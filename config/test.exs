@@ -7,10 +7,6 @@ config :gara, GaraWeb.Endpoint,
   secret_key_base: "0zj7ohlEDFSFdLMnyr+vEurnT6gRohuhDvb5QmBnNGVK+VeNjpIEAytxwhnx3G4k",
   server: false
 
-# In test we don't send emails.
-config :gara, Gara.Mailer,
-  adapter: Swoosh.Adapters.Test
-
 # Print only warnings and errors during test
 config :logger, level: :warn
 
