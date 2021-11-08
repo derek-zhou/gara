@@ -9,6 +9,9 @@ module.exports = {
 	"css": "/css",
 	"js": "/js"
     },
+    plugins: [
+	"@snowpack/plugin-postcss"
+    ],
     // installOptions: {},
     // devOptions: {},
     buildOptions: {

@@ -33,6 +33,8 @@ defmodule Gara.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:guardian, "~> 2.1"},
+      {:surface, "~> 0.6.1"},
       {:phoenix, "~> 1.6.2"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.3.1", only: :dev},

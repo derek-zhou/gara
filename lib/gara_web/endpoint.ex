@@ -1,16 +1,7 @@
 defmodule GaraWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :gara
 
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
-  @session_options [
-    store: :cookie,
-    key: "_gara_key",
-    signing_salt: "JOLmPvm8"
-  ]
-
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
+  socket "/live", Phoenix.LiveView.Socket, longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -44,6 +35,10 @@ defmodule GaraWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-  plug Plug.Session, @session_options
+  
+  if Mix.env() == :prod do
+    plug Plug.RewriteOn, [:x_forwarded_proto, :x_forwarded_host, :x_forwarded_port]
+  end
+
   plug GaraWeb.Router
 end

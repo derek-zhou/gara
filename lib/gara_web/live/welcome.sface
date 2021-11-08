@@ -1,0 +1,11 @@
+<div class="content">
+    <Form for={:login}>
+	<Field name="topic" class="field">
+	    <Label>Room topic:</Label>
+	    <TextInput />
+	</Field>
+	<div class="toolbar">
+	    <input class="button" type="submit" value="Get a room already!">
+	</div>
+    </Form>
+</div>

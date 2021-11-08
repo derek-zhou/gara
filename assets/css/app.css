@@ -1,89 +1,148 @@
-/* This file is for your main application CSS */
-@import "./phoenix.css";
+@tailwind base;
 
-/* Alerts and form errors used by phx.new */
-.alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-.alert-info {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-}
-.alert-warning {
-  color: #8a6d3b;
-  background-color: #fcf8e3;
-  border-color: #faebcc;
-}
-.alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
-}
-.alert p {
-  margin-bottom: 0;
-}
-.alert:empty {
-  display: none;
-}
-.invalid-feedback {
-  color: #a94442;
-  display: block;
-  margin: -1rem 0 2rem;
+@tailwind components;
+
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply mx-1;
+    }
+    a {
+        @apply text-blue-600;
+    }
+    a:focus, a:hover {
+        @apply text-gray-600;
+    }
+    span {
+        @apply whitespace-nowrap;
+    }
+    @screen md {
+        body {
+            @apply mx-0;
+        }
+    }
 }
 
-/* LiveView specific classes for your customization */
-.phx-no-feedback.invalid-feedback,
-.phx-no-feedback .invalid-feedback {
-  display: none;
-}
-
-.phx-click-loading {
-  opacity: 0.5;
-  transition: opacity 1s ease-out;
-}
-
-.phx-disconnected{
-  cursor: wait;
-}
-.phx-disconnected *{
-  pointer-events: none;
-}
-
-.phx-modal {
-  opacity: 1!important;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.4);
-}
-
-.phx-modal-content {
-  background-color: #fefefe;
-  margin: 15vh auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-}
-
-.phx-modal-close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.phx-modal-close:hover,
-.phx-modal-close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+@layer components {
+    /* Alerts and form errors */
+    .alert {
+	@apply p-2 rounded mb-0;
+    }
+    .alert-info {
+        @apply bg-yellow-200 text-blue-700;
+    }
+    .alert-warning {
+        @apply bg-yellow-200 text-purple-700;
+    }
+    .alert-danger {
+        @apply bg-yellow-200 text-red-700;
+    }
+    .alert-info:empty {
+        @apply hidden;
+    }
+    .alert-warning:empty {
+        @apply hidden;
+    }
+    .alert-danger:empty {
+        @apply hidden;
+    }
+    .button {
+        @apply flex-none px-6 py-1 text-purple-600 inline-block rounded appearance-none
+        font-bold whitespace-nowrap text-lg text-center uppercase;
+    }
+    .button:focus, .button:hover {
+        @apply text-gray-600;
+    }
+    .button[disabled] {
+        @apply pointer-events-none cursor-default opacity-50;
+    }
+    .button.disabled {
+        @apply pointer-events-none cursor-default opacity-50;
+    }
+    /* progress bar */
+    .progress-bar {
+	@apply fixed left-0 top-0 h-1 bg-indigo-700 z-50;
+	transition:
+            width 300ms ease-out,
+            opacity 150ms 150ms ease-in;
+	transform: translate3d(0, 0, 0);
+    }
+    .viewport {
+	@apply relative;
+	.header {
+	    @apply sticky top-0 bg-gray-100 p-2 flex;
+	    .brand {
+                img {
+		    @apply inline-block h-8;
+                }
+		.title {
+                    @apply text-3xl text-indigo-500 font-bold align-bottom;
+		}
+		.info {
+		    @apply text-gray-600 align-bottom;
+		}
+	    }
+	}
+	.content {
+	    @apply border border-gray-100 rounded;
+	    form {
+		@apply p-2 bg-gray-50 flex flex-col;
+                input[type="text"] {
+		    @apply w-80 leading-relaxed border rounded border-gray-600;
+                }
+		.field {
+		    @apply mb-2 flex flex-row flex-wrap justify-center;
+		}
+		hr {
+		    @apply mb-2 border-gray-200;
+		}
+		.toolbar {
+		    @apply pt-2 flex flex-row flex-wrap justify-center border-t border-gray-200;
+                    .button[type="reset"] {
+			@apply flex-none cursor-pointer text-white bg-pink-600 mr-1;
+                    }
+                    .button[type="submit"] {
+			@apply flex-none cursor-pointer text-white bg-purple-600 mr-1;
+                    }
+		}
+                label {
+                    @apply flex-none mr-2;
+		    .focus {
+			@apply font-bold italic;
+		    }
+                }
+		.footnote {
+		    @apply text-sm text-gray-700 py-2 flex justify-center;
+		}
+		.error {
+		    @apply text-sm text-red-700 py-2;
+		}
+	    }
+	}
+	.footer {
+	    @apply text-sm text-gray-700 p-2 flex text-center;
+	    .links {
+		@apply w-1/2 text-left;
+	    }
+	    .copyright {
+                @apply w-1/2 text-right;
+            }
+	}
+    }
+    @screen md {
+	.viewport {
+            @apply max-w-screen-md mx-auto;
+	}
+    }
+    @screen lg {
+	.viewport {
+            @apply max-w-screen-lg;
+ 	}
+    }
+    @screen xl {
+	.viewport {
+            @apply max-w-screen-xl;
+	}
+    }
 }

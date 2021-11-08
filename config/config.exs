@@ -22,6 +22,14 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# for guardian
+config :gara, GaraWeb.Guardian,
+  issuer: "gara",
+  secret_key: "Ub5Nfc6dAgJWZUyLoSWiVsCB8tr7z0x6w5eYmpE+A2WzQvFYhDQPDQJfExElOzIC",
+  token_ttl: %{
+    "access" => {8, :hours}
+  }
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

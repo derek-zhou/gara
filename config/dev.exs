@@ -53,7 +53,8 @@ config :gara, GaraWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/gara_web/(live|views)/.*(ex)$",
-      ~r"lib/gara_web/templates/.*(eex)$"
+      ~r"lib/gara_web/templates/.*(eex)$",
+      ~r"lib/my_app_web/live/.*(sface)$"
     ]
   ]
 
