@@ -4,6 +4,7 @@ defmodule Gara.Application do
   @moduledoc false
 
   use Application
+  alias Gara.Defaults
 
   @impl true
   def start(_type, _args) do
@@ -12,6 +13,13 @@ defmodule Gara.Application do
       GaraWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Gara.PubSub},
+      # start the registry for chatrooms
+      {Registry, keys: :unique, name: Gara.Rooms},
+      # start the supervisor for chatrooms
+      {DynamicSupervisor,
+       strategy: :one_for_one,
+       name: Gara.RoomSupervisor,
+       max_children: Defaults.default(:max_rooms)},
       # Start the Endpoint (http/https)
       GaraWeb.Endpoint
       # Start a worker by calling: Gara.Worker.start_link(arg)

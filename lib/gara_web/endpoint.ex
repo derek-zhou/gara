@@ -35,7 +35,7 @@ defmodule GaraWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-  
+
   if Mix.env() == :prod do
     plug Plug.RewriteOn, [:x_forwarded_proto, :x_forwarded_host, :x_forwarded_port]
   end

@@ -4,6 +4,6 @@ defmodule GaraWeb.Welcome do
   alias Surface.Components.Form
   alias Surface.Components.Form.{Field, Label, TextInput}
 
-  prop rooms, :integer, required: true
-  prop occupied, :integer, default: 0
+  prop(rooms, :integer, required: true)
+  prop(occupied, :integer, default: 0)
 end

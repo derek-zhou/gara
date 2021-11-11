@@ -37,5 +37,4 @@ defmodule GaraWeb.Router do
       live_dashboard "/dashboard", metrics: GaraWeb.Telemetry
     end
   end
-
 end
