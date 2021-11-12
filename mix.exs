@@ -35,6 +35,7 @@ defmodule Gara.MixProject do
     [
       {:guardian, "~> 2.1"},
       {:surface, "~> 0.6.1"},
+      {:earmark, "~> 1.4"},
       {:phoenix, "~> 1.6.2"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.3.1", only: :dev},
