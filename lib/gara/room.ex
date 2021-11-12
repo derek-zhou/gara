@@ -4,20 +4,36 @@ defmodule Gara.Room do
   require Logger
   use GenServer, restart: :transient
   alias Gara.Roster
+  alias Gara.RoomSupervisor
   alias Phoenix.PubSub
 
-  defstruct [:name, :roster, messages: []]
+  defstruct [:name, :topic, :roster, :since, messages: []]
 
-  def child_spec(name: name) do
+  @doc """
+  create a new room for the given topic. return the room name if success or nil
+  """
+  def new_room(topic) do
+    name = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
+
+    case DynamicSupervisor.start_child(
+           RoomSupervisor,
+           {__MODULE__, [name: name, topic: topic]}
+         ) do
+      {:error, _} -> nil
+      {:ok, _} -> name
+    end
+  end
+
+  def child_spec([name: name] = args) do
     %{
       id: name,
-      start: {__MODULE__, :start_link, [[name: name]]},
+      start: {__MODULE__, :start_link, [args]},
       restart: :transient
     }
   end
 
-  def start_link(name: name) do
-    GenServer.start_link(__MODULE__, name, name: {:via, Registry, {Gara.Rooms, name}})
+  def start_link(name: name, topic: topic) do
+    GenServer.start_link(__MODULE__, {name, topic}, name: {:via, Registry, {Gara.Rooms, name}})
   end
 
   @doc """
@@ -40,11 +56,24 @@ defmodule Gara.Room do
   """
   def rename(room, id, new_nick), do: GenServer.call(room, {:rename, id, new_nick})
 
+  @doc """
+  return a stat of the room in a map, or nil if room not found
+  """
+  def stat(room) do
+    try do
+      GenServer.call(room, :stat)
+    catch
+      :exit, _ -> nil
+    end
+  end
+
   @impl true
-  def init(name) do
+  def init({name, topic}) do
     Process.flag(:trap_exit, true)
+    Process.flag(:max_heap_size, 1_000_000)
     Process.send_after(self(), :tick, @tick_interval)
-    {:ok, %__MODULE__{name: name, roster: %Roster{}}}
+    Logger.info("Room #{name}: room created with topic: #{topic}")
+    {:ok, %__MODULE__{name: name, topic: topic, since: DateTime.utc_now(), roster: %Roster{}}}
   end
 
   @impl true
@@ -129,5 +158,12 @@ defmodule Gara.Room do
         PubSub.local_broadcast(Gara.PubSub, "messages", {:rename_message, old_nick, new_nick})
         {:reply, :ok, %{state | roster: roster}}
     end
+  end
+
+  @impl true
+  def handle_call(:stat, _from, %__MODULE__{topic: topic, since: since, roster: roster} = state) do
+    {:reply,
+     %{topic: topic, since: since, people: Roster.fullsize(roster), active: Roster.size(roster)},
+     state}
   end
 end

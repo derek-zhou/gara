@@ -1,5 +1,8 @@
 <div class="content">
-    <Form for={:login}>
+    <img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara.jpg")}>
+    {#if @occupied < @rooms}
+    <h2>{@occupied} out of {@rooms} rooms occupied</h2>
+    <Form for={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
 	<Field name="topic" class="field">
 	    <Label>Room topic:</Label>
 	    <TextInput />
@@ -8,4 +11,7 @@
 	    <input class="button" type="submit" value="Get a room already!">
 	</div>
     </Form>
+    {#else}
+    <h2>All {@rooms} rooms occupied, comeback later</h2>
+    {/if}
 </div>

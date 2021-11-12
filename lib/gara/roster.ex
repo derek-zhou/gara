@@ -38,6 +38,11 @@ defmodule Gara.Roster do
   def size(%__MODULE__{info_map: infos}), do: map_size(infos)
 
   @doc """
+  count the occupants, active and past
+  """
+  def fullsize(%__MODULE__{name_map: names}), do: map_size(names)
+
+  @doc """
   Join the roster. return the {new_id, new_roster}, or {:error, reason}
   """
   def join(%__MODULE__{next_id: id, name_map: names, info_map: infos} = roster, pid) do
@@ -127,6 +132,7 @@ defmodule Gara.Roster do
             []
 
           true ->
+            send(pid, {:tick, idle_counter + 1})
             [{id, {pid, idle_counter + 1}}]
         end
       end)

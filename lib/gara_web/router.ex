@@ -15,6 +15,8 @@ defmodule GaraWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    post "/create", PageController, :create
+    get "/room/:name", PageController, :room
   end
 
   # Other scopes may use custom stacks.

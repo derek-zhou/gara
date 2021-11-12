@@ -1,0 +1,12 @@
+<div class="content">
+     {#if @open}
+     
+     {#else}
+     <h2>Room @stat[:topic] is open</h2>
+     <ul>
+     <li>Opened since: {inspect(@stat[:since])}</li>
+     <li>Total participants: {to_string(@stat[:people])}</li>
+     <li>Active participants: {to_string(@stat[:active])}</li>
+     </ul>
+     {/if}
+</div>
