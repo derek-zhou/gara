@@ -1,5 +1,5 @@
 <div class="content">
-    <img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara.jpg")}>
+    <img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara_room.jpg")}>
     {#if @occupied < @rooms}
     <h2>{@occupied} out of {@rooms} rooms occupied</h2>
     <Form for={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>

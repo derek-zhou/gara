@@ -6,12 +6,13 @@ defmodule GaraWeb.PageController do
   alias Gara.RoomSupervisor
   alias Gara.Rooms
 
+  plug :no_layout
+
   def index(conn, _params) do
-    %{specs: rooms} = DynamicSupervisor.count_children(RoomSupervisor)
-    occupied = Defaults.default(:max_rooms)
+    %{specs: occupied} = DynamicSupervisor.count_children(RoomSupervisor)
+    rooms = Defaults.default(:max_rooms)
 
     conn
-    |> put_layout(false)
     |> assign(:rooms, rooms)
     |> assign(:occupied, occupied)
     |> render("welcome.html")
@@ -30,7 +31,8 @@ defmodule GaraWeb.PageController do
     case Room.stat(room) do
       nil ->
         conn
-        |> assign(:opened, false)
+        |> assign(:open, false)
+        |> assign(:stat, %{})
         |> render("room.html")
 
       stat ->
@@ -40,4 +42,6 @@ defmodule GaraWeb.PageController do
         |> render("room.html")
     end
   end
+
+  defp no_layout(conn, _opts), do: put_layout(conn, false)
 end

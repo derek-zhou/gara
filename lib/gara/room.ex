@@ -17,22 +17,22 @@ defmodule Gara.Room do
 
     case DynamicSupervisor.start_child(
            RoomSupervisor,
-           {__MODULE__, [name: name, topic: topic]}
+           {__MODULE__, %{name: name, topic: topic}}
          ) do
       {:error, _} -> nil
       {:ok, _} -> name
     end
   end
 
-  def child_spec([name: name] = args) do
+  def child_spec(args) do
     %{
-      id: name,
+      id: args[:name],
       start: {__MODULE__, :start_link, [args]},
       restart: :transient
     }
   end
 
-  def start_link(name: name, topic: topic) do
+  def start_link(%{name: name, topic: topic}) do
     GenServer.start_link(__MODULE__, {name, topic}, name: {:via, Registry, {Gara.Rooms, name}})
   end
 
@@ -86,14 +86,15 @@ defmodule Gara.Room do
   def handle_info(:tick, %__MODULE__{name: name, roster: roster} = state) do
     roster = Roster.tick(roster)
 
-    if Roster.size(roster) == 0 do
-      Logger.info("Room #{name}: room is empty")
-      GenServer.stop(self())
-    else
-      Process.send_after(self(), :tick, @tick_interval)
-    end
+    case Roster.size(roster) do
+      0 ->
+        Logger.info("Room #{name}: room is empty")
+        {:stop, :normal, state}
 
-    {:noreply, %{state | roster: roster}}
+      _ ->
+        Process.send_after(self(), :tick, @tick_interval)
+        {:noreply, %{state | roster: roster}}
+    end
   end
 
   @impl true
