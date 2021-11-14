@@ -5,7 +5,6 @@ defmodule Gara.Room do
   use GenServer, restart: :transient
   alias Gara.Roster
   alias Gara.RoomSupervisor
-  alias Phoenix.PubSub
 
   defstruct [:name, :topic, :roster, :since, messages: []]
 
@@ -47,7 +46,8 @@ defmodule Gara.Room do
   def leave(room, id), do: GenServer.cast(room, {:leave, id})
 
   @doc """
-  join the room with existing id. Returns {id, nick} if successful, :error if not
+  join the room with existing id. Returns {id, nick, participants, history} if successful,
+  {:error, reason} if not
   """
   def join(room, id \\ nil), do: GenServer.call(room, {:join, self(), id})
 
@@ -79,7 +79,7 @@ defmodule Gara.Room do
   @impl true
   def terminate(_reason, %__MODULE__{name: name, roster: roster}) do
     Logger.info("Room #{name}: closing")
-    Roster.kill(roster)
+    Roster.broadcast(roster, :hangup)
   end
 
   @impl true
@@ -109,8 +109,9 @@ defmodule Gara.Room do
 
       {:ok, roster} ->
         nick = Roster.get_name(roster, id)
-        PubSub.local_broadcast(Gara.PubSub, "messages", {:user_message, nick, msg})
-        messages = [{id, DateTime.utc_now(), msg} | messages]
+        now = DateTime.utc_now()
+        Roster.broadcast(roster, {:user_message, nick, now, msg})
+        messages = [{id, now, msg} | messages]
         {:noreply, %{state | roster: roster, messages: messages}}
     end
   end
@@ -127,13 +128,17 @@ defmodule Gara.Room do
 
       nick ->
         roster = Roster.leave(roster, id)
-        PubSub.local_broadcast(Gara.PubSub, "messages", {:leave_message, nick})
+        Roster.broadcast(roster, {:leave_message, nick})
         {:noreply, %{state | roster: roster}}
     end
   end
 
   @impl true
-  def handle_call({:join, pid, id}, _from, %__MODULE__{name: name, roster: roster} = state) do
+  def handle_call(
+        {:join, pid, id},
+        _from,
+        %__MODULE__{name: name, roster: roster, messages: messages} = state
+      ) do
     case Roster.join(roster, pid, id) do
       {:error, reason} ->
         Logger.warn("Room #{name}: room full")
@@ -141,9 +146,16 @@ defmodule Gara.Room do
 
       {id, roster} ->
         nick = Roster.get_name(roster, id)
+        participants = Roster.participants(roster)
+
+        history =
+          Enum.map(messages, fn {id, time, msg} ->
+            {Roster.get_name(roster, id), time, msg}
+          end)
+
         Logger.info("Room #{name}: #{nick}(#{id}) joined")
-        PubSub.local_broadcast(Gara.PubSub, "messages", {:join_message, nick})
-        {:reply, {id, nick}, %{state | roster: roster}}
+        Roster.broadcast(roster, {:join_message, nick})
+        {:reply, {id, nick, participants, history}, %{state | roster: roster}}
     end
   end
 
@@ -156,7 +168,7 @@ defmodule Gara.Room do
 
       {:ok, roster, old_nick} ->
         Logger.info("Room #{name}: #{old_nick}(#{id}) renamed to #{new_nick}")
-        PubSub.local_broadcast(Gara.PubSub, "messages", {:rename_message, old_nick, new_nick})
+        Roster.broadcast(roster, {:rename_message, old_nick, new_nick})
         {:reply, :ok, %{state | roster: roster}}
     end
   end

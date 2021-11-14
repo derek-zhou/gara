@@ -6,6 +6,6 @@ defmodule GaraWeb.Welcome do
   alias GaraWeb.Router.Helpers, as: Routes
   alias GaraWeb.Endpoint
 
-  prop(rooms, :integer, required: true)
-  prop(occupied, :integer, default: 0)
+  prop rooms, :integer, required: true
+  prop occupied, :integer, default: 0
 end

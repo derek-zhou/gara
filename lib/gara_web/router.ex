@@ -16,7 +16,7 @@ defmodule GaraWeb.Router do
 
     get "/", PageController, :index
     post "/create", PageController, :create
-    get "/room/:name", PageController, :room
+    live "/room/:name", RoomLive, :chat
   end
 
   # Other scopes may use custom stacks.

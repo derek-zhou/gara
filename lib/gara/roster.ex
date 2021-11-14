@@ -132,7 +132,7 @@ defmodule Gara.Roster do
             []
 
           true ->
-            send(pid, {:tick, idle_counter + 1})
+            send(pid, {:tick, idle_counter + 1, idle_limit})
             [{id, {pid, idle_counter + 1}}]
         end
       end)
@@ -141,10 +141,17 @@ defmodule Gara.Roster do
   end
 
   @doc """
-  kill everyone. return :ok
+  broadcast a message to every one, return :ok
   """
-  def kill(%__MODULE__{info_map: infos}) do
-    Enum.each(infos, fn {_id, {pid, _}} -> send(pid, :hangup) end)
+  def broadcast(%__MODULE__{info_map: infos}, msg) do
+    Enum.each(infos, fn {_id, {pid, _}} -> send(pid, msg) end)
+  end
+
+  @doc """
+  Return all active nicks on the roster
+  """
+  def participants(%__MODULE__{info_map: infos, name_map: names}) do
+    Enum.map(infos, fn {id, _} -> names[id] end)
   end
 
   defp gen_new_nick(list) do
