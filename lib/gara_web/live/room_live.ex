@@ -1,11 +1,11 @@
 defmodule GaraWeb.RoomLive do
   use Surface.LiveView
+  import GaraWeb.Gettext
   require Logger
 
-  alias Gara.{Room, Rooms, Defaults, Message}
+  alias Gara.{Room, Rooms, Message}
   alias Phoenix.LiveView.Socket
-  alias GaraWeb.Router.Helpers, as: Routes
-  alias GaraWeb.{Endpoint, Guardian}
+  alias GaraWeb.{Chat, Guardian}
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -31,7 +31,7 @@ defmodule GaraWeb.RoomLive do
     socket =
       case Registry.lookup(Rooms, room_name) do
         [] ->
-          push_event(socket, "leave", %{reason: "no such room"})
+          push_event(socket, "leave", %{reason: gettext("No such room")})
 
         [{pid, _}] ->
           socket = assign(socket, room_pid: pid, room_stat: Room.stat(pid), room_status: :existed)
@@ -45,7 +45,7 @@ defmodule GaraWeb.RoomLive do
 
               case Room.join(pid, fetch_token(values, room_name)) do
                 :error ->
-                  push_event(socket, "leave", %{reason: "no space in room"})
+                  push_event(socket, "leave", %{reason: gettext("No space in room")})
 
                 {id, nick, participants, history} ->
                   {:ok, token} = Guardian.build_token(id, room_name)
@@ -69,12 +69,16 @@ defmodule GaraWeb.RoomLive do
     {:ok, socket, temporary_assigns: [history: [], message: nil]}
   end
 
+  def handle_info(:hangup, %Socket{assigns: %{room_status: :hangup}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_info(:hangup, socket) do
     {
       :noreply,
       socket
       |> assign(room_status: :hangup)
-      |> push_event("leave", %{reason: "server hangup"})
+      |> push_event("leave", %{reason: gettext("Server hangup")})
     }
   end
 
@@ -82,12 +86,16 @@ defmodule GaraWeb.RoomLive do
     {:noreply, assign(socket, idle_percentage: Float.floor(idle_counter / idle_limit * 100))}
   end
 
+  def handle_info({:DOWN, _, _, _, _}, %Socket{assigns: %{room_status: :hangup}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_info({:DOWN, _, _, _, _}, socket) do
     {
       :noreply,
       socket
       |> assign(room_status: :hangup)
-      |> push_event("leave", %{reason: "server crashed"})
+      |> push_event("leave", %{reason: gettext("Server crashed")})
     }
   end
 
@@ -125,6 +133,35 @@ defmodule GaraWeb.RoomLive do
       end
 
     {:noreply, assign(socket, message: message, participants: participants, nick: nick)}
+  end
+
+  def handle_event("leave", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
+    Room.leave(room, uid)
+
+    {
+      :noreply,
+      socket
+      |> assign(room_status: :hangup)
+      |> push_event("leave", %{reason: gettext("You left")})
+    }
+  end
+
+  def handle_event(
+        "rename",
+        %{"rename" => %{"name" => new_nick}},
+        %Socket{assigns: %{room_pid: room, uid: uid}} = socket
+      ) do
+    Room.rename(room, uid, new_nick)
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "message",
+        %{"message" => %{"text" => text}},
+        %Socket{assigns: %{room_pid: room, uid: uid}} = socket
+      ) do
+    Room.say(room, uid, Message.parse(text))
+    {:noreply, socket}
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do
