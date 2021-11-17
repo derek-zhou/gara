@@ -6,7 +6,7 @@ defmodule Gara.Room do
   alias Gara.Roster
   alias Gara.RoomSupervisor
 
-  defstruct [:name, :topic, :roster, :since, messages: []]
+  defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0]
 
   @doc """
   create a new room for the given topic. return the room name if success or nil
@@ -73,7 +73,9 @@ defmodule Gara.Room do
     Process.flag(:max_heap_size, 1_000_000)
     Process.send_after(self(), :tick, @tick_interval)
     Logger.info("Room #{name}: room created with topic: #{topic}")
-    {:ok, %__MODULE__{name: name, topic: topic, since: DateTime.utc_now(), roster: %Roster{}}}
+
+    {:ok,
+     %__MODULE__{name: name, topic: topic, since: NaiveDateTime.utc_now(), roster: %Roster{}}}
   end
 
   @impl true
@@ -100,7 +102,7 @@ defmodule Gara.Room do
   @impl true
   def handle_cast(
         {:say, id, msg},
-        %__MODULE__{name: name, roster: roster, messages: messages} = state
+        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
     case Roster.ping(roster, id) do
       :error ->
@@ -109,17 +111,17 @@ defmodule Gara.Room do
 
       {:ok, roster} ->
         nick = Roster.get_name(roster, id)
-        now = DateTime.utc_now()
-        Roster.broadcast(roster, {:user_message, nick, now, msg})
-        messages = [{id, now, msg} | messages]
-        {:noreply, %{state | roster: roster, messages: messages}}
+        now = NaiveDateTime.utc_now()
+        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+        messages = [{msg_id, now, id, msg} | messages]
+        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
     end
   end
 
   @impl true
   def handle_cast(
         {:leave, id},
-        %__MODULE__{name: name, roster: roster} = state
+        %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
       ) do
     case Roster.get_name(roster, id) do
       nil ->
@@ -128,8 +130,8 @@ defmodule Gara.Room do
 
       nick ->
         roster = Roster.leave(roster, id)
-        Roster.broadcast(roster, {:leave_message, nick})
-        {:noreply, %{state | roster: roster}}
+        Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
+        {:noreply, %{state | roster: roster, msg_id: msg_id + 1}}
     end
   end
 
@@ -137,7 +139,7 @@ defmodule Gara.Room do
   def handle_call(
         {:join, pid, id},
         _from,
-        %__MODULE__{name: name, roster: roster, messages: messages} = state
+        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
     case Roster.join(roster, pid, id) do
       {:error, reason} ->
@@ -149,18 +151,22 @@ defmodule Gara.Room do
         participants = Roster.participants(roster)
 
         history =
-          Enum.map(messages, fn {id, time, msg} ->
-            {Roster.get_name(roster, id), time, msg}
+          Enum.map(messages, fn {mid, id, time, msg} ->
+            {:user_message, mid, Roster.get_name(roster, id), time, msg}
           end)
 
         Logger.info("Room #{name}: #{nick}(#{id}) joined")
-        Roster.broadcast(roster, {:join_message, nick})
-        {:reply, {id, nick, participants, history}, %{state | roster: roster}}
+        Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
+        {:reply, {id, nick, participants, history}, %{state | roster: roster, msg_id: msg_id + 1}}
     end
   end
 
   @impl true
-  def handle_call({:rename, id, new_nick}, _from, %__MODULE__{name: name, roster: roster} = state) do
+  def handle_call(
+        {:rename, id, new_nick},
+        _from,
+        %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
+      ) do
     case Roster.rename(roster, id, new_nick) do
       :error ->
         Logger.warn("Room #{name}: #{id} rename failed")
@@ -168,8 +174,13 @@ defmodule Gara.Room do
 
       {:ok, roster, old_nick} ->
         Logger.info("Room #{name}: #{old_nick}(#{id}) renamed to #{new_nick}")
-        Roster.broadcast(roster, {:rename_message, old_nick, new_nick})
-        {:reply, :ok, %{state | roster: roster}}
+
+        Roster.broadcast(
+          roster,
+          {:rename_message, msg_id, NaiveDateTime.utc_now(), old_nick, new_nick}
+        )
+
+        {:reply, :ok, %{state | roster: roster, msg_id: msg_id}}
     end
   end
 

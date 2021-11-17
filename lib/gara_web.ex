@@ -100,3 +100,7 @@ defmodule GaraWeb do
     apply(__MODULE__, which, [])
   end
 end
+
+defmodule GaraWeb.RoomNotFoundError do
+  defexception [:message, plug_status: 404]
+end

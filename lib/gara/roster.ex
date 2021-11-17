@@ -81,14 +81,7 @@ defmodule Gara.Roster do
   leave the roster, return new_roster
   """
   def leave(%__MODULE__{info_map: infos} = roster, id) do
-    case Map.get(infos, id) do
-      nil ->
-        roster
-
-      {pid, _} ->
-        send(pid, :hangup)
-        %{roster | info_map: Map.delete(infos, id)}
-    end
+    %{roster | info_map: Map.delete(infos, id)}
   end
 
   @doc """

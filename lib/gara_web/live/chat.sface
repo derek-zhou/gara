@@ -1,11 +1,42 @@
-<div id="main-content" class="content" phx-hook="Main">
-    {#for type <- Map.keys(@messages)}
-    <div role="alert" class={"alert", alert_class(type)} phx-value-key={type}
-	 phx-click="lv:clear-flash">
-	{@messages[type]}
+<div class="transcript" id="transcript" phx-update="prepend">
+    {#for message <- @messages}
+    {#case message}
+    {#match {:user_message, msg_id, ts, from, content}}
+    <div id={"msg_#{msg_id}"} class={user_message_class(from == @nick)}>
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    <i>{from}</i>
+	    {gettext("said: ")}
+	</div>
+	<div class="content">
+	    {raw(content)}
+	</div>
     </div>
+    {#match {:leave_message, msg_id, ts, from}}
+    <div id={"message_#{msg_id}"} class="system_message">
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    <i>{from}</i>
+	    {gettext("left")}
+	</div>
+    </div>
+    {#match {:join_message, msg_id, ts, from}}
+    <div id={"message_#{msg_id}"} class="system_message">
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    <i>{from}</i>
+	    {gettext("joined")}
+	</div>
+    </div>
+    {#match {:rename_message, msg_id, ts, from, to}}
+    <div id={"message_#{msg_id}"} class="system_message">
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    <i>{from}</i>
+	    {gettext("renamed to")}
+	    <i>{to}</i>
+	</div>
+    </div>
+    {/case}
     {/for}
-    <div class="header">
-    </div>
-    <#slot />
 </div>

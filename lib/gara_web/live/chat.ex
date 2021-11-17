@@ -1,10 +1,18 @@
 defmodule GaraWeb.Chat do
   use Surface.Component
+  import GaraWeb.Gettext
 
-  slot default, required: true
-  prop messages, :map, default: %{}
+  prop tz_offset, :integer, default: 0
+  prop messages, :list, default: []
+  prop nick, :string, required: true
 
-  defp alert_class("error"), do: "alert-danger"
-  defp alert_class("warning"), do: "alert-warning"
-  defp alert_class("info"), do: "alert-info"
+  defp date_string(date, tz_offset) do
+    date
+    |> NaiveDateTime.add(0 - tz_offset * 60)
+    |> NaiveDateTime.to_time()
+    |> Time.to_string()
+  end
+
+  defp user_message_class(true), do: ["user_message", "self_message"]
+  defp user_message_class(false), do: ["user_message"]
 end

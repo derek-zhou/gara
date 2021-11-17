@@ -58,7 +58,7 @@ Hooks.Main = {
 	    else
 		localStorage.removeItem(local_key);
 	});
-	this.handleEvent("leave", ({reason}) => {	
+	this.handleEvent("leave", () => {	
 	    window.removeEventListener("phx:page-loading-start", show_progress_bar);
 	    liveSocket.disconnect();
 	});

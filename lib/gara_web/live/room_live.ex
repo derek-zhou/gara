@@ -5,7 +5,7 @@ defmodule GaraWeb.RoomLive do
 
   alias Gara.{Room, Rooms, Message}
   alias Phoenix.LiveView.Socket
-  alias GaraWeb.{Chat, Guardian}
+  alias GaraWeb.{Main, Header, Chat, Guardian}
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -22,8 +22,11 @@ defmodule GaraWeb.RoomLive do
   data idle_percentage, :integer, default: 0
 
   # temporary state
-  data history, :list, default: []
-  data message, :tuple, default: nil
+  data messages, :list, default: []
+
+  # for GUI
+  data show_roster, :boolean, default: false
+  data show_info, :boolean, default: false
 
   def mount(%{"name" => room_name}, _session, %Socket{assigns: %{live_action: :chat}} = socket) do
     socket = assign(socket, room_name: room_name)
@@ -31,7 +34,16 @@ defmodule GaraWeb.RoomLive do
     socket =
       case Registry.lookup(Rooms, room_name) do
         [] ->
-          push_event(socket, "leave", %{reason: gettext("No such room")})
+          cond do
+            connected?(socket) ->
+              socket
+              |> put_flash(:error, gettext("No such room"))
+              |> push_event("leave", %{})
+
+            true ->
+              raise(GaraWeb.RoomNotFoundError, gettext("No such room"))
+              socket
+          end
 
         [{pid, _}] ->
           socket = assign(socket, room_pid: pid, room_stat: Room.stat(pid), room_status: :existed)
@@ -45,9 +57,11 @@ defmodule GaraWeb.RoomLive do
 
               case Room.join(pid, fetch_token(values, room_name)) do
                 :error ->
-                  push_event(socket, "leave", %{reason: gettext("No space in room")})
+                  socket
+                  |> put_flash(:error, gettext("No space in room"))
+                  |> push_event("leave", %{})
 
-                {id, nick, participants, history} ->
+                {id, nick, participants, messages} ->
                   {:ok, token} = Guardian.build_token(id, room_name)
 
                   socket
@@ -56,7 +70,7 @@ defmodule GaraWeb.RoomLive do
                     nick: nick,
                     room_status: :joined,
                     participants: participants,
-                    history: history
+                    messages: messages
                   )
                   |> push_event("set_value", %{key: "token", value: token})
               end
@@ -66,11 +80,7 @@ defmodule GaraWeb.RoomLive do
           end
       end
 
-    {:ok, socket, temporary_assigns: [history: [], message: nil]}
-  end
-
-  def handle_info(:hangup, %Socket{assigns: %{room_status: :hangup}} = socket) do
-    {:noreply, socket}
+    {:ok, socket, temporary_assigns: [messages: []]}
   end
 
   def handle_info(:hangup, socket) do
@@ -78,7 +88,8 @@ defmodule GaraWeb.RoomLive do
       :noreply,
       socket
       |> assign(room_status: :hangup)
-      |> push_event("leave", %{reason: gettext("Server hangup")})
+      |> put_flash(:warning, gettext("Server hangup"))
+      |> push_event("leave", %{})
     }
   end
 
@@ -86,41 +97,38 @@ defmodule GaraWeb.RoomLive do
     {:noreply, assign(socket, idle_percentage: Float.floor(idle_counter / idle_limit * 100))}
   end
 
-  def handle_info({:DOWN, _, _, _, _}, %Socket{assigns: %{room_status: :hangup}} = socket) do
-    {:noreply, socket}
-  end
-
   def handle_info({:DOWN, _, _, _, _}, socket) do
     {
       :noreply,
       socket
       |> assign(room_status: :hangup)
-      |> push_event("leave", %{reason: gettext("Server crashed")})
+      |> put_flash(:warning, gettext("Server crashed"))
+      |> push_event("leave", %{})
     }
   end
 
-  def handle_info({:user_message, _, _, _} = message, socket) do
-    {:noreply, assign(socket, message: message)}
+  def handle_info({:user_message, _mid, _ts, _nick, _msg} = message, socket) do
+    {:noreply, assign(socket, messages: [message])}
   end
 
   def handle_info(
-        {:leave_message, nick} = message,
+        {:leave_message, _mid, _ts, nick} = message,
         %Socket{assigns: %{participants: participants}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == nick))
-    {:noreply, assign(socket, message: message, participants: participants)}
+    {:noreply, assign(socket, messages: [message], participants: participants)}
   end
 
   def handle_info(
-        {:join_message, nick} = message,
+        {:join_message, _mid, _ts, nick} = message,
         %Socket{assigns: %{participants: participants}} = socket
       ) do
     participants = [nick | participants]
-    {:noreply, assign(socket, message: message, participants: participants)}
+    {:noreply, assign(socket, messages: [message], participants: participants)}
   end
 
   def handle_info(
-        {:rename_message, old_nick, new_nick} = message,
+        {:rename_message, _mid, _ts, old_nick, new_nick} = message,
         %Socket{assigns: %{participants: participants, nick: nick}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == old_nick))
@@ -132,7 +140,7 @@ defmodule GaraWeb.RoomLive do
         _ -> nick
       end
 
-    {:noreply, assign(socket, message: message, participants: participants, nick: nick)}
+    {:noreply, assign(socket, messages: [message], participants: participants, nick: nick)}
   end
 
   def handle_event("leave", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
@@ -142,7 +150,8 @@ defmodule GaraWeb.RoomLive do
       :noreply,
       socket
       |> assign(room_status: :hangup)
-      |> push_event("leave", %{reason: gettext("You left")})
+      |> put_flash(:info, gettext("You left"))
+      |> push_event("leave", %{})
     }
   end
 
@@ -162,6 +171,22 @@ defmodule GaraWeb.RoomLive do
       ) do
     Room.say(room, uid, Message.parse(text))
     {:noreply, socket}
+  end
+
+  def handle_event("click_topic", _, %Socket{assigns: %{show_roster: true}} = socket) do
+    {:noreply, assign(socket, show_roster: false)}
+  end
+
+  def handle_event("click_topic", _, %Socket{assigns: %{show_roster: false}} = socket) do
+    {:noreply, assign(socket, show_roster: true, show_info: false)}
+  end
+
+  def handle_event("click_nick", _, %Socket{assigns: %{show_info: true}} = socket) do
+    {:noreply, assign(socket, show_info: false)}
+  end
+
+  def handle_event("click_nick", _, %Socket{assigns: %{show_info: false}} = socket) do
+    {:noreply, assign(socket, show_info: true, show_roster: false)}
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do
