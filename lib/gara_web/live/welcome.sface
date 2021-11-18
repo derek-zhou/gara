@@ -1,10 +1,12 @@
 <div class="content">
-    <img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara_room.jpg")}>
+    <div class="hero">
+	<img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara_room.jpg")}>
+    </div>
     {#if @occupied < @rooms}
-    <h2>{@occupied}/{@rooms} {gettext("rooms occupied")}</h2>
+    <div class="info"><i>{@occupied}/{@rooms}</i> {gettext("rooms occupied")}</div>
     <Form for={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
 	<Field name="topic" class="field">
-	    <Label>{gettext("Room topic: ")}</Label>
+	    <Label>{gettext("Your topic: ")}</Label>
 	    <TextInput />
 	</Field>
 	<div class="toolbar">

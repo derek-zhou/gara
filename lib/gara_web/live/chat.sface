@@ -2,7 +2,8 @@
     {#for message <- @messages}
     {#case message}
     {#match {:user_message, msg_id, ts, from, content}}
-    <div id={"msg_#{msg_id}"} class={user_message_class(from == @nick)}>
+    <div id={"msg_#{msg_id}"}
+	 class={["message", (if from == @nick, do: "self_message", else: "user_message")]}>
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
@@ -13,7 +14,7 @@
 	</div>
     </div>
     {#match {:leave_message, msg_id, ts, from}}
-    <div id={"message_#{msg_id}"} class="system_message">
+    <div id={"message_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
@@ -21,7 +22,7 @@
 	</div>
     </div>
     {#match {:join_message, msg_id, ts, from}}
-    <div id={"message_#{msg_id}"} class="system_message">
+    <div id={"message_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
@@ -29,7 +30,7 @@
 	</div>
     </div>
     {#match {:rename_message, msg_id, ts, from, to}}
-    <div id={"message_#{msg_id}"} class="system_message">
+    <div id={"message_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>

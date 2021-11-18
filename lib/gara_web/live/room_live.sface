@@ -1,14 +1,8 @@
 <Main {... messages: @flash }>
-    {#if @room_status == :unknown}
-    <Link class="button" to={Routes.page_path(Endpoint, :welcome)}>
-        {gettext("Back to the lobby")}
-    </Link>
-    {#else}
-    <Header {... tz_offset: @tz_offset, stat: @room_stat, joined: @room_status == :joined,
+    <Header {... tz_offset: @tz_offset, stat: @room_stat, room_status: @room_status,
 	    participants: @participants, nick: @nick, idle_percentage: @idle_percentage,
 	    show_roster: @show_roster, show_info: @show_info,
 	    leave: "leave", rename: "rename", message: "message",
-	    click_topic: "click_topic", click_nick: "click_nick"} />
-    {/if}
+	    click_topic: "click_topic", click_nick: "click_nick", click_else: "click_else"} />
     <Chat {... tz_offset: @tz_offset, messages: @messages, nick: @nick } />
 </Main>

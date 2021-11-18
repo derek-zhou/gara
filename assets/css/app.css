@@ -6,7 +6,7 @@
 
 @layer base {
     body {
-        @apply mx-1;
+        @apply mx-1 bg-black text-yellow-100;
     }
     a {
         @apply text-blue-600;
@@ -49,7 +49,7 @@
     }
     .button {
         @apply flex-none px-6 py-1 text-purple-600 inline-block rounded appearance-none
-        font-bold whitespace-nowrap text-lg text-center uppercase;
+        font-bold whitespace-nowrap text-center uppercase;
     }
     .button:focus, .button:hover {
         @apply text-gray-600;
@@ -70,41 +70,49 @@
     }
     .viewport {
 	@apply relative;
-	.header {
-	    @apply sticky top-0 bg-gray-100 p-2 flex;
-	    .brand {
-                img {
-		    @apply inline-block h-8;
-                }
-		.title {
-                    @apply text-3xl text-indigo-500 font-bold align-bottom;
+	.content {
+	    .header {
+		@apply flex flex-row mt-1 justify-between;
+		.topic {
+		    @apply flex-none overflow-clip text-lg text-left whitespace-nowrap p-2;
+		    max-width: 12rem;
 		}
-		.info {
-		    @apply text-gray-600 align-bottom;
+		.spacer {
+		    @apply inline-block flex-grow;
+		}
+		.stamina-box {
+		    @apply flex-none mx-2 mt-4 border border-yellow-100 bg-red-600 h-2 w-16 inline-block;
+		    .stamina {
+			@apply bg-black h-full;
+		    }
+		}
+		.nick {
+		    @apply flex-none overflow-clip text-lg text-right whitespace-nowrap p-2;
+		    max-width: 7rem;
+		}
+		.clicked {
+		    @apply rounded-t bg-gray-200 text-black;
 		}
 	    }
-	}
-	.content {
-	    @apply border border-gray-100 rounded;
+	    .hero {
+		@apply flex flex-row justify-center;
+		img {
+		    @apply block;
+		}
+	    }
+	    .info {
+		@apply text-lg text-center;
+	    }
 	    form {
-		@apply p-2 bg-gray-50 flex flex-col;
+		@apply p-2 flex flex-col;
                 input[type="text"] {
-		    @apply w-80 leading-relaxed border rounded border-gray-600;
+		    @apply w-80 leading-relaxed border rounded text-black;
                 }
 		.field {
 		    @apply mb-2 flex flex-row flex-wrap justify-center;
 		}
 		hr {
 		    @apply mb-2 border-gray-200;
-		}
-		.toolbar {
-		    @apply pt-2 flex flex-row flex-wrap justify-center border-t border-gray-200;
-                    .button[type="reset"] {
-			@apply flex-none cursor-pointer text-white bg-pink-600 mr-1;
-                    }
-                    .button[type="submit"] {
-			@apply flex-none cursor-pointer text-white bg-purple-600 mr-1;
-                    }
 		}
                 label {
                     @apply flex-none mr-2;
@@ -117,6 +125,94 @@
 		}
 		.error {
 		    @apply text-sm text-red-700 py-2;
+		}
+	    }
+	    .toolbar {
+		@apply flex flex-row flex-wrap justify-center;
+                .button {
+		    @apply flex-none cursor-pointer text-white bg-purple-600;
+                }
+                .button-danger {
+		    @apply bg-red-600;
+                }
+	    }
+	    .panel {
+		@apply flex flex-col px-2 py-2 mb-2 bg-gray-200 text-black;
+		h3 {
+		    @apply text-2xl mb-2 leading-relaxed;
+		}
+		h4 {
+		    @apply mb-1 leading-relaxed;
+		}
+		ul {
+		    @apply mb-4 pl-2 list-inside list-disc;
+		}
+		hr {
+		    @apply border-t-2 border-gray-400;
+		}
+	    }
+	    .write {
+		@apply flex flex-col;
+		form {
+		    @apply p-0;
+		    .compose {
+			@apply flex-grow resize-none text-black;
+		    }
+		}
+	    }
+	    .transcript {
+		@apply py-2 flex flex-col;
+		.message {
+		    @apply rounded text-black p-1 mb-2;
+		    .meta {
+			@apply text-gray-500 text-sm;
+		    }
+		    .content {
+			h1 {
+			    @apply text-xl mb-1 leading-relaxed;
+			}
+			h2 {
+			    @apply text-lg mb-1 leading-relaxed;
+			}
+			p {
+			    @apply mb-2;
+			}
+			ol {
+			    @apply mb-2 pl-2 list-inside list-decimal;
+			}
+			ul {
+			    @apply mb-2 pl-2 list-inside list-disc;
+			}
+			table {
+			    @apply mb-2 border-collapse;
+			}
+			blockquote {
+			    @apply mb-2 border-l-4 border-gray-400 py-3 px-2;
+			}
+			pre {
+			    @apply mb-2 border-l-4 border-purple-500 bg-gray-100 p-2;
+			    > code {
+				@apply whitespace-pre;
+			    }
+			}
+			code {
+			    @apply bg-gray-100 whitespace-nowrap;
+			}
+			dd,
+			dt,
+			li {
+			    @apply mb-1;
+			}
+		    }
+		}
+		.user_message {
+		    @apply bg-yellow-200;
+		}
+		.self_message {
+		    @apply bg-green-200;
+		}
+		.system_message {
+		    @apply bg-gray-200;
 		}
 	    }
 	}

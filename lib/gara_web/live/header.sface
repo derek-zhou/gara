@@ -1,45 +1,70 @@
+{#if @room_status == :unknown}
+<div class="hero">
+    <Link class="button" to={Routes.page_path(Endpoint, :welcome)}>
+        {gettext("Back to the lobby")}
+    </Link>
+</div>
+{#else}
 <div class="header">
-    <button class="button topic" :on-click={@click_topic} disabled={!@joined}>{@stat.topic}</button>
-    <div class="stamina-box">
+    <button class={["topic", (if @show_roster, do: "clicked", else: "unclicked")]}
+	    :on-click={@click_topic}
+	    disabled={@room_status != :joined}>
+	{@stat.topic}</button>
+    <div class="spacer" :on-click={@click_else}></div>
+    <div class="stamina-box" :on-click={@click_topic}>
 	<div class="stamina"
 	     style={"width:#{@idle_percentage}%"}/>
     </div>
-    <button class="button nick" :on-click={@click_nick} disabled={!@joined}>{@nick}</button>
+    <button class={["nick", (if @show_info, do: "clicked", else: "unclicked")]}
+	    :on-click={@click_nick}
+	    disabled={@room_status != :joined}>
+	{@nick}</button>
 </div>
-<ul class="roster" hidden={!@show_roster}>
-    {#for name <- @participants}
-    <li>{name}</li>
-    {/for}
-</ul>
-<div class="info" hidden={!@show_info}>
-    <h3>
-	{gettext("The topic is: ")}<b>{@stat.topic}</b>
-	{gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
-	<i>{length(@participants)}</i> {gettext("people are here. ")}
-    </h3>
-    <h3>{gettext("Your nickname is ")}<i>{@nick}</i></h3>
-    <hr />
-    <Form for={:rename} submit={@rename}>
-	<Field name="name" class="field">
-	    <Label>{gettext("Your new nickname: ")}</Label>
-	    <TextInput />
-	</Field>
-	<div class="toolbar">
-	    <input class="button" type="submit" value={gettext("rename")}>
-	</div>
-    </Form>
-    <hr />
-    <Form for={:leave} submit={@leave}>
-	<Label>{gettext("Leave the room. Your transcipt will be frozen.")}</Label>
-	<div class="toolbar">
-	    <input class="button" type="submit" value={gettext("leave")}>
-	</div>
-    </Form>
+{/if}
+<div hidden={!@show_roster}>
+    <div class="panel">
+	<h3>
+	    <i>{length(@participants)}</i> {gettext("people are here. ")}
+	</h3>
+	<ul class="roster">
+	    {#for name <- @participants}
+	    <li>{name}</li>
+	    {/for}
+	</ul>
+    </div>
 </div>
-<div class="write" hidden={!@joined}>
+<div hidden={!@show_info}>
+    <div class="panel">
+	<h3>
+	    {gettext("The topic is: ")}<i>{@stat.topic}</i>
+	</h3>
+	<h4>
+	    {gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
+	</h4>
+	<hr />
+	<h3>{gettext("Your nickname is ")}<i>{@nick}</i></h3>
+	<Form for={:rename} submit={@rename}>
+	    <Field name="name" class="field">
+		<Label>{gettext("Your new nickname: ")}</Label>
+		<TextInput />
+	    </Field>
+	    <div class="toolbar">
+		<input class="button" type="submit" value={gettext("rename")}>
+	    </div>
+	</Form>
+	<hr />
+	<Form for={:leave} submit={@leave}>
+	    <Label>{gettext("Leave the room. Your transcipt will be frozen.")}</Label>
+	    <div class="toolbar">
+		<input class="button button-danger" type="submit" value={gettext("leave")}>
+	    </div>
+	</Form>
+    </div>
+</div>
+<div class="write" hidden={@room_status != :joined}>
     <Form for={:message} submit={@message}>
-	<Field name="text">
-	    <TextArea rows="3" />
+	<Field name="text" class="field">
+	    <TextArea rows="3" class="compose" opts={autofocus: true}/>
 	</Field>
 	<div class="toolbar">
 	    <input class="button" type="submit" value={gettext("send")}>

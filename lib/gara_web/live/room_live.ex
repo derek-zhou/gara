@@ -3,11 +3,9 @@ defmodule GaraWeb.RoomLive do
   import GaraWeb.Gettext
   require Logger
 
-  alias Surface.Components.Link
   alias Gara.{Room, Rooms, Message}
   alias Phoenix.LiveView.Socket
-  alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
-  alias GaraWeb.Router.Helpers, as: Routes
+  alias GaraWeb.{Main, Header, Chat, Guardian}
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -189,6 +187,10 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event("click_nick", _, %Socket{assigns: %{show_info: false}} = socket) do
     {:noreply, assign(socket, show_info: true, show_roster: false)}
+  end
+
+  def handle_event("click_else", _, socket) do
+    {:noreply, assign(socket, show_info: false, show_roster: false)}
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do

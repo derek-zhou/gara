@@ -13,7 +13,4 @@ defmodule GaraWeb.Chat do
     |> NaiveDateTime.to_time()
     |> Time.to_string()
   end
-
-  defp user_message_class(true), do: ["user_message", "self_message"]
-  defp user_message_class(false), do: ["user_message"]
 end
