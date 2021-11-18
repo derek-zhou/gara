@@ -21,7 +21,7 @@ defmodule GaraWeb.PageController do
   def create(conn, %{"create" => %{"topic" => topic}}) do
     case Room.new_room(topic) do
       nil -> redirect(conn, to: Routes.page_path(conn, :index))
-      name -> redirect(conn, to: Routes.page_path(conn, :room, name))
+      name -> redirect(conn, to: Routes.room_path(conn, :chat, name))
     end
   end
 

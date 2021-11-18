@@ -3,9 +3,11 @@ defmodule GaraWeb.RoomLive do
   import GaraWeb.Gettext
   require Logger
 
+  alias Surface.Components.Link
   alias Gara.{Room, Rooms, Message}
   alias Phoenix.LiveView.Socket
-  alias GaraWeb.{Main, Header, Chat, Guardian}
+  alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
+  alias GaraWeb.Router.Helpers, as: Routes
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -37,7 +39,7 @@ defmodule GaraWeb.RoomLive do
           cond do
             connected?(socket) ->
               socket
-              |> put_flash(:error, gettext("No such room"))
+              |> put_flash(:error, gettext("Room closed already"))
               |> push_event("leave", %{})
 
             true ->
@@ -123,24 +125,19 @@ defmodule GaraWeb.RoomLive do
         {:join_message, _mid, _ts, nick} = message,
         %Socket{assigns: %{participants: participants}} = socket
       ) do
+    participants = Enum.reject(participants, &(&1 == nick))
     participants = [nick | participants]
     {:noreply, assign(socket, messages: [message], participants: participants)}
   end
 
   def handle_info(
         {:rename_message, _mid, _ts, old_nick, new_nick} = message,
-        %Socket{assigns: %{participants: participants, nick: nick}} = socket
+        %Socket{assigns: %{participants: participants}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == old_nick))
     participants = [new_nick | participants]
 
-    nick =
-      case old_nick do
-        ^nick -> new_nick
-        _ -> nick
-      end
-
-    {:noreply, assign(socket, messages: [message], participants: participants, nick: nick)}
+    {:noreply, assign(socket, messages: [message], participants: participants)}
   end
 
   def handle_event("leave", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
@@ -149,7 +146,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(room_status: :hangup)
+      |> assign(room_status: :hangup, show_info: false)
       |> put_flash(:info, gettext("You left"))
       |> push_event("leave", %{})
     }
@@ -160,8 +157,13 @@ defmodule GaraWeb.RoomLive do
         %{"rename" => %{"name" => new_nick}},
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
-    Room.rename(room, uid, new_nick)
-    {:noreply, socket}
+    case Room.rename(room, uid, new_nick) do
+      :ok ->
+        {:noreply, assign(socket, nick: new_nick, show_info: false)}
+
+      :error ->
+        {:noreply, put_flash(socket, :error, gettext("The nickname is taken."))}
+    end
   end
 
   def handle_event(

@@ -1,10 +1,10 @@
 <div class="header">
-    <button class="button topic" on-click={@click_topic} disabled={!@joined}>{@stat.topic}</button>
+    <button class="button topic" :on-click={@click_topic} disabled={!@joined}>{@stat.topic}</button>
     <div class="stamina-box">
 	<div class="stamina"
 	     style={"width:#{@idle_percentage}%"}/>
     </div>
-    <button class="button nick" on-click={@click_nick} disabled={!@joined}>{@nick}</button>
+    <button class="button nick" :on-click={@click_nick} disabled={!@joined}>{@nick}</button>
 </div>
 <ul class="roster" hidden={!@show_roster}>
     {#for name <- @participants}
@@ -13,9 +13,9 @@
 </ul>
 <div class="info" hidden={!@show_info}>
     <h3>
+	{gettext("The topic is: ")}<b>{@stat.topic}</b>
 	{gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
-	<i>{@stat.people}</i> gettext("people have stopped by. ")}
-	<i>{@stat.active}</i> gettext("people are here. ")}
+	<i>{length(@participants)}</i> {gettext("people are here. ")}
     </h3>
     <h3>{gettext("Your nickname is ")}<i>{@nick}</i></h3>
     <hr />

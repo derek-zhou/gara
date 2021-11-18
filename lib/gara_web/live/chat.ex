@@ -9,6 +9,7 @@ defmodule GaraWeb.Chat do
   defp date_string(date, tz_offset) do
     date
     |> NaiveDateTime.add(0 - tz_offset * 60)
+    |> NaiveDateTime.truncate(:second)
     |> NaiveDateTime.to_time()
     |> Time.to_string()
   end

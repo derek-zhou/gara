@@ -151,8 +151,8 @@ defmodule Gara.Room do
         participants = Roster.participants(roster)
 
         history =
-          Enum.map(messages, fn {mid, id, time, msg} ->
-            {:user_message, mid, Roster.get_name(roster, id), time, msg}
+          Enum.map(messages, fn {mid, time, id, msg} ->
+            {:user_message, mid, time, Roster.get_name(roster, id), msg}
           end)
 
         Logger.info("Room #{name}: #{nick}(#{id}) joined")
