@@ -19,7 +19,21 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
+  guardian_key =
+    System.get_env("GUARDIAN_KEY") ||
+      raise """
+      environment variable GUARDIAN_KEY is missing.
+      You can generate one by calling: mix guardian.gen.secret
+      """
+
+  app_name =
+    System.get_env("FLY_APP_NAME") ||
+      raise "FLY_APP_NAME not available"
+
   config :gara, GaraWeb.Endpoint,
+    server: true,
+    url: [host: "#{app_name}.fly.dev", scheme: "https", port: 443],
+    cache_static_manifest: "priv/static/cache_manifest.json",
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
@@ -30,13 +44,7 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  # ## Using releases
-  #
-  # If you are doing OTP releases, you need to instruct Phoenix
-  # to start each relevant endpoint:
-  #
-  #     config :gara, GaraWeb.Endpoint, server: true
-  #
-  # Then you can assemble a release by calling `mix release`.
-  # See `mix help release` for more information.
+  # for guardian
+  config :liv, LivWeb.Guardian, secret_key: guardian_key
+
 end
