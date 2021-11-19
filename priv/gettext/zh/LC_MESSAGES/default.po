@@ -1,0 +1,152 @@
+## "msgid"s in this file come from POT (.pot) files.
+##
+## Do not add, change, or remove "msgid"s manually here as
+## they're tied to the ones in the corresponding POT file
+## (with the same domain).
+##
+## Use "mix gettext.extract --merge" or "mix gettext.merge"
+## to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: zh\n"
+"Plural-Forms: nplurals=1\n"
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:17
+msgid "All"
+msgstr "所有"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:4
+msgid "Back to the lobby"
+msgstr "回大厅吧"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:55
+msgid "Leave the room. Your transcipt will be frozen."
+msgstr "离开包房。你的聊天记录会不再更新。"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:71
+msgid "No space in room"
+msgstr "包房里没空了"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:45
+msgid "No such room"
+msgstr "没这个包房"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:40
+msgid "Room closed already"
+msgstr "包房已关闭"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:134
+msgid "Server crashed"
+msgstr "服务器死机了"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:120
+msgid "Server hangup"
+msgstr "你被踢下线了"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:192
+msgid "The nickname is taken."
+msgstr "这个昵称已有人占用了。"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:41
+msgid "The room have been opened since "
+msgstr "包房开放始于"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:38
+msgid "The topic is: "
+msgstr "聊天话题是："
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:84
+msgid "Welcome back, "
+msgstr "欢迎回来，"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:177
+msgid "You left"
+msgstr "你离开了"
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:103
+msgid "You should change it by clicking the top right corner"
+msgstr "你可以点击右上角修改"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:47
+msgid "Your new nickname: "
+msgstr "你的新昵称："
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:44
+msgid "Your nickname is "
+msgstr "你的昵称是 "
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:100
+msgid "Your temporary nickname is: "
+msgstr "你的临时昵称是："
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:9
+msgid "Your topic: "
+msgstr "聊点啥："
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:29
+msgid "joined"
+msgstr "已上线"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:58
+msgid "leave"
+msgstr "离开"
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:21
+msgid "left"
+msgstr "走了"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:26
+msgid "people are here. "
+msgstr "个人在这里。"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:51
+msgid "rename"
+msgstr "改名"
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:37
+msgid "renamed to"
+msgstr "改名为"
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:6
+msgid "rooms occupied"
+msgstr "个包房已占用"
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:17
+msgid "rooms occupied, comeback later"
+msgstr "个包房都被占了，下次请早"
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:10
+msgid "said: "
+msgstr "说："
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:69
+msgid "send"
+msgstr "发送"

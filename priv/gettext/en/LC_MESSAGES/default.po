@@ -1,0 +1,152 @@
+## "msgid"s in this file come from POT (.pot) files.
+##
+## Do not add, change, or remove "msgid"s manually here as
+## they're tied to the ones in the corresponding POT file
+## (with the same domain).
+##
+## Use "mix gettext.extract --merge" or "mix gettext.merge"
+## to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: en\n"
+"Plural-Forms: nplurals=2\n"
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:17
+msgid "All"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:4
+msgid "Back to the lobby"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:55
+msgid "Leave the room. Your transcipt will be frozen."
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:71
+msgid "No space in room"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:45
+msgid "No such room"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:40
+msgid "Room closed already"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:134
+msgid "Server crashed"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:120
+msgid "Server hangup"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:192
+msgid "The nickname is taken."
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:41
+msgid "The room have been opened since "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:38
+msgid "The topic is: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:84
+msgid "Welcome back, "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:177
+msgid "You left"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:103
+msgid "You should change it by clicking the top right corner"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:47
+msgid "Your new nickname: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:44
+msgid "Your nickname is "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:100
+msgid "Your temporary nickname is: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:9
+msgid "Your topic: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:29
+msgid "joined"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:58
+msgid "leave"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:21
+msgid "left"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:26
+msgid "people are here. "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:51
+msgid "rename"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:37
+msgid "renamed to"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:6
+msgid "rooms occupied"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:17
+msgid "rooms occupied, comeback later"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/chat.sface:10
+msgid "said: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:69
+msgid "send"
+msgstr ""
