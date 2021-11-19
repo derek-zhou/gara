@@ -38,6 +38,7 @@ defmodule GaraWeb.RoomLive do
             connected?(socket) ->
               socket
               |> put_flash(:error, gettext("Room closed already"))
+              |> assign(page_title: "Room closed already")
               |> push_event("leave", %{})
 
             true ->
@@ -46,20 +47,41 @@ defmodule GaraWeb.RoomLive do
           end
 
         [{pid, _}] ->
-          socket = assign(socket, room_pid: pid, room_stat: Room.stat(pid), room_status: :existed)
+          stat = Room.stat(pid)
+
+          socket =
+            assign(socket,
+              room_pid: pid,
+              room_stat: stat,
+              page_title: stat.topic,
+              room_status: :existed
+            )
 
           cond do
             connected?(socket) ->
               values = get_connect_params(socket)
               socket = fetch_tz_offset(socket, values)
+              old_id = fetch_token(values, room_name)
               fetch_locale(values)
               Process.monitor(pid)
 
-              case Room.join(pid, fetch_token(values, room_name)) do
-                :error ->
+              case Room.join(pid, old_id) do
+                {:error, _} ->
                   socket
                   |> put_flash(:error, gettext("No space in room"))
                   |> push_event("leave", %{})
+
+                {^old_id, nick, participants, messages} ->
+                  socket
+                  |> assign(
+                    uid: old_id,
+                    nick: nick,
+                    room_status: :joined,
+                    participants: participants,
+                    messages: messages
+                  )
+                  |> assign(page_title: "Room closed already")
+                  |> put_flash(:info, gettext("Welcome back, ") <> nick)
 
                 {id, nick, participants, messages} ->
                   {:ok, token} = Guardian.build_token(id, room_name)
@@ -73,6 +95,13 @@ defmodule GaraWeb.RoomLive do
                     messages: messages
                   )
                   |> push_event("set_value", %{key: "token", value: token})
+                  |> put_flash(
+                    :info,
+                    gettext("Your temporary nickname is: ") <>
+                      nick <>
+                      ". " <>
+                      gettext("You should change it by clicking the top right corner")
+                  )
               end
 
             true ->
@@ -144,7 +173,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(room_status: :hangup, show_info: false)
+      |> assign(room_status: :hangup, show_info: false, show_roster: false)
       |> put_flash(:info, gettext("You left"))
       |> push_event("leave", %{})
     }

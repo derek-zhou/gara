@@ -22,6 +22,12 @@ config :gara, GaraWeb.Endpoint,
     ]
   ]
 
+config :gara,
+  room_capacity: 3,
+  idle_limit: 3,
+  max_rooms: 3,
+  max_history: 10
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

@@ -1,6 +1,6 @@
 {#if @room_status == :unknown}
 <div class="hero">
-    <Link class="button" to={Routes.page_path(Endpoint, :welcome)}>
+    <Link class="button" to={Routes.page_path(Endpoint, :index)}>
         {gettext("Back to the lobby")}
     </Link>
 </div>
@@ -20,7 +20,6 @@
 	    disabled={@room_status != :joined}>
 	{@nick}</button>
 </div>
-{/if}
 <div hidden={!@show_roster}>
     <div class="panel">
 	<h3>
@@ -53,15 +52,15 @@
 	    </div>
 	</Form>
 	<hr />
+	<h3>{gettext("Leave the room. Your transcipt will be frozen.")}</h3>
 	<Form for={:leave} submit={@leave}>
-	    <Label>{gettext("Leave the room. Your transcipt will be frozen.")}</Label>
 	    <div class="toolbar">
 		<input class="button button-danger" type="submit" value={gettext("leave")}>
 	    </div>
 	</Form>
     </div>
 </div>
-<div class="write" hidden={@room_status != :joined}>
+<div class="write" hidden={@room_status != :joined || @show_info || @show_roster}>
     <Form for={:message} submit={@message}>
 	<Field name="text" class="field">
 	    <TextArea rows="3" class="compose" opts={autofocus: true}/>
@@ -71,3 +70,4 @@
 	</div>
     </Form>
 </div>
+{/if}

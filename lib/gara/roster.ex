@@ -22,7 +22,7 @@ defmodule Gara.Roster do
        Enum.random(@syllable_head), Enum.random(@syllable_core)}
 
     cond do
-      ht == th || hc == tc -> hh <> hc <> th <> tc <> ht
+      ht == th || hc > tc -> hh <> hc <> th <> tc <> ht
       true -> hh <> hc <> ht <> th <> tc
     end
   end
