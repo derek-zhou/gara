@@ -46,5 +46,4 @@ if config_env() == :prod do
 
   # for guardian
   config :liv, LivWeb.Guardian, secret_key: guardian_key
-
 end

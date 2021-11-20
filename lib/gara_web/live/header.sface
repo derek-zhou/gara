@@ -11,7 +11,7 @@
 	    disabled={@room_status != :joined}>
 	{@stat.topic}</button>
     <div class="spacer" :on-click={@click_else}></div>
-    <div class="stamina-box" :on-click={@click_topic}>
+    <div class="stamina-box" :on-click={@click_else}>
 	<div class="stamina"
 	     style={"width:#{@idle_percentage}%"}/>
     </div>

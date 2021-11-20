@@ -5,7 +5,8 @@ defmodule GaraWeb.RoomLive do
 
   alias Gara.{Room, Rooms, Message}
   alias Phoenix.LiveView.Socket
-  alias GaraWeb.{Main, Header, Chat, Guardian}
+  alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
+  alias GaraWeb.Router.Helpers, as: Routes
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -38,7 +39,7 @@ defmodule GaraWeb.RoomLive do
             connected?(socket) ->
               socket
               |> put_flash(:error, gettext("Room closed already"))
-              |> assign(page_title: "Room closed already")
+              |> assign(page_title: gettext("Room closed already"))
               |> push_event("leave", %{})
 
             true ->
@@ -54,6 +55,7 @@ defmodule GaraWeb.RoomLive do
               room_pid: pid,
               room_stat: stat,
               page_title: stat.topic,
+              page_url: Routes.room_url(Endpoint, :chat, room_name),
               room_status: :existed
             )
 
@@ -80,7 +82,6 @@ defmodule GaraWeb.RoomLive do
                     participants: participants,
                     messages: messages
                   )
-                  |> assign(page_title: "Room closed already")
                   |> put_flash(:info, gettext("Welcome back, ") <> nick)
 
                 {id, nick, participants, messages} ->

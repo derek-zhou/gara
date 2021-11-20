@@ -15,6 +15,8 @@ defmodule GaraWeb.PageController do
     conn
     |> assign(:rooms, rooms)
     |> assign(:occupied, occupied)
+    |> assign(:page_title, gettext("The Lobby"))
+    |> assign(:page_url, Routes.page_url(conn, :index))
     |> render("welcome.html")
   end
 

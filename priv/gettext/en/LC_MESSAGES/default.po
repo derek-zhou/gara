@@ -27,32 +27,32 @@ msgid "Leave the room. Your transcipt will be frozen."
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:71
+#: lib/gara_web/live/room_live.ex:73
 msgid "No space in room"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:45
+#: lib/gara_web/live/room_live.ex:46
 msgid "No such room"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:40
+#: lib/gara_web/live/room_live.ex:41 lib/gara_web/live/room_live.ex:42
 msgid "Room closed already"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:134
+#: lib/gara_web/live/room_live.ex:135
 msgid "Server crashed"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:120
+#: lib/gara_web/live/room_live.ex:121
 msgid "Server hangup"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:192
+#: lib/gara_web/live/room_live.ex:193
 msgid "The nickname is taken."
 msgstr ""
 
@@ -67,17 +67,17 @@ msgid "The topic is: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:84
+#: lib/gara_web/live/room_live.ex:85
 msgid "Welcome back, "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:177
+#: lib/gara_web/live/room_live.ex:178
 msgid "You left"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:103
+#: lib/gara_web/live/room_live.ex:104
 msgid "You should change it by clicking the top right corner"
 msgstr ""
 
@@ -92,7 +92,7 @@ msgid "Your nickname is "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:100
+#: lib/gara_web/live/room_live.ex:101
 msgid "Your temporary nickname is: "
 msgstr ""
 
@@ -149,4 +149,9 @@ msgstr ""
 #, elixir-format
 #: lib/gara_web/live/header.sface:69
 msgid "send"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/controllers/page_controller.ex:18
+msgid "The Lobby"
 msgstr ""

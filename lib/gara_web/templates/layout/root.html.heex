@@ -4,6 +4,12 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- for open graph -->
+    <meta property="og:title" content={assigns[:page_title] || "Welcome"} />
+    <meta property="og:site_name" content="Get a room already!" />
+    <meta property="og:url" content={assigns[:page_url] || ""} />
+    <meta property="og:type" content="article" />
+    <meta property="og:image" content={Routes.static_url(@conn, "/images/gara_room.jpg")} />
     <%= live_title_tag assigns[:page_title] || "Welcome", suffix: " – Get a room already!" %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/css/app.css")}/>
     <script defer phx-track-static type="module" src={Routes.static_path(@conn, "/js/app.js")}></script>
