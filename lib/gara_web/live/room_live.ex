@@ -229,8 +229,38 @@ defmodule GaraWeb.RoomLive do
 
   defp fetch_tz_offset(socket, _), do: socket
 
-  defp fetch_locale(%{"language" => locale}), do: Gettext.put_locale(LivWeb.Gettext, locale)
-  defp fetch_locale(_), do: Gettext.put_locale(LivWeb.Gettext, "en")
+  defp fetch_locale(%{"language" => language}) do
+    case language |> language_to_locale() |> validate_locale() do
+      nil -> :ok
+      locale -> Gettext.put_locale(GaraWeb.Gettext, locale)
+    end
+  end
+
+  defp fetch_locale(_), do: Gettext.put_locale(GaraWeb.Gettext, "en")
+
+  defp language_to_locale(language) do
+    String.replace(language, "-", "_", global: false)
+  end
+
+  defp validate_locale(nil), do: nil
+
+  defp validate_locale(locale) do
+    supported_locales = Gettext.known_locales(GaraWeb.Gettext)
+
+    case String.split(locale, "_") do
+      [language, _] ->
+        Enum.find([locale, language], fn locale ->
+          locale in supported_locales
+        end)
+
+      [^locale] ->
+        if locale in supported_locales do
+          locale
+        else
+          nil
+        end
+    end
+  end
 
   defp fetch_token(%{"token" => token}, room_name) do
     case Guardian.decode_token(token) do
