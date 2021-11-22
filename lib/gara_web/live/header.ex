@@ -9,7 +9,6 @@ defmodule GaraWeb.Header do
   prop tz_offset, :integer, default: 0
   prop stat, :map, required: true
   prop room_status, :atom, required: true
-  prop show_roster, :boolean, default: false
   prop show_info, :boolean, default: false
   prop participants, :list, default: []
   prop nick, :string, required: true
@@ -17,7 +16,6 @@ defmodule GaraWeb.Header do
   prop leave, :event, required: true
   prop rename, :event, required: true
   prop message, :event, required: true
-  prop click_topic, :event, required: true
   prop click_nick, :event, required: true
   prop click_else, :event, required: true
 

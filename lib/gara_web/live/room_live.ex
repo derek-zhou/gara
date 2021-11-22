@@ -26,7 +26,6 @@ defmodule GaraWeb.RoomLive do
   data messages, :list, default: []
 
   # for GUI
-  data show_roster, :boolean, default: false
   data show_info, :boolean, default: false
 
   def mount(%{"name" => room_name}, _session, %Socket{assigns: %{live_action: :chat}} = socket) do
@@ -167,7 +166,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(room_status: :hangup, show_info: false, show_roster: false)
+      |> assign(room_status: :hangup, show_info: false)
       |> put_flash(:info, gettext("You left"))
       |> push_event("leave", %{})
     }
@@ -180,7 +179,12 @@ defmodule GaraWeb.RoomLive do
       ) do
     case Room.rename(room, uid, new_nick) do
       :ok ->
-        {:noreply, assign(socket, nick: new_nick, show_info: false)}
+        {
+          :noreply,
+          socket
+          |> assign(nick: new_nick, show_info: false, idle_percentage: 0)
+          |> clear_flash()
+        }
 
       :error ->
         {:noreply, put_flash(socket, :error, gettext("The nickname is taken."))}
@@ -193,27 +197,40 @@ defmodule GaraWeb.RoomLive do
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
     Room.say(room, uid, Message.parse(text))
-    {:noreply, socket}
-  end
 
-  def handle_event("click_topic", _, %Socket{assigns: %{show_roster: true}} = socket) do
-    {:noreply, assign(socket, show_roster: false)}
-  end
-
-  def handle_event("click_topic", _, %Socket{assigns: %{show_roster: false}} = socket) do
-    {:noreply, assign(socket, show_roster: true, show_info: false)}
+    {
+      :noreply,
+      socket
+      |> assign(idle_percentage: 0)
+      |> clear_flash()
+    }
   end
 
   def handle_event("click_nick", _, %Socket{assigns: %{show_info: true}} = socket) do
-    {:noreply, assign(socket, show_info: false)}
+    {
+      :noreply,
+      socket
+      |> assign(show_info: false)
+      |> clear_flash()
+    }
   end
 
   def handle_event("click_nick", _, %Socket{assigns: %{show_info: false}} = socket) do
-    {:noreply, assign(socket, show_info: true, show_roster: false)}
+    {
+      :noreply,
+      socket
+      |> assign(how_info: true)
+      |> clear_flash()
+    }
   end
 
   def handle_event("click_else", _, socket) do
-    {:noreply, assign(socket, show_info: false, show_roster: false)}
+    {
+      :noreply,
+      socket
+      |> assign(show_info: false)
+      |> clear_flash()
+    }
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do

@@ -6,10 +6,7 @@
 </div>
 {#else}
 <div class="header">
-    <button class={["topic", (if @show_roster, do: "clicked", else: "unclicked")]}
-	    :on-click={@click_topic}
-	    disabled={@room_status != :joined}>
-	{@stat.topic}</button>
+    <span class="topic" :on-click={@click_else}>{@stat.topic}</span>
     <div class="spacer" :on-click={@click_else}></div>
     <div class="stamina-box" :on-click={@click_else}>
 	<div class="stamina"
@@ -19,18 +16,6 @@
 	    :on-click={@click_nick}
 	    disabled={@room_status != :joined}>
 	{@nick}</button>
-</div>
-<div hidden={!@show_roster}>
-    <div class="panel">
-	<h3>
-	    <i>{length(@participants)}</i> {gettext("people are here. ")}
-	</h3>
-	<ul class="roster">
-	    {#for name <- @participants}
-	    <li>{name}</li>
-	    {/for}
-	</ul>
-    </div>
 </div>
 <div hidden={!@show_info}>
     <div class="panel">
@@ -60,7 +45,17 @@
 	</Form>
     </div>
 </div>
-<div class="write" hidden={@room_status != :joined || @show_info || @show_roster}>
+<div class="roster-panel" hidden={@room_status != :joined || @show_info}>
+    <span>
+	<i>{length(@participants)}</i> {gettext("people are here: ")}
+    </span>
+    <ul class="roster">
+	{#for name <- @participants}
+	<li class={if @nick == name, do: "me", else: ""}>{name}</li>
+	{/for}
+    </ul>
+</div>
+<div class="write" hidden={@room_status != :joined || @show_info}>
     <Form for={:message} submit={@message}>
 	<Field name="text" class="field">
 	    <TextArea rows="3" class="compose" opts={autofocus: true}/>

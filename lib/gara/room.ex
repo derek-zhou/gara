@@ -186,7 +186,7 @@ defmodule Gara.Room do
           {:rename_message, msg_id, NaiveDateTime.utc_now(), old_nick, new_nick}
         )
 
-        {:reply, :ok, %{state | roster: roster, msg_id: msg_id}}
+        {:reply, :ok, %{state | roster: roster, msg_id: msg_id + 1}}
     end
   end
 

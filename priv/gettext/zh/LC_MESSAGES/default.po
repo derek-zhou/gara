@@ -118,8 +118,8 @@ msgstr "走了"
 
 #, elixir-format
 #: lib/gara_web/live/header.sface:26
-msgid "people are here. "
-msgstr "个人在这里。"
+msgid "people are here: "
+msgstr "个人在这里: "
 
 #, elixir-format
 #: lib/gara_web/live/header.sface:51

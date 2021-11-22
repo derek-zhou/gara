@@ -139,6 +139,22 @@
 		    @apply bg-red-600;
                 }
 	    }
+	    .roster-panel {
+		@apply mb-2;
+		ul.roster {
+		    @apply inline;
+		    li {
+			@apply inline text-yellow-200 whitespace-nowrap;
+		    }
+		    li.me {
+			@apply text-green-200;
+		    }
+		    li::before {
+			@apply text-gray-400;
+			content: "@";
+		    }
+		}
+	    }
 	    .panel {
 		@apply flex flex-col px-2 py-2 bg-gray-200 text-black;
 		h3 {
@@ -147,11 +163,13 @@
 		h4 {
 		    @apply mb-1 leading-relaxed;
 		}
-		ul {
-		    @apply mb-4 pl-2 list-inside list-disc;
-		}
 		hr {
 		    @apply border-t-2 border-gray-400;
+		}
+	    }
+	    .wrapper {
+		.panel {
+		    @apply hidden;
 		}
 	    }
 	    .write {
