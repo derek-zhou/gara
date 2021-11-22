@@ -18,6 +18,7 @@ The first type of chatrooms have questionable practice on user privacy, and the 
 * There is no login, everyone can hop on
 * Each room is defined by a unique link to be shared
 * Nothing is persisted anywhere, there is no database or third party service behind
+* A reduced subset of the markdown syntax is supported, so the messages can have nice format
 
 A typical usage is like this: You are in a social chatroom with many people, and you want to discuss something sensitive or only interesting to a smaller group of people. So you grab a room from Gara and post the link to the room. The people can opt-in to the smaller and safer chatroom by clicking the link. If one is done with it just leave the room. After the last one left, the room would be destroyed with all chat transcript lost.
 

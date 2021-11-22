@@ -69,7 +69,7 @@ defmodule Gara.Room do
   @impl true
   def init({name, topic}) do
     Process.flag(:trap_exit, true)
-    Process.flag(:max_heap_size, 1_000_000)
+    Process.flag(:max_heap_size, 100_000)
     Process.send_after(self(), :tick, @tick_interval)
     Logger.info("Room #{name}: room created with topic: #{topic}")
 
