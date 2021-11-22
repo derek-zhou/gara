@@ -35,17 +35,10 @@ defmodule GaraWeb.RoomLive do
     socket =
       case Registry.lookup(Rooms, room_name) do
         [] ->
-          cond do
-            connected?(socket) ->
-              socket
-              |> put_flash(:error, gettext("Room closed already"))
-              |> assign(page_title: gettext("Room closed already"))
-              |> push_event("leave", %{})
-
-            true ->
-              raise(GaraWeb.RoomNotFoundError, gettext("No such room"))
-              socket
-          end
+          socket
+          |> put_flash(:error, gettext("Room closed already"))
+          |> assign(page_title: gettext("Room closed already"))
+          |> push_event("leave", %{})
 
         [{pid, _}] ->
           stat = Room.stat(pid)
