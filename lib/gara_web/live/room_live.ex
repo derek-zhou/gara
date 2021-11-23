@@ -219,7 +219,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(how_info: true)
+      |> assign(show_info: true)
       |> clear_flash()
     }
   end
