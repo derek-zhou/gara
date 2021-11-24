@@ -57,6 +57,7 @@ Hooks.Main = {
 		localStorage.setItem(local_key, value);
 	    else
 		localStorage.removeItem(local_key);
+	    console.log("regenerate liveSocket");
 	});
 	this.handleEvent("leave", () => {	
 	    window.removeEventListener("phx:page-loading-start", show_progress_bar);
@@ -65,7 +66,7 @@ Hooks.Main = {
     }
 };
 
-let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: local_state()})
+let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: local_state})
 
 // Show progress bar on live navigation and form submits
 window.addEventListener("phx:page-loading-start", show_progress_bar)
