@@ -180,8 +180,11 @@ defmodule Gara.Message do
 
           {title, site, description, thumbnail} ->
             case URI.parse(thumbnail) do
-              %URI{scheme: "https", port: 443, userinfo: nil} -> {title, site, description, nil}
-              _ -> {title, site, description, thumbnail}
+              %URI{scheme: "https", port: 443, userinfo: nil} ->
+                {title, site, description, thumbnail}
+
+              _ ->
+                {title, site, description, nil}
             end
         end
     end
