@@ -20,6 +20,8 @@ defmodule Gara.Application do
        strategy: :one_for_one,
        name: Gara.RoomSupervisor,
        max_children: Defaults.default(:max_rooms)},
+      # Start the CookieJar
+      {CookieJar.Server, name: Gara.CookieJar},
       # Start the Endpoint (http/https)
       GaraWeb.Endpoint
       # Start a worker by calling: Gara.Worker.start_link(arg)

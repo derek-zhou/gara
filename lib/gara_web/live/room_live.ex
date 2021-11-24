@@ -3,7 +3,7 @@ defmodule GaraWeb.RoomLive do
   import GaraWeb.Gettext
   require Logger
 
-  alias Gara.{Room, Rooms, Message}
+  alias Gara.{Room, Rooms}
   alias Phoenix.LiveView.Socket
   alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
   alias GaraWeb.Router.Helpers, as: Routes
@@ -196,7 +196,7 @@ defmodule GaraWeb.RoomLive do
         %{"message" => %{"text" => text}},
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
-    Room.say(room, uid, Message.parse(text))
+    Room.say(room, uid, text)
 
     {
       :noreply,

@@ -187,6 +187,24 @@
 		    .meta {
 			@apply text-gray-500 text-sm;
 		    }
+		    .card {
+			@apply bg-white bg-opacity-75 flow-root;
+			.thumbnail {
+			    @apply flex justify-center;
+			    img {
+				@apply w-auto max-w-full max-h-80;
+			    }
+			}
+			.title {
+			    @apply font-bold mb-2 text-lg leading-tight;
+			}
+			.url {
+			    @apply text-sm pt-2 leading-tight overflow-hidden whitespace-nowrap block;
+			}
+			.site {
+			    @apply text-gray-400 whitespace-nowrap;
+			}
+		    }
 		    .content {
 			h1 {
 			    @apply text-xl mb-1 leading-relaxed;
@@ -249,6 +267,19 @@
     @screen md {
 	.viewport {
             @apply max-w-screen-md mx-auto;
+	    .content {
+		.transcript {
+		    .card {
+			@apply pl-2;
+			.thumbnail {
+			    @apply ml-2 float-right;
+			}
+			.headline {
+			    @apply mt-2 mb-1;
+			}
+		    }
+		}
+	    }
 	}
     }
     @screen lg {

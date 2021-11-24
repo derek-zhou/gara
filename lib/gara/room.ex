@@ -3,7 +3,7 @@ defmodule Gara.Room do
 
   require Logger
   use GenServer, restart: :transient
-  alias Gara.{Roster, Defaults, RoomSupervisor, Rooms}
+  alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms}
 
   defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0]
 
@@ -37,7 +37,15 @@ defmodule Gara.Room do
   @doc """
   say something. Returns :ok
   """
-  def say(room, id, msg), do: GenServer.cast(room, {:say, id, msg})
+  def say(room, id, str) do
+    is_url =
+      case URI.parse(str) do
+        %URI{scheme: "https", port: 443, userinfo: nil} -> true
+        _ -> false
+      end
+
+    GenServer.cast(room, {:say, id, Message.parse(str), is_url, str})
+  end
 
   @doc """
   leave the room. Returns :ok
@@ -99,8 +107,16 @@ defmodule Gara.Room do
   end
 
   @impl true
+  def handle_info(
+        {:update, mid, msg},
+        %__MODULE__{roster: roster, messages: messages} = state
+      ) do
+    {:noreply, %{state | messages: update_messages(messages, mid, msg, roster)}}
+  end
+
+  @impl true
   def handle_cast(
-        {:say, id, msg},
+        {:say, id, msg, is_url, text},
         %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
     case Roster.ping(roster, id) do
@@ -109,6 +125,7 @@ defmodule Gara.Room do
         {:noreply, state}
 
       {:ok, roster} ->
+        if is_url, do: Message.fetch_preview(text, msg_id)
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
@@ -195,5 +212,17 @@ defmodule Gara.Room do
     {:reply,
      %{topic: topic, since: since, people: Roster.fullsize(roster), active: Roster.size(roster)},
      state}
+  end
+
+  defp update_messages([], _mid, _msg, _roster), do: []
+
+  defp update_messages([{mid, ts, id, _old} | tail], mid, msg, roster) do
+    nick = Roster.get_name(roster, id)
+    Roster.broadcast(roster, {:user_message, mid, ts, nick, msg})
+    [{mid, ts, id, msg} | tail]
+  end
+
+  defp update_messages([head | tail], mid, msg, roster) do
+    [head | update_messages(tail, mid, msg, roster)]
   end
 end
