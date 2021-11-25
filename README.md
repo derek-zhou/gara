@@ -34,7 +34,7 @@ Although there is no end-to-end encryption, the connection between the user and 
 
 ## Test instance
 
-I encourage anyone technocally capable to operate their own Gara server. Gara is a standard [Phoenix Liveview](https://www.phoenixframework.org/) application that can be deployed anywhere. Even better, it does not need a database and has no persisted data. There is a couple of Dockerfile in the source repository to faciliate deplyment. I have a deployment on [fly.io](https://fly.io] here: [gara.fly.dev](https://gara.fly.dev), and everyone is welcome to try. Please note this server will be taken offline from time to time, and it is on the free tier of fly.io, so it have a limited capacity.
+I encourage anyone technocally capable to operate their own Gara server. Gara is a standard [Phoenix Liveview](https://www.phoenixframework.org/) application that can be deployed anywhere. Even better, it does not need a database and has no persisted data. There is a couple of Dockerfile in the source repository to faciliate deplyment. I have a deployment on [fly.io](https://fly.io) here: [gara.fly.dev](https://gara.fly.dev), and everyone is welcome to try. Please note this server will be taken offline from time to time, and it is on the free tier of fly.io, so it have a limited capacity.
 
 To start your Phoenix server:
 

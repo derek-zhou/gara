@@ -32,17 +32,25 @@ function hide_progress_bar() {
     bar.style.opacity = "0";
 }
 
+function get_room() {
+    let url = new URL(location);
+    let result = url.pathname.match(/^\/room\/(.*)/);
+    if (result)
+	return result[1];
+    else
+	return null;
+}
+
 function local_state() {
     let ret = new Object();
+    let room = get_room();
     ret.timezoneOffset = new Date().getTimezoneOffset();
     ret.language = navigator.language;
-    // dump everthing from localStorage to the server side
-    for (let i = 0; i < localStorage.length; i++) {
-	let key = localStorage.key(i);
-	let value = localStorage.getItem(key);
-	let found = key.match(/^gara_(.*)/);
-	if (found)
-	    ret[found[1]] = value;
+    if (room) {
+	let key = "gara_token_" + room;
+	let token = localStorage.getItem(key);
+	if (token)
+	    ret["token"] = token;
     }
     return ret;
 }
@@ -51,15 +59,23 @@ let Hooks = new Object();
 
 Hooks.Main = {
     mounted() {
-	this.handleEvent("set_value", ({key, value}) => {
-	    let local_key = "gara_" + key;
-	    if (value)
-		localStorage.setItem(local_key, value);
-	    else
-		localStorage.removeItem(local_key);
-	    console.log("regenerate liveSocket");
+	this.handleEvent("set_token", ({token}) => {
+	    let room = get_room();
+	    if (room) {
+		let key = "gara_token_" + room;
+		if (token)
+		    localStorage.setItem(key, token);
+		else
+		    localStorage.removeItem(key);
+		console.log("setting token of " + room + " as: " + token);
+	    }
 	});
-	this.handleEvent("leave", () => {	
+	this.handleEvent("leave", () => {
+	    let room = get_room();
+	    if (room) {
+		let key = "gara_token_" + room;
+		localStorage.removeItem(key);
+	    }
 	    window.removeEventListener("phx:page-loading-start", show_progress_bar);
 	    liveSocket.disconnect();
 	});

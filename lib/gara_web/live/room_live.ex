@@ -87,7 +87,7 @@ defmodule GaraWeb.RoomLive do
                     participants: participants,
                     messages: messages
                   )
-                  |> push_event("set_value", %{key: "token", value: token})
+                  |> push_event("set_token", %{token: token})
                   |> put_flash(
                     :info,
                     gettext("Your temporary nickname is: ") <>
