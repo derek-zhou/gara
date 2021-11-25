@@ -49,7 +49,7 @@ defmodule Gara.Message do
   [
     "a",
     "b",
-    "blockqoute",
+    "blockquote",
     "br",
     "code",
     "dd",

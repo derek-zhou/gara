@@ -38,13 +38,15 @@ defmodule Gara.Room do
   say something. Returns :ok
   """
   def say(room, id, str) do
+    trimmed = String.trim(str)
+
     is_url =
-      case URI.parse(str) do
+      case URI.parse(trimmed) do
         %URI{scheme: "https", port: 443, userinfo: nil} -> true
         _ -> false
       end
 
-    GenServer.cast(room, {:say, id, Message.parse(str), is_url, str})
+    GenServer.cast(room, {:say, id, Message.parse(str), is_url, trimmed})
   end
 
   @doc """
