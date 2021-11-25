@@ -46,7 +46,7 @@ defmodule GaraWeb.RoomLive do
             assign(socket,
               room_pid: pid,
               room_stat: stat,
-              page_title: stat.topic,
+              page_title: "(#{stat.active}) #{stat.topic}",
               page_url: Routes.room_url(Endpoint, :chat, room_name),
               room_status: :existed
             )
@@ -135,19 +135,35 @@ defmodule GaraWeb.RoomLive do
 
   def handle_info(
         {:leave_message, _mid, _ts, nick} = message,
-        %Socket{assigns: %{participants: participants}} = socket
+        %Socket{assigns: %{participants: participants, room_stat: stat}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == nick))
-    {:noreply, assign(socket, messages: [message], participants: participants)}
+
+    {
+      :noreply,
+      assign(socket,
+        page_title: "(#{length(participants)}) #{stat.topic}",
+        messages: [message],
+        participants: participants
+      )
+    }
   end
 
   def handle_info(
         {:join_message, _mid, _ts, nick} = message,
-        %Socket{assigns: %{participants: participants}} = socket
+        %Socket{assigns: %{participants: participants, room_stat: stat}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == nick))
     participants = [nick | participants]
-    {:noreply, assign(socket, messages: [message], participants: participants)}
+
+    {
+      :noreply,
+      assign(socket,
+        page_title: "(#{length(participants)}) #{stat.topic}",
+        messages: [message],
+        participants: participants
+      )
+    }
   end
 
   def handle_info(
