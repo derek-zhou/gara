@@ -37,6 +37,7 @@ defmodule GaraWeb.RoomLive do
           socket
           |> put_flash(:error, gettext("Room closed already"))
           |> assign(page_title: gettext("Room closed already"))
+          |> push_event("set_token", %{token: ""})
           |> push_event("leave", %{})
 
         [{pid, _}] ->
@@ -184,6 +185,7 @@ defmodule GaraWeb.RoomLive do
       socket
       |> assign(room_status: :hangup, show_info: false)
       |> put_flash(:info, gettext("You left"))
+      |> push_event("set_token", %{token: ""})
       |> push_event("leave", %{})
     }
   end
