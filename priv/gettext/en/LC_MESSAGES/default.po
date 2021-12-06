@@ -22,77 +22,72 @@ msgid "Back to the lobby"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:55
+#: lib/gara_web/live/header.sface:40
 msgid "Leave the room. Your transcipt will be frozen."
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:73
+#: lib/gara_web/live/room_live.ex:69
 msgid "No space in room"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:46
-msgid "No such room"
-msgstr ""
-
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:41 lib/gara_web/live/room_live.ex:42
+#: lib/gara_web/live/room_live.ex:39 lib/gara_web/live/room_live.ex:40
 msgid "Room closed already"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:135
+#: lib/gara_web/live/room_live.ex:131
 msgid "Server crashed"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:121
+#: lib/gara_web/live/room_live.ex:117
 msgid "Server hangup"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:193
+#: lib/gara_web/live/room_live.ex:211
 msgid "The nickname is taken."
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:41
+#: lib/gara_web/live/header.sface:26
 msgid "The room have been opened since "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:38
+#: lib/gara_web/live/header.sface:23
 msgid "The topic is: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:85
+#: lib/gara_web/live/room_live.ex:81
 msgid "Welcome back, "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:178
+#: lib/gara_web/live/room_live.ex:190
 msgid "You left"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:104
+#: lib/gara_web/live/room_live.ex:100
 msgid "You should change it by clicking the top right corner"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:47
+#: lib/gara_web/live/header.sface:32
 msgid "Your new nickname: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:44
+#: lib/gara_web/live/header.sface:29
 msgid "Your nickname is "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:101
+#: lib/gara_web/live/room_live.ex:97
 msgid "Your temporary nickname is: "
 msgstr ""
 
@@ -107,7 +102,7 @@ msgid "joined"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:58
+#: lib/gara_web/live/header.sface:43
 msgid "leave"
 msgstr ""
 
@@ -117,12 +112,7 @@ msgid "left"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:26
-msgid "people are here. "
-msgstr ""
-
-#, elixir-format
-#: lib/gara_web/live/header.sface:51
+#: lib/gara_web/live/header.sface:36
 msgid "rename"
 msgstr ""
 
@@ -147,11 +137,26 @@ msgid "said: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:69
+#: lib/gara_web/live/header.sface:70
 msgid "send"
 msgstr ""
 
 #, elixir-format
 #: lib/gara_web/controllers/page_controller.ex:18
 msgid "The Lobby"
+msgstr ""
+
+#, elixir-format, fuzzy
+#: lib/gara_web/live/header.sface:50
+msgid "people are here: "
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:72
+msgid "picture"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:74
+msgid "text"
 msgstr ""

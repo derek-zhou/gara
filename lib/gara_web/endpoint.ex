@@ -11,7 +11,7 @@ defmodule GaraWeb.Endpoint do
     at: "/",
     from: :gara,
     gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt web_modules _snowpack)
+    only: ~w(css fonts images js uploads favicon.ico robots.txt web_modules _snowpack)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

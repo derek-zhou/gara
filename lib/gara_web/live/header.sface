@@ -56,12 +56,23 @@
     </ul>
 </div>
 <div class="write" hidden={@room_status != :joined || @show_info}>
-    <Form for={:message} submit={@message}>
+    <Form for={:message} submit={@message} change={@validate}>
+	{#if @mode == :text}
 	<Field name="text" class="field">
 	    <TextArea rows="3" class="compose" opts={autofocus: true}/>
 	</Field>
+	{#elseif @mode == :image}
+	<div class="image-drap" phx-drop-target={@uploads.image.ref}>
+	    {live_file_input(@uploads.image)}
+	</div>
+	{/if}
 	<div class="toolbar">
 	    <input class="button" type="submit" value={gettext("send")}>
+	    {#if @mode == :text}
+	    <button type="button" class="button button-danger" :on-click={@click_toggle}>{gettext("picture")}</button>
+	    {#elseif @mode == :image}
+	    <button type="button" class="button button-danger" :on-click={@click_toggle}>{gettext("text")}</button>
+	    {/if}
 	</div>
     </Form>
 </div>

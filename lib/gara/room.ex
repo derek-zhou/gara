@@ -5,7 +5,7 @@ defmodule Gara.Room do
   use GenServer, restart: :transient
   alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms}
 
-  defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0]
+  defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0, img_id: 0]
 
   @doc """
   create a new room for the given topic. return the room name if success or nil
@@ -50,6 +50,11 @@ defmodule Gara.Room do
   end
 
   @doc """
+  flaunt an image, Returns :ok
+  """
+  def flaunt(room, id, path), do: GenServer.cast(room, {:flaunt, id, File.read!(path)})
+
+  @doc """
   leave the room. Returns :ok
   """
   def leave(room, id), do: GenServer.cast(room, {:leave, id})
@@ -82,14 +87,21 @@ defmodule Gara.Room do
     Process.flag(:max_heap_size, 100_000)
     Process.send_after(self(), :tick, @tick_interval)
     Logger.info("Room #{name}: room created with topic: #{topic}")
+    upload_dir = Path.join([:code.priv_dir(:gara), "static", "uploads", name])
+    File.rm_rf!(upload_dir)
+    File.mkdir_p!(upload_dir)
 
-    {:ok,
-     %__MODULE__{name: name, topic: topic, since: NaiveDateTime.utc_now(), roster: %Roster{}}}
+    {
+      :ok,
+      %__MODULE__{name: name, topic: topic, since: NaiveDateTime.utc_now(), roster: %Roster{}}
+    }
   end
 
   @impl true
   def terminate(_reason, %__MODULE__{name: name, roster: roster}) do
     Logger.info("Room #{name}: closing")
+    upload_dir = Path.join([:code.priv_dir(:gara), "static", "uploads", name])
+    File.rm_rf!(upload_dir)
     Roster.broadcast(roster, :hangup)
   end
 
@@ -133,6 +145,38 @@ defmodule Gara.Room do
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
         messages = [{msg_id, now, id, msg} | messages]
         {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
+    end
+  end
+
+  @impl true
+  def handle_cast(
+        {:flaunt, id, content},
+        %__MODULE__{
+          name: name,
+          roster: roster,
+          messages: messages,
+          img_id: img_id,
+          msg_id: msg_id
+        } = state
+      ) do
+    case Roster.ping(roster, id) do
+      :error ->
+        Logger.warn("Room #{name}: Spurious user message received from #{id}")
+        {:noreply, state}
+
+      {:ok, roster} ->
+        dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
+        File.write!(dest, content)
+        msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
+        nick = Roster.get_name(roster, id)
+        now = NaiveDateTime.utc_now()
+        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+        messages = [{msg_id, now, id, msg} | messages]
+
+        {
+          :noreply,
+          %{state | roster: roster, messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}
+        }
     end
   end
 

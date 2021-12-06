@@ -56,7 +56,7 @@ config :gara,
 config :gara, GaraWeb.Endpoint,
   live_reload: [
     patterns: [
-      ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/static/.*(js|css)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/gara_web/(live|views)/.*(ex)$",
       ~r"lib/gara_web/templates/.*(eex)$",

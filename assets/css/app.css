@@ -131,7 +131,7 @@
 		}
 	    }
 	    .toolbar {
-		@apply flex flex-row flex-wrap justify-center;
+		@apply flex flex-row flex-wrap justify-between;
                 .button {
 		    @apply flex-none cursor-pointer text-white bg-purple-600;
                 }

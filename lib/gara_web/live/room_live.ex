@@ -21,7 +21,8 @@ defmodule GaraWeb.RoomLive do
   data nick, :string, default: ""
   data uid, :integer, default: 0
   data idle_percentage, :integer, default: 0
-
+  # :text or :image
+  data input_mode, :atom, default: :text
   # temporary state
   data messages, :list, default: []
 
@@ -44,13 +45,15 @@ defmodule GaraWeb.RoomLive do
           stat = Room.stat(pid)
 
           socket =
-            assign(socket,
+            socket
+            |> assign(
               room_pid: pid,
               room_stat: stat,
               page_title: "(#{stat.active}) #{stat.topic}",
               page_url: Routes.room_url(Endpoint, :chat, room_name),
               room_status: :existed
             )
+            |> allow_upload(:image, accept: ~w(.jpg .jpeg))
 
           cond do
             connected?(socket) ->
@@ -212,9 +215,15 @@ defmodule GaraWeb.RoomLive do
   def handle_event(
         "message",
         %{"message" => %{"text" => text}},
-        %Socket{assigns: %{room_pid: room, uid: uid}} = socket
+        %Socket{assigns: %{room_pid: room, uid: uid, uploads: uploads}} = socket
       ) do
     Room.say(room, uid, text)
+    # cancel image upload in case there is any
+    case uploads.image.entries do
+      nil -> :ok
+      [] -> :ok
+      entries -> Enum.each(entries, &cancel_upload(socket, :image, &1.ref))
+    end
 
     {
       :noreply,
@@ -222,6 +231,25 @@ defmodule GaraWeb.RoomLive do
       |> assign(idle_percentage: 0)
       |> clear_flash()
     }
+  end
+
+  def handle_event("message", _params, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
+    Logger.info("in picture")
+
+    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
+      Room.flaunt(room, uid, path)
+    end)
+
+    {
+      :noreply,
+      socket
+      |> assign(idle_percentage: 0, input_mode: :text)
+      |> clear_flash()
+    }
+  end
+
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("click_nick", _, %Socket{assigns: %{show_info: true}} = socket) do
@@ -249,6 +277,14 @@ defmodule GaraWeb.RoomLive do
       |> assign(show_info: false)
       |> clear_flash()
     }
+  end
+
+  def handle_event("click_toggle", _, %Socket{assigns: %{input_mode: :text}} = socket) do
+    {:noreply, assign(socket, input_mode: :image)}
+  end
+
+  def handle_event("click_toggle", _, %Socket{assigns: %{input_mode: :image}} = socket) do
+    {:noreply, assign(socket, input_mode: :text)}
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do

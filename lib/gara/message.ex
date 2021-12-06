@@ -21,6 +21,15 @@ defmodule Gara.Message do
   end
 
   @doc """
+  show a simgle image
+  """
+  def flaunt(path) do
+    """
+    <img class="flaunt" alt="image" src="#{path}">
+    """
+  end
+
+  @doc """
   fetch a preview in html, and send back as a message
   """
   def fetch_preview(url, mid) do
