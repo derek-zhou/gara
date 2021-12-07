@@ -7,6 +7,8 @@ let attachHook = null;
 let attachment = null;
 let blobURL = null;
 const chunkSize = 16384;
+const MAX_WIDTH = 512;
+const MAX_HEIGHT = 1024;
 
 function show_progress_bar() {
     var bar = document.querySelector("div#app-progress-bar");
@@ -43,15 +45,58 @@ function local_state() {
     return ret;
 }
 
-function add_attachment(event) {
+function scale_ratio(w, h, max_w, max_h) {
+    let wr = Math.ceil(w/max_w);
+    let hr = Math.ceil(h/max_h);
+    if (wr > hr)
+	return wr;
+    else
+	return hr;
+}
+
+function scale_canvas(canvas, scale) {
+    const scaledCanvas = document.createElement('canvas');
+    scaledCanvas.width = canvas.width / scale;
+    scaledCanvas.height = canvas.height / scale;
+
+    scaledCanvas
+	.getContext('2d')
+	.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+    return scaledCanvas;
+}
+
+async function add_attachment(event) {
     let file = event.target.files[0];
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-	attachment = reader.result;
-	blobURL = URL.createObjectURL(file);
-	attachHook.pushEvent("attach", {size: file.size, url: blobURL});
+    let canvas = document.createElement('canvas');
+    const img = document.createElement('img');
+
+    img.src = await new Promise((resolve) => {
+	const reader = new FileReader();
+	reader.onload = (e) => resolve(e.target.result);
+	reader.readAsDataURL(file);
     });
-    reader.readAsArrayBuffer(file);
+    await new Promise((resolve) => {
+	img.onload = resolve;
+    });
+
+    // draw image in canvas element
+    canvas.width = img.width;
+    canvas.height = img.height;
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    if (img.width > MAX_WIDTH || img.height > MAX_HEIGHT) {
+	let ratio = scale_ratio(img.width, img.height, MAX_WIDTH, MAX_HEIGHT);
+	canvas = scale_canvas(canvas, ratio);
+    }
+
+    let blob = await new Promise((resolve) => {
+	canvas.toBlob(resolve, 'image/jpeg');
+    });
+
+    blobURL = URL.createObjectURL(blob);
+    attachment = await blob.arrayBuffer();
+    attachHook.pushEvent("attach", {size: blob.size, url: blobURL});
 }
 
 function upload_attachment(offset) {
