@@ -23,6 +23,10 @@ defmodule GaraWeb.RoomLive do
   data idle_percentage, :integer, default: 0
   # :text or :image
   data input_mode, :atom, default: :text
+  # upload
+  data attachment, :tuple, default: nil
+  data preview_url, :string, default: ""
+  data uploading, :boolean, default: false
   # temporary state
   data messages, :list, default: []
 
@@ -53,7 +57,6 @@ defmodule GaraWeb.RoomLive do
               page_url: Routes.room_url(Endpoint, :chat, room_name),
               room_status: :existed
             )
-            |> allow_upload(:image, accept: ~w(.jpg .jpeg))
 
           cond do
             connected?(socket) ->
@@ -215,15 +218,9 @@ defmodule GaraWeb.RoomLive do
   def handle_event(
         "message",
         %{"message" => %{"text" => text}},
-        %Socket{assigns: %{room_pid: room, uid: uid, uploads: uploads}} = socket
+        %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
     Room.say(room, uid, text)
-    # cancel image upload in case there is any
-    case uploads.image.entries do
-      nil -> :ok
-      [] -> :ok
-      entries -> Enum.each(entries, &cancel_upload(socket, :image, &1.ref))
-    end
 
     {
       :noreply,
@@ -233,23 +230,27 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_event("message", _params, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
-    Logger.info("in picture")
-
-    consume_uploaded_entries(socket, :image, fn %{path: path}, _entry ->
-      Room.flaunt(room, uid, path)
-    end)
+  def handle_event(
+        "send_image",
+        _params,
+        %Socket{
+          assigns: %{
+            room_pid: room,
+            uid: uid,
+            uploading: false,
+            attachment: {_, _, data}
+          }
+        } = socket
+      ) do
+    Room.flaunt(room, uid, data)
 
     {
       :noreply,
       socket
-      |> assign(idle_percentage: 0, input_mode: :text)
+      |> assign(idle_percentage: 0, input_mode: :text, attachment: nil)
+      |> push_event("clear_attachment", %{})
       |> clear_flash()
     }
-  end
-
-  def handle_event("validate", _params, socket) do
-    {:noreply, socket}
   end
 
   def handle_event("click_nick", _, %Socket{assigns: %{show_info: true}} = socket) do
@@ -283,8 +284,34 @@ defmodule GaraWeb.RoomLive do
     {:noreply, assign(socket, input_mode: :image)}
   end
 
-  def handle_event("click_toggle", _, %Socket{assigns: %{input_mode: :image}} = socket) do
-    {:noreply, assign(socket, input_mode: :text)}
+  def handle_event(
+        "click_toggle",
+        _,
+        %Socket{assigns: %{input_mode: :image, uploading: false}} = socket
+      ) do
+    {
+      :noreply,
+      socket
+      |> assign(input_mode: :text, attachment: nil)
+      |> push_event("clear_attachment", %{})
+    }
+  end
+
+  def handle_event(
+        "attach",
+        %{"size" => size, "url" => url},
+        %Socket{assigns: %{uploading: false}} = socket
+      ) do
+    {
+      :noreply,
+      socket
+      |> assign(attachment: {size, 0, []}, preview_url: url, uploading: true)
+      |> push_event("read_attachment", %{offset: 0})
+    }
+  end
+
+  def handle_event("attachment_chunk", %{"chunk" => chunk}, socket) do
+    {:noreply, accept_chunk(socket, chunk)}
   end
 
   defp fetch_tz_offset(socket, %{"timezoneOffset" => offset}) do
@@ -334,4 +361,28 @@ defmodule GaraWeb.RoomLive do
   end
 
   defp fetch_token(_, _), do: nil
+
+  defp accept_chunk(
+         %Socket{assigns: %{attachment: {size, offset, data}}} = socket,
+         chunk
+       ) do
+    chunk = Base.decode64!(chunk)
+    offset = offset + byte_size(chunk)
+
+    cond do
+      offset > size ->
+        raise("Excessive data received in streaming")
+
+      offset == size ->
+        assign(socket,
+          attachment: {size, offset, Enum.reverse([chunk | data])},
+          uploading: false
+        )
+
+      true ->
+        socket
+        |> assign(attachment: {size, offset, [chunk | data]})
+        |> push_event("read_attachment", %{offset: offset})
+    end
+  end
 end

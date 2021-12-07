@@ -56,24 +56,38 @@
     </ul>
 </div>
 <div class="write" hidden={@room_status != :joined || @show_info}>
-    <Form for={:message} submit={@message} change={@validate}>
-	{#if @mode == :text}
-	<Field name="text" class="field">
-	    <TextArea rows="3" class="compose" opts={autofocus: true}/>
+    {#if @mode == :text}
+    <Form for={:message} submit={@message}>
+	<Field name="text" class="input-box">
+	    <TextArea class="compose" opts={autofocus: true}/>
 	</Field>
-	{#elseif @mode == :image}
-	<div class="image-drap" phx-drop-target={@uploads.image.ref}>
-	    {live_file_input(@uploads.image)}
-	</div>
-	{/if}
 	<div class="toolbar">
-	    <input class="button" type="submit" value={gettext("send")}>
-	    {#if @mode == :text}
-	    <button type="button" class="button button-danger" :on-click={@click_toggle}>{gettext("picture")}</button>
-	    {#elseif @mode == :image}
-	    <button type="button" class="button button-danger" :on-click={@click_toggle}>{gettext("text")}</button>
-	    {/if}
+	    <input class={"button", disabled: @uploading}
+		   type="submit" value={gettext("send")}>
+	    <button class={"button", "button-danger"}
+		    type="button" :on-click={@click_toggle}>{gettext("picture")}</button>
 	</div>
     </Form>
+    {#elseif @mode == :image}
+    <div class="image-container">
+	<div id="image-box" class="input-box">
+	    <label id="image-notice" class="image-notice" for="image-attach">
+		{#if !@attached}
+		{gettext("Click to select a picture")}
+		{#else}
+		<img alt="preview" src={@preview_url}>
+		{/if}
+	    </label>
+	    <FileInput name="image-attach" id="image-attach"
+		       opts={"phx-hook": "ImageAttach", accept: ".jpg,.jpeg,.png"}/>
+	</div>
+	<div class="toolbar">
+	    <button class={"button", disabled: @uploading}
+		   type="button"  :on-click={@send_image}>{gettext("send")}</button>
+	    <button class={"button", "button-danger", disabled: @uploading}
+		    type="button" :on-click={@click_toggle}>{gettext("text")}</button>
+	</div>
+    </div>
+    {/if}
 </div>
 {/if}

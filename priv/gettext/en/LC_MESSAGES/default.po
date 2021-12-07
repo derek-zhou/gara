@@ -27,27 +27,27 @@ msgid "Leave the room. Your transcipt will be frozen."
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:69
+#: lib/gara_web/live/room_live.ex:72
 msgid "No space in room"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:39 lib/gara_web/live/room_live.ex:40
+#: lib/gara_web/live/room_live.ex:43 lib/gara_web/live/room_live.ex:44
 msgid "Room closed already"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:131
+#: lib/gara_web/live/room_live.ex:134
 msgid "Server crashed"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:117
+#: lib/gara_web/live/room_live.ex:120
 msgid "Server hangup"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:211
+#: lib/gara_web/live/room_live.ex:214
 msgid "The nickname is taken."
 msgstr ""
 
@@ -62,17 +62,17 @@ msgid "The topic is: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:81
+#: lib/gara_web/live/room_live.ex:84
 msgid "Welcome back, "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:190
+#: lib/gara_web/live/room_live.ex:193
 msgid "You left"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:100
+#: lib/gara_web/live/room_live.ex:103
 msgid "You should change it by clicking the top right corner"
 msgstr ""
 
@@ -87,7 +87,7 @@ msgid "Your nickname is "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:97
+#: lib/gara_web/live/room_live.ex:100
 msgid "Your temporary nickname is: "
 msgstr ""
 
@@ -137,7 +137,7 @@ msgid "said: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:70
+#: lib/gara_web/live/header.sface:66 lib/gara_web/live/header.sface:86
 msgid "send"
 msgstr ""
 
@@ -146,17 +146,22 @@ msgstr ""
 msgid "The Lobby"
 msgstr ""
 
-#, elixir-format, fuzzy
+#, elixir-format
 #: lib/gara_web/live/header.sface:50
 msgid "people are here: "
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:72
+#: lib/gara_web/live/header.sface:68
 msgid "picture"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:74
+#: lib/gara_web/live/header.sface:88
 msgid "text"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:76
+msgid "Click to select a picture"
 msgstr ""

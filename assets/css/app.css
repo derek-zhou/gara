@@ -131,7 +131,7 @@
 		}
 	    }
 	    .toolbar {
-		@apply flex flex-row flex-wrap justify-between;
+		@apply flex flex-row flex-wrap justify-center gap-4;
                 .button {
 		    @apply flex-none cursor-pointer text-white bg-purple-600;
                 }
@@ -175,8 +175,26 @@
 	    .write {
 		form {
 		    @apply p-0;
-		    .compose {
-			@apply flex-grow resize-none text-black;
+		    .input-box {
+			@apply mb-2 w-full h-24 text-black;
+			.compose {
+			    @apply w-full h-full resize-none;
+			}
+		    }
+		}
+		.image-container {
+		    @apply flex flex-col;
+		    .input-box {
+			@apply mb-2 w-full h-24 text-black;
+			.image-notice {
+			    @apply flex flex-col bg-gray-200 place-content-center text-center w-full h-full;
+			    img {
+				@apply w-auto h-auto max-w-full max-h-full object-scale-down;
+			    }
+			}
+			input[type=file] {
+			    @apply hidden;
+			}
 		    }
 		}
 	    }

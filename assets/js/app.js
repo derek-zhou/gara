@@ -1,6 +1,12 @@
 import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
+import {toByteArray, fromByteArray} from "base64-js"
+
+let attachHook = null;
+let attachment = null;
+let blobURL = null;
+const chunkSize = 16384;
 
 function show_progress_bar() {
     var bar = document.querySelector("div#app-progress-bar");
@@ -37,6 +43,25 @@ function local_state() {
     return ret;
 }
 
+function add_attachment(event) {
+    let file = event.target.files[0];
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+	attachment = reader.result;
+	blobURL = URL.createObjectURL(file);
+	attachHook.pushEvent("attach", {size: file.size, url: blobURL});
+    });
+    reader.readAsArrayBuffer(file);
+}
+
+function upload_attachment(offset) {
+    let dlen = attachment.byteLength;
+    let slen = dlen > offset + chunkSize ? chunkSize : dlen - offset;
+    let slice = new Uint8Array(attachment, offset, slen);
+    let chunk = fromByteArray(slice);
+    attachHook.pushEvent("attachment_chunk", {chunk: chunk});
+}
+
 let Hooks = new Object();
 
 Hooks.Main = {
@@ -54,6 +79,21 @@ Hooks.Main = {
 	this.handleEvent("leave", () => {
 	    window.removeEventListener("phx:page-loading-start", show_progress_bar);
 	    liveSocket.disconnect();
+	});
+    }
+};
+
+Hooks.ImageAttach = {
+    mounted() {
+	attachHook = this;
+	this.el.addEventListener("change", add_attachment);
+	this.handleEvent("clear_attachment", () => {
+	    URL.revokeObjectURL(blobURL);
+	    blobURL = null;
+	    attachment = null;
+	});
+	this.handleEvent("read_attachment", ({offset}) => {
+	    upload_attachment(offset);
 	});
     }
 };

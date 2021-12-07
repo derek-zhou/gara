@@ -52,7 +52,7 @@ defmodule Gara.Room do
   @doc """
   flaunt an image, Returns :ok
   """
-  def flaunt(room, id, path), do: GenServer.cast(room, {:flaunt, id, File.read!(path)})
+  def flaunt(room, id, data), do: GenServer.cast(room, {:flaunt, id, data})
 
   @doc """
   leave the room. Returns :ok
