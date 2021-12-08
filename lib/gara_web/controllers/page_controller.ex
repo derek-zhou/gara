@@ -1,10 +1,7 @@
 defmodule GaraWeb.PageController do
   use GaraWeb, :controller
 
-  alias Gara.Room
-  alias Gara.Defaults
-  alias Gara.RoomSupervisor
-  alias Gara.Rooms
+  alias Gara.{Room, Defaults, RoomSupervisor, Rooms}
 
   plug :no_layout
 
@@ -21,9 +18,17 @@ defmodule GaraWeb.PageController do
   end
 
   def create(conn, %{"create" => %{"topic" => topic}}) do
-    case Room.new_room(topic) do
-      nil -> redirect(conn, to: Routes.page_path(conn, :index))
-      name -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+    trimmed = String.trim(topic)
+
+    case Registry.lookup(Rooms, trimmed) do
+      [] ->
+        case Room.new_room(trimmed) do
+          nil -> redirect(conn, to: Routes.page_path(conn, :index))
+          name -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+        end
+
+      _ ->
+        redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
     end
   end
 
