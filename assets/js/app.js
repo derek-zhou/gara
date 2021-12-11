@@ -3,13 +3,6 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {toByteArray, fromByteArray} from "base64-js"
 
-let attachHook = null;
-let attachment = null;
-let blobURL = null;
-const chunkSize = 16384;
-const MAX_WIDTH = 512;
-const MAX_HEIGHT = 1024;
-
 function show_progress_bar() {
     var bar = document.querySelector("div#app-progress-bar");
     bar.style.width = "100%";
@@ -45,68 +38,6 @@ function local_state() {
     return ret;
 }
 
-function scale_ratio(w, h, max_w, max_h) {
-    let wr = Math.ceil(w/max_w);
-    let hr = Math.ceil(h/max_h);
-    if (wr > hr)
-	return wr;
-    else
-	return hr;
-}
-
-function scale_canvas(canvas, scale) {
-    const scaledCanvas = document.createElement('canvas');
-    scaledCanvas.width = canvas.width / scale;
-    scaledCanvas.height = canvas.height / scale;
-
-    scaledCanvas
-	.getContext('2d')
-	.drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
-
-    return scaledCanvas;
-}
-
-async function add_attachment(event) {
-    let file = event.target.files[0];
-    let canvas = document.createElement('canvas');
-    const img = document.createElement('img');
-
-    img.src = await new Promise((resolve) => {
-	const reader = new FileReader();
-	reader.onload = (e) => resolve(e.target.result);
-	reader.readAsDataURL(file);
-    });
-    await new Promise((resolve) => {
-	img.onload = resolve;
-    });
-
-    // draw image in canvas element
-    canvas.width = img.width;
-    canvas.height = img.height;
-    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    if (img.width > MAX_WIDTH || img.height > MAX_HEIGHT) {
-	let ratio = scale_ratio(img.width, img.height, MAX_WIDTH, MAX_HEIGHT);
-	canvas = scale_canvas(canvas, ratio);
-    }
-
-    let blob = await new Promise((resolve) => {
-	canvas.toBlob(resolve, 'image/jpeg');
-    });
-
-    blobURL = URL.createObjectURL(blob);
-    attachment = await blob.arrayBuffer();
-    attachHook.pushEvent("attach", {size: blob.size, url: blobURL});
-}
-
-function upload_attachment(offset) {
-    let dlen = attachment.byteLength;
-    let slen = dlen > offset + chunkSize ? chunkSize : dlen - offset;
-    let slice = new Uint8Array(attachment, offset, slen);
-    let chunk = fromByteArray(slice);
-    attachHook.pushEvent("attachment_chunk", {chunk: chunk});
-}
-
 let Hooks = new Object();
 
 Hooks.Main = {
@@ -129,17 +60,83 @@ Hooks.Main = {
 };
 
 Hooks.ImageAttach = {
+    attachment: null,
+    blobURL: null,
+    chunkSize: 16384,
+    maxWidth: 512,
+    maxHeight: 1024,
+
     mounted() {
-	attachHook = this;
-	this.el.addEventListener("change", add_attachment);
+	this.el.addEventListener("change", (e) => this.add_attachment(e.target.files[0]));
 	this.handleEvent("clear_attachment", () => {
 	    URL.revokeObjectURL(blobURL);
-	    blobURL = null;
-	    attachment = null;
+	    this.blobURL = null;
+	    this.attachment = null;
 	});
 	this.handleEvent("read_attachment", ({offset}) => {
-	    upload_attachment(offset);
+	    this.upload_attachment(offset);
 	});
+    },
+
+    scale_ratio(w, h) {
+	let wr = Math.ceil(w/this.maxWidth);
+	let hr = Math.ceil(h/this.maxHeight);
+	if (wr > hr)
+	    return wr;
+	else
+	    return hr;
+    },
+
+    scale_canvas(canvas, scale) {
+	const scaledCanvas = document.createElement('canvas');
+	scaledCanvas.width = canvas.width / scale;
+	scaledCanvas.height = canvas.height / scale;
+	
+	scaledCanvas
+	    .getContext('2d')
+	    .drawImage(canvas, 0, 0, scaledCanvas.width, scaledCanvas.height);
+	
+	return scaledCanvas;
+    },
+
+    async add_attachment(file) {
+	let canvas = document.createElement('canvas');
+	const img = document.createElement('img');
+
+	img.src = await new Promise((resolve) => {
+	    const reader = new FileReader();
+	    reader.onload = (e) => resolve(e.target.result);
+	    reader.readAsDataURL(file);
+	});
+	await new Promise((resolve) => {
+	    img.onload = resolve;
+	});
+
+	// draw image in canvas element
+	canvas.width = img.width;
+	canvas.height = img.height;
+	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+	if (img.width > this.maxWidth || img.height > this.maxHeight) {
+	    let ratio = this.scale_ratio(img.width, img.height);
+	    canvas = this.scale_canvas(canvas, ratio);
+	}
+
+	let blob = await new Promise((resolve) => {
+	    canvas.toBlob(resolve, 'image/jpeg');
+	});
+
+	this.blobURL = URL.createObjectURL(blob);
+	this.attachment = await blob.arrayBuffer();
+	this.pushEvent("attach", {size: blob.size, url: this.blobURL});
+    },
+
+    upload_attachment(offset) {
+	let dlen = this.attachment.byteLength;
+	let slen = dlen > offset + this.chunkSize ? this.chunkSize : dlen - offset;
+	let slice = new Uint8Array(this.attachment, offset, slen);
+	let chunk = fromByteArray(slice);
+	this.pushEvent("attachment_chunk", {chunk: chunk});
     }
 };
 
