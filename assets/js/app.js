@@ -24,6 +24,38 @@ function get_room() {
 	return null;
 }
 
+function list_room() {
+    let ret = [];
+    for (let i = 0; i < localStorage.length; i++) {
+	let key = localStorage.key(i);
+	let value = localStorage.getItem(key);
+	let found = key.match(/^gara_token_(.*)/);
+	if (found)
+	    ret.push(found[1]);
+    }
+    return ret;
+}
+
+function setup_list() {
+    let room_list = document.querySelector("ul#room-list");
+    if (room_list) {
+	let rooms = list_room();
+	if (rooms.length > 0) {
+	    let list_notice = document.querySelector("#list-notice");
+	    list_notice.removeAttribute("hidden");
+	    for (let room of rooms) {
+		let room_li = document.createElement('li');
+		let room_link = document.createElement('a');
+		let text = document.createTextNode(room);
+		room_link.setAttribute("href", "/room/" + room);
+		room_link.appendChild(text);
+		room_li.appendChild(room_link);
+		room_list.appendChild(room_li);
+	    }
+	}
+    }
+}
+
 function local_state() {
     let ret = new Object();
     let room = get_room();
@@ -154,3 +186,5 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
+
+document.addEventListener("DOMContentLoaded", setup_list);

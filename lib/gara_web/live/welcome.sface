@@ -16,4 +16,11 @@
     {#else}
     <h2>{gettext("All")} {@rooms} {gettext("rooms occupied, comeback later")}</h2>
     {/if}
+    <div class="info" id="list-notice" hidden>
+	{gettext("You were in the following rooms: ")}
+    </div>
+    <div class="list-container">
+	<ul class="room-list" id="room-list">
+	</ul>
+    </div>
 </div>

@@ -106,6 +106,15 @@
 	    .info {
 		@apply text-lg text-center;
 	    }
+	    .list-container {
+		@apply flex justify-center;
+	    }
+	    ul.room-list {
+		@apply inline space-x-2;
+		li {
+		    @apply inline text-yellow-200 whitespace-nowrap;
+		}
+	    }
 	    form {
 		@apply p-2 flex flex-col;
                 input[type="text"] {
