@@ -142,7 +142,7 @@ msgid "send"
 msgstr "发送"
 
 #, elixir-format
-#: lib/gara_web/controllers/page_controller.ex:18
+#: lib/gara_web/controllers/page_controller.ex:15
 msgid "The Lobby"
 msgstr "大厅"
 
@@ -165,3 +165,8 @@ msgstr "文字"
 #: lib/gara_web/live/header.sface:76
 msgid "Click to select a picture"
 msgstr "请点击选择你的图片"
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:20
+msgid "You were in the following rooms: "
+msgstr "你访问过下列房间："

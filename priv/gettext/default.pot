@@ -141,7 +141,7 @@ msgid "send"
 msgstr ""
 
 #, elixir-format
-#: lib/gara_web/controllers/page_controller.ex:18
+#: lib/gara_web/controllers/page_controller.ex:15
 msgid "The Lobby"
 msgstr ""
 
@@ -163,4 +163,9 @@ msgstr ""
 #, elixir-format
 #: lib/gara_web/live/header.sface:76
 msgid "Click to select a picture"
+msgstr ""
+
+#, elixir-format
+#: lib/gara_web/live/welcome.sface:20
+msgid "You were in the following rooms: "
 msgstr ""
