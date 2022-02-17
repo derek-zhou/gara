@@ -7,12 +7,13 @@ defmodule GaraWeb.Header do
   alias GaraWeb.Router.Helpers, as: Routes
 
   prop tz_offset, :integer, default: 0
+  prop name, :string, required: true
   prop stat, :map, required: true
   prop room_status, :atom, default: :unknown
   prop mode, :atom, default: :text
   prop show_info, :boolean, default: false
   prop uploading, :boolean, default: false
-  prop attached, :boolean, default: false
+  prop attachment, :tuple, default: nil
   prop participants, :list, default: []
   prop nick, :string, required: true
   prop preview_url, :string, default: ""
@@ -32,4 +33,12 @@ defmodule GaraWeb.Header do
     |> NaiveDateTime.to_time()
     |> Time.to_string()
   end
+
+  defp attached(nil), do: false
+  defp attached(_), do: true
+
+  defp attachment_type({_, nil, _, _}), do: :image
+  defp attachment_type(_), do: :file
+
+  defp attachment_name({_, name, _, _}), do: name
 end

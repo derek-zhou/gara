@@ -1,9 +1,10 @@
 <Main {... messages: @flash }>
-    <Header {... tz_offset: @tz_offset, stat: @room_stat, room_status: @room_status,
-	    participants: @participants, nick: @nick, idle_percentage: @idle_percentage,
-	    show_info: @show_info, click_nick: "click_nick", click_else: "click_else",
+    <Header {... tz_offset: @tz_offset, name: @room_name, stat: @room_stat,
+    	    room_status: @room_status, participants: @participants, nick: @nick,
+	    idle_percentage: @idle_percentage, show_info: @show_info,
+	    click_nick: "click_nick", click_else: "click_else",
 	    leave: "leave", rename: "rename", message: "message", send_image: "send_image",
 	    uploading: @uploading, click_toggle: "click_toggle", mode: @input_mode,
-	    preview_url: @preview_url, attached: @attachment != nil} />
+	    preview_url: @preview_url, attachment: @attachment } />
     <Chat {... tz_offset: @tz_offset, messages: @messages, nick: @nick } />
 </Main>

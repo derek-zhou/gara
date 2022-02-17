@@ -23,6 +23,9 @@
 	    {gettext("The topic is: ")}<i>{@stat.topic}</i>
 	</h3>
 	<h4>
+	    {gettext("The room's code is: ")}<i>{@name}</i>.
+	</h4>
+	<h4>
 	    {gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
 	</h4>
 	<hr />
@@ -37,7 +40,7 @@
 	    </div>
 	</Form>
 	<hr />
-	<h3>{gettext("Leave the room. Your transcipt will be frozen.")}</h3>
+	<h3>{gettext("Leave the room. Your transcript will be frozen.")}</h3>
 	<Form for={:leave} submit={@leave}>
 	    <div class="toolbar">
 		<input class="button button-danger" type="submit" value={gettext("leave")}>
@@ -65,21 +68,27 @@
 	    <input class={"button", disabled: @uploading}
 		   type="submit" value={gettext("send")}>
 	    <button class={"button", "button-danger"}
-		    type="button" :on-click={@click_toggle}>{gettext("picture")}</button>
+		    type="button" :on-click={@click_toggle}>{gettext("image/file")}</button>
 	</div>
     </Form>
     {#elseif @mode == :image}
     <div class="image-container">
 	<div id="image-box" class="input-box">
 	    <label id="image-notice" class="image-notice" for="image-attach">
-		{#if !@attached}
-		{gettext("Click to select a picture")}
+		{#if !attached(@attachment)}
+		{gettext("Click to select a picture or file")}
 		{#else}
+		{#case attachment_type(@attachment)}
+		{#match :image}
 		<img alt="preview" src={@preview_url}>
+		{#match :file}
+		<a class="attachment" download={attachment_name(@attachment)}
+		   href={@preview_url}>{attachment_name(@attachment)}</a>
+		{/case}
 		{/if}
 	    </label>
 	    <FileInput name="image-attach" id="image-attach"
-		       opts={"phx-hook": "ImageAttach", accept: ".jpg,.jpeg,.png"}/>
+		       opts={"phx-hook": "ImageAttach"}/>
 	</div>
 	<div class="toolbar">
 	    <button class={"button", disabled: @uploading}

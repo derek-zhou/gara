@@ -30,6 +30,15 @@ defmodule Gara.Message do
   end
 
   @doc """
+  show an attahment to be downloaded
+  """
+  def attach(name, path) do
+    """
+    <a class="attachment" download="#{name}" href="#{path}">#{name}</a>
+    """
+  end
+
+  @doc """
   fetch a preview in html, and send back as a message
   """
   def fetch_preview(url, mid) do

@@ -265,6 +265,9 @@ button[disabled] {
 		    li {
 			@apply mb-1;
 		    }
+		    a.attachment {
+			@apply block py-2 italic text-rose-700;
+		    }
 		}
 	    }
 	    .user_message {

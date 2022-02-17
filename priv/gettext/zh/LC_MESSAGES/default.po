@@ -22,37 +22,32 @@ msgid "Back to the lobby"
 msgstr "回大厅吧"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:40
-msgid "Leave the room. Your transcipt will be frozen."
-msgstr "离开包房。你的聊天记录会不再更新。"
-
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:72
+#: lib/gara_web/live/room_live.ex:73
 msgid "No space in room"
 msgstr "包房里没空了"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:43 lib/gara_web/live/room_live.ex:44
+#: lib/gara_web/live/room_live.ex:44 lib/gara_web/live/room_live.ex:45
 msgid "Room closed already"
 msgstr "包房已关闭"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:134
+#: lib/gara_web/live/room_live.ex:135
 msgid "Server crashed"
 msgstr "服务器死机了"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:120
+#: lib/gara_web/live/room_live.ex:121
 msgid "Server hangup"
 msgstr "你被踢下线了"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:214
+#: lib/gara_web/live/room_live.ex:215
 msgid "The nickname is taken."
 msgstr "这个昵称已有人占用了。"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:26
+#: lib/gara_web/live/header.sface:29
 msgid "The room have been opened since "
 msgstr "包房开放始于"
 
@@ -62,32 +57,32 @@ msgid "The topic is: "
 msgstr "聊天话题是："
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:84
+#: lib/gara_web/live/room_live.ex:85
 msgid "Welcome back, "
 msgstr "欢迎回来，"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:193
+#: lib/gara_web/live/room_live.ex:194
 msgid "You left"
 msgstr "你离开了"
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:103
+#: lib/gara_web/live/room_live.ex:104
 msgid "You should change it by clicking the top right corner"
 msgstr "你可以点击右上角修改"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:32
+#: lib/gara_web/live/header.sface:35
 msgid "Your new nickname: "
 msgstr "你的新昵称："
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:29
+#: lib/gara_web/live/header.sface:32
 msgid "Your nickname is "
 msgstr "你的昵称是 "
 
 #, elixir-format
-#: lib/gara_web/live/room_live.ex:100
+#: lib/gara_web/live/room_live.ex:101
 msgid "Your temporary nickname is: "
 msgstr "你的临时昵称是："
 
@@ -102,7 +97,7 @@ msgid "joined"
 msgstr "已上线"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:43
+#: lib/gara_web/live/header.sface:46
 msgid "leave"
 msgstr "离开"
 
@@ -112,7 +107,7 @@ msgid "left"
 msgstr "走了"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:36
+#: lib/gara_web/live/header.sface:39
 msgid "rename"
 msgstr "改名"
 
@@ -137,7 +132,7 @@ msgid "said: "
 msgstr "说："
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:66 lib/gara_web/live/header.sface:86
+#: lib/gara_web/live/header.sface:69 lib/gara_web/live/header.sface:97
 msgid "send"
 msgstr "发送"
 
@@ -147,26 +142,36 @@ msgid "The Lobby"
 msgstr "大厅"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:50
+#: lib/gara_web/live/header.sface:53
 msgid "people are here: "
 msgstr "个人在这里: "
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:68
-msgid "picture"
-msgstr "图片"
-
-#, elixir-format
-#: lib/gara_web/live/header.sface:88
+#: lib/gara_web/live/header.sface:99
 msgid "text"
 msgstr "文字"
-
-#, elixir-format
-#: lib/gara_web/live/header.sface:76
-msgid "Click to select a picture"
-msgstr "请点击选择你的图片"
 
 #, elixir-format
 #: lib/gara_web/live/welcome.sface:20
 msgid "You were in the following rooms: "
 msgstr "你访问过下列房间："
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:79
+msgid "Click to select a picture or file"
+msgstr "请点击选择你的图片或文件"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:43
+msgid "Leave the room. Your transcript will be frozen."
+msgstr "离开包房。你的聊天记录会不再更新。"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:71
+msgid "image/file"
+msgstr "图片/文件"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:26
+msgid "The room's code is: "
+msgstr "房间代码是: "

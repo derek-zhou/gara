@@ -132,35 +132,45 @@ Hooks.ImageAttach = {
     },
 
     async add_attachment(file) {
-	let canvas = document.createElement('canvas');
-	const img = document.createElement('img');
+	const tokens = file.type.split("/");
+	if (tokens[0] === 'image') {
+	    let canvas = document.createElement('canvas');
+	    const img = document.createElement('img');
 
-	img.src = await new Promise((resolve) => {
-	    const reader = new FileReader();
-	    reader.onload = (e) => resolve(e.target.result);
-	    reader.readAsDataURL(file);
-	});
-	await new Promise((resolve) => {
-	    img.onload = resolve;
-	});
+	    img.src = await new Promise((resolve) => {
+		const reader = new FileReader();
+		reader.onload = (e) => resolve(e.target.result);
+		reader.readAsDataURL(file);
+	    });
+	    await new Promise((resolve) => {
+		img.onload = resolve;
+	    });
 
-	// draw image in canvas element
-	canvas.width = img.width;
-	canvas.height = img.height;
-	canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+	    // draw image in canvas element
+	    canvas.width = img.width;
+	    canvas.height = img.height;
+	    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 
-	if (img.width > this.maxWidth || img.height > this.maxHeight) {
-	    let ratio = this.scale_ratio(img.width, img.height);
-	    canvas = this.scale_canvas(canvas, ratio);
+	    if (img.width > this.maxWidth || img.height > this.maxHeight) {
+		let ratio = this.scale_ratio(img.width, img.height);
+		canvas = this.scale_canvas(canvas, ratio);
+	    }
+
+	    let blob = await new Promise((resolve) => {
+		canvas.toBlob(resolve, 'image/jpeg');
+	    });
+	    this.blobURL = URL.createObjectURL(blob);
+	    this.attachment = await blob.arrayBuffer();
+	    this.pushEvent("attach", {size: blob.size, url: this.blobURL});
+	} else {
+	    this.blobURL = URL.createObjectURL(file);
+	    this.attachment = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsArrayBuffer(file);
+            });
+	    this.pushEvent("attach", {size: file.size, name: file.name, url: this.blobURL});
 	}
-
-	let blob = await new Promise((resolve) => {
-	    canvas.toBlob(resolve, 'image/jpeg');
-	});
-
-	this.blobURL = URL.createObjectURL(blob);
-	this.attachment = await blob.arrayBuffer();
-	this.pushEvent("attach", {size: blob.size, url: this.blobURL});
     },
 
     upload_attachment(offset) {

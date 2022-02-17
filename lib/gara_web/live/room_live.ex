@@ -24,6 +24,7 @@ defmodule GaraWeb.RoomLive do
   # :text or :image
   data input_mode, :atom, default: :text
   # upload
+  # {size, name, offset, chunks} if name is nil thaen it is an image
   data attachment, :tuple, default: nil
   data preview_url, :string, default: ""
   data uploading, :boolean, default: false
@@ -238,11 +239,14 @@ defmodule GaraWeb.RoomLive do
             room_pid: room,
             uid: uid,
             uploading: false,
-            attachment: {_, _, data}
+            attachment: {_, name, _, data}
           }
         } = socket
       ) do
-    Room.flaunt(room, uid, data)
+    case name do
+      nil -> Room.flaunt(room, uid, data)
+      _ -> Room.attach(room, uid, name, data)
+    end
 
     {
       :noreply,
@@ -299,13 +303,26 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event(
         "attach",
+        %{"size" => size, "name" => name, "url" => url},
+        %Socket{assigns: %{uploading: false}} = socket
+      ) do
+    {
+      :noreply,
+      socket
+      |> assign(attachment: {size, name, 0, []}, preview_url: url, uploading: true)
+      |> push_event("read_attachment", %{offset: 0})
+    }
+  end
+
+  def handle_event(
+        "attach",
         %{"size" => size, "url" => url},
         %Socket{assigns: %{uploading: false}} = socket
       ) do
     {
       :noreply,
       socket
-      |> assign(attachment: {size, 0, []}, preview_url: url, uploading: true)
+      |> assign(attachment: {size, nil, 0, []}, preview_url: url, uploading: true)
       |> push_event("read_attachment", %{offset: 0})
     }
   end
@@ -363,7 +380,7 @@ defmodule GaraWeb.RoomLive do
   defp fetch_token(_, _), do: nil
 
   defp accept_chunk(
-         %Socket{assigns: %{attachment: {size, offset, data}}} = socket,
+         %Socket{assigns: %{attachment: {size, name, offset, data}}} = socket,
          chunk
        ) do
     chunk = Base.decode64!(chunk)
@@ -375,13 +392,13 @@ defmodule GaraWeb.RoomLive do
 
       offset == size ->
         assign(socket,
-          attachment: {size, offset, Enum.reverse([chunk | data])},
+          attachment: {size, name, offset, Enum.reverse([chunk | data])},
           uploading: false
         )
 
       true ->
         socket
-        |> assign(attachment: {size, offset, [chunk | data]})
+        |> assign(attachment: {size, name, offset, [chunk | data]})
         |> push_event("read_attachment", %{offset: offset})
     end
   end

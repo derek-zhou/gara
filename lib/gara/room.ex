@@ -52,7 +52,12 @@ defmodule Gara.Room do
   @doc """
   flaunt an image, Returns :ok
   """
-  def flaunt(room, id, data), do: GenServer.cast(room, {:flaunt, id, data})
+  def flaunt(room, id, content), do: GenServer.cast(room, {:flaunt, id, content})
+
+  @doc """
+  attach a file, Returns :ok
+  """
+  def attach(room, id, name, content), do: GenServer.cast(room, {:attach, id, name, content})
 
   @doc """
   leave the room. Returns :ok
@@ -168,6 +173,38 @@ defmodule Gara.Room do
         dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
         File.write!(dest, content)
         msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
+        nick = Roster.get_name(roster, id)
+        now = NaiveDateTime.utc_now()
+        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+        messages = [{msg_id, now, id, msg} | messages]
+
+        {
+          :noreply,
+          %{state | roster: roster, messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}
+        }
+    end
+  end
+
+  @impl true
+  def handle_cast(
+        {:attach, id, filename, content},
+        %__MODULE__{
+          name: name,
+          roster: roster,
+          messages: messages,
+          img_id: img_id,
+          msg_id: msg_id
+        } = state
+      ) do
+    case Roster.ping(roster, id) do
+      :error ->
+        Logger.warn("Room #{name}: Spurious user message received from #{id}")
+        {:noreply, state}
+
+      {:ok, roster} ->
+        dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.bin"])
+        File.write!(dest, content)
+        msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
