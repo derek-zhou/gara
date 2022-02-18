@@ -132,7 +132,7 @@ msgid "said: "
 msgstr "说："
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:69 lib/gara_web/live/header.sface:97
+#: lib/gara_web/live/header.sface:70 lib/gara_web/live/header.sface:99
 msgid "send"
 msgstr "发送"
 
@@ -147,7 +147,7 @@ msgid "people are here: "
 msgstr "个人在这里: "
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:99
+#: lib/gara_web/live/header.sface:101
 msgid "text"
 msgstr "文字"
 
@@ -157,17 +157,12 @@ msgid "You were in the following rooms: "
 msgstr "你访问过下列房间："
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:79
-msgid "Click to select a picture or file"
-msgstr "请点击选择你的图片或文件"
-
-#, elixir-format
 #: lib/gara_web/live/header.sface:43
 msgid "Leave the room. Your transcript will be frozen."
 msgstr "离开包房。你的聊天记录会不再更新。"
 
 #, elixir-format
-#: lib/gara_web/live/header.sface:71
+#: lib/gara_web/live/header.sface:72
 msgid "image/file"
 msgstr "图片/文件"
 
@@ -175,3 +170,18 @@ msgstr "图片/文件"
 #: lib/gara_web/live/header.sface:26
 msgid "The room's code is: "
 msgstr "房间代码是: "
+
+#, elixir-format
+#: lib/gara_web/live/room_live.ex:307
+msgid "File too big"
+msgstr "文件太大"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:80
+msgid "Click to select a picture or a file"
+msgstr "请点击选择你的图片或文件"
+
+#, elixir-format
+#: lib/gara_web/live/header.sface:66
+msgid "Markdown syntax supported"
+msgstr "支持Markdown语法"

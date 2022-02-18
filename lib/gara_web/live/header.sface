@@ -62,7 +62,8 @@
     {#if @mode == :text}
     <Form for={:message} submit={@message}>
 	<Field name="text" class="input-box">
-	    <TextArea class="compose" opts={autofocus: true}/>
+	    <TextArea class="compose"
+		      opts={autofocus: true, placeholder: gettext("Markdown syntax supported") }/>
 	</Field>
 	<div class="toolbar">
 	    <input class={"button", disabled: @uploading}
@@ -74,19 +75,22 @@
     {#elseif @mode == :image}
     <div class="image-container">
 	<div id="image-box" class="input-box">
-	    <label id="image-notice" class="image-notice" for="image-attach">
-		{#if !attached(@attachment)}
-		{gettext("Click to select a picture or file")}
-		{#else}
-		{#case attachment_type(@attachment)}
-		{#match :image}
-		<img alt="preview" src={@preview_url}>
-		{#match :file}
-		<a class="attachment" download={attachment_name(@attachment)}
-		   href={@preview_url}>{attachment_name(@attachment)}</a>
-		{/case}
-		{/if}
+	    {#if !attached(@attachment)}
+	    <label id="image-notice" for="image-attach">
+		{gettext("Click to select a picture or a file")}
 	    </label>
+	    {#elseif @uploading}
+	    <div class="progress"
+		 style={"width:#{percentage(@attachment)}%"}/>
+	    {#else}
+	    {#case attachment_type(@attachment)}
+	    {#match :image}
+	    <img alt="preview" src={@preview_url}>
+	    {#match :file}
+	    <a class="attachment notice" download={attachment_name(@attachment)}
+	       href={@preview_url}>{attachment_name(@attachment)}</a>
+	    {/case}
+	    {/if}
 	    <FileInput name="image-attach" id="image-attach"
 		       opts={"phx-hook": "ImageAttach"}/>
 	</div>

@@ -41,4 +41,7 @@ defmodule GaraWeb.Header do
   defp attachment_type(_), do: :file
 
   defp attachment_name({_, name, _, _}), do: name
+
+  defp percentage({size, _, offset, _}) when size > 0, do: floor(offset / size * 100)
+  defp percentage(_), do: 100
 end

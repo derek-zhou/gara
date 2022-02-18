@@ -191,12 +191,18 @@ button[disabled] {
 	    .image-container {
 		@apply flex flex-col;
 		.input-box {
-		    @apply mb-2 w-full h-24 text-black;
-		    .image-notice {
-			@apply flex flex-col bg-gray-200 place-content-center text-center w-full h-full;
-			img {
-			    @apply w-auto h-auto max-w-full max-h-full object-scale-down;
-			}
+		    @apply mb-2 w-full h-24 text-black flex flex-col place-content-center bg-gray-200;
+		    .progress {
+			@apply bg-indigo-700 h-full;
+		    }
+		    img {
+			@apply w-auto h-auto max-w-full max-h-full object-scale-down;
+		    }
+		    label {
+			@apply h-full flex flex-col place-content-center text-center;
+		    }
+		    .notice {
+			@apply flex place-content-center;
 		    }
 		    input[type=file] {
 			@apply hidden;
