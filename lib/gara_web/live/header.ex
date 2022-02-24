@@ -44,4 +44,21 @@ defmodule GaraWeb.Header do
 
   defp percentage({size, _, offset, _}) when size > 0, do: floor(offset / size * 100)
   defp percentage(_), do: 100
+
+  defp is_url(str) do
+    case URI.parse(str) do
+      %URI{scheme: "https"} -> true
+      %URI{scheme: "http"} -> true
+      _ -> false
+    end
+  end
+
+  defp abbrev(url) do
+    case URI.parse(url) do
+      %URI{host: host, path: nil} -> host
+      %URI{host: host, path: ""} -> host
+      %URI{host: host, path: "/"} -> host
+      %URI{host: _host, path: path} -> path
+    end
+  end
 end

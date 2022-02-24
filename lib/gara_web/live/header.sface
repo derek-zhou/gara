@@ -6,7 +6,13 @@
 </div>
 {#else}
 <div class="header">
-    <span class="topic" :on-click={@click_else}>{@stat.topic}</span>
+    <span class="topic">
+	{#if is_url(@stat.topic)}
+	<a href={@stat.topic}>{abbrev(@stat.topic)}</a>
+	{#else}
+	{@stat.topic}
+	{/if}
+    </span>
     <div class="spacer" :on-click={@click_else}></div>
     <div class="stamina-box" :on-click={@click_else}>
 	<div class="stamina"
@@ -19,9 +25,16 @@
 </div>
 <div hidden={!@show_info}>
     <div class="panel">
-	<h3>
-	    {gettext("The topic is: ")}<i>{@stat.topic}</i>
-	</h3>
+	<h4>
+	    {gettext("The topic is: ")}
+	    <i>
+		{#if is_url(@stat.topic)}
+		<a href={@stat.topic}>{@stat.topic}</a>
+		{#else}
+		{@stat.topic}
+		{/if}
+	    </i>
+	</h4>
 	<h4>
 	    {gettext("The room's code is: ")}<i>{@name}</i>.
 	</h4>

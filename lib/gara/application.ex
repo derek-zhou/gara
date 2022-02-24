@@ -15,6 +15,8 @@ defmodule Gara.Application do
       {Phoenix.PubSub, name: Gara.PubSub},
       # start the registry for chatrooms
       {Registry, keys: :unique, name: Gara.Rooms},
+      # start the registry for chatrooms
+      {Registry, keys: :unique, name: Gara.RoomsByPublicTopic},
       # start the supervisor for chatrooms
       {DynamicSupervisor,
        strategy: :one_for_one,

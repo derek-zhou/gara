@@ -3,7 +3,7 @@ defmodule Gara.Room do
 
   require Logger
   use GenServer, restart: :transient
-  alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms}
+  alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
 
   defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0, img_id: 0]
 
@@ -17,8 +17,9 @@ defmodule Gara.Room do
            RoomSupervisor,
            {__MODULE__, %{name: name, topic: topic}}
          ) do
-      {:error, _} -> nil
       {:ok, _} -> name
+      :ignore -> :ignore
+      {:error, _} -> nil
     end
   end
 
@@ -88,6 +89,19 @@ defmodule Gara.Room do
 
   @impl true
   def init({name, topic}) do
+    case is_public_topic(topic) do
+      true ->
+        case Registry.register(RoomsByPublicTopic, topic, name) do
+          {:ok, _} -> init_inner(name, topic)
+          {:error, {:already_registered, _pid}} -> :ignore
+        end
+
+      false ->
+        init_inner(name, topic)
+    end
+  end
+
+  defp init_inner(name, topic) do
     Process.flag(:trap_exit, true)
     Process.flag(:max_heap_size, 100_000)
     Process.send_after(self(), :tick, @tick_interval)
@@ -100,6 +114,14 @@ defmodule Gara.Room do
       :ok,
       %__MODULE__{name: name, topic: topic, since: NaiveDateTime.utc_now(), roster: %Roster{}}
     }
+  end
+
+  defp is_public_topic(topic) do
+    case URI.parse(topic) do
+      %URI{scheme: "https"} -> true
+      %URI{scheme: "http"} -> true
+      _ -> false
+    end
   end
 
   @impl true

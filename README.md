@@ -22,6 +22,26 @@ The first type of chatrooms have questionable practice on user privacy, and the 
 
 A typical usage is like this: You are in a social chatroom with many people, and you want to discuss something sensitive or only interesting to a smaller group of people. So you grab a room from Gara and post the link to the room. The people can opt-in to the smaller and safer chatroom by clicking the link. If one is done with it just leave the room. After the last one left, the room would be destroyed with all chat transcript lost.
 
+## Private chatrooms
+
+The topic string that you give does not need to be unique. Each time someone types a string, a new chatroom is generated. The only way to get in the same room is to get the link from someone already in the room. This way, the room is private to the party. The link to the room must be passed through some back channel that is outside Gara.
+
+## Public chatrooms
+
+It is also possible to make a public chatroom tied to one specific URL. Gara will detect if the topic string looks like an URL. If it does, then whoever type the exactly same URL later will join the same room. This way, there is no need to pass another URL through a back channel.
+
+Gara will infer the URL if you click a link to the homepage of Gara from a web page, by looking the [referer header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer). Each unique URL in the world would get a dedicated chatroom with just a plain link. Isn't it neat?
+
+One thing to keep in mind is you have to make sure the referer header is intact. In Firefox 87+ the default of referrer policy is very strict, it will strip off path and query string when crossing origins. So you may want to add the proper `referrerpolicy` attribute in the link, so visitors would not get lumped in one busy chatroom:
+
+``` html
+<a href="https://gara.fly.dev/" referrerpolicy="no-referrer-when-downgrade">Join the chat!</a>
+```
+
+Try it here: [Join the chat in Gara!](https://gara.fly.dev/)
+
+Any public chatroom will be destroyed and recreated according to the same policy of a private chat room; we don't persist any data in the server-side.
+
 ## Security considerations
 
 The room link is randomly generated and is both unguessable and undiscoverable. The only way to get in is through someone giving you the link. So there should not be any intruders.
