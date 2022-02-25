@@ -8,9 +8,18 @@ defmodule GaraWeb.PageController do
   def index(conn, _params) do
     case get_req_header(conn, "referer") do
       [url | _] when url != "" ->
-        case Registry.lookup(RoomsByPublicTopic, url) do
-          [] -> local_index(conn)
-          [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+        case Room.new_room(url) do
+          nil ->
+            local_index(conn)
+
+          :ignore ->
+            case Registry.lookup(RoomsByPublicTopic, url) do
+              [] -> local_index(conn)
+              [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+            end
+
+          name ->
+            redirect(conn, to: Routes.room_path(conn, :chat, name))
         end
 
       _ ->
