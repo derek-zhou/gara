@@ -85,6 +85,11 @@ Hooks.Main = {
 	    }
 	});
 	this.handleEvent("leave", () => {
+	    let room = get_room();
+	    if (room) {
+		let key = "gara_token_" + room;
+		localStorage.removeItem(key);
+	    }
 	    window.removeEventListener("phx:page-loading-start", show_progress_bar);
 	    liveSocket.disconnect();
 	});

@@ -7,7 +7,23 @@ defmodule GaraWeb.PageController do
 
   def index(conn, _params) do
     case get_req_header(conn, "referer") do
-      [url | _] when url != "" ->
+      [url | _] -> referrer_index(conn, url)
+      _ -> local_index(conn)
+    end
+  end
+
+  defp referrer_index(conn, url) do
+    cond do
+      url == "" ->
+        local_index(conn)
+
+      String.starts_with?(url, "/") ->
+        local_index(conn)
+
+      String.starts_with?(url, Routes.page_url(conn, :index)) ->
+        local_index(conn)
+
+      true ->
         case Room.new_room(url) do
           nil ->
             local_index(conn)
@@ -21,9 +37,6 @@ defmodule GaraWeb.PageController do
           name ->
             redirect(conn, to: Routes.room_path(conn, :chat, name))
         end
-
-      _ ->
-        local_index(conn)
     end
   end
 

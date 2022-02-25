@@ -1,11 +1,10 @@
-{#if @room_status == :unknown}
-<div class="hero">
-    <Link class="button" to={Routes.page_path(Endpoint, :index)}>
+<div class="hero" :if={@room_status == :unknown || @room_status == :hangup}>
+    <Link class="button" to={Routes.page_path(Endpoint, :index)}
+	  opts={referrerpolicy: "no-referrer"}>
         {gettext("Back to the lobby")}
     </Link>
 </div>
-{#else}
-<div class="header">
+<div class="header" :if={@room_status != :unknown}>
     <span class="topic">
 	{#if is_url(@stat.topic)}
 	<a href={@stat.topic}>{abbrev(@stat.topic)}</a>
@@ -23,7 +22,7 @@
 	    disabled={@room_status != :joined}>
 	{@nick}</button>
 </div>
-<div hidden={!@show_info}>
+<div hidden={!@show_info} :if={@room_status != :unknown}>
     <div class="panel">
 	<h4>
 	    {gettext("The topic is: ")}
@@ -61,7 +60,7 @@
 	</Form>
     </div>
 </div>
-<div class="roster-panel" hidden={@room_status != :joined || @show_info}>
+<div class="roster-panel" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
     <span>
 	<i>{length(@participants)}</i> {gettext("people are here: ")}
     </span>
@@ -71,9 +70,8 @@
 	{/for}
     </ul>
 </div>
-<div class="write" hidden={@room_status != :joined || @show_info}>
-    {#if @mode == :text}
-    <Form for={:message} submit={@message}>
+<div class="write" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
+    <Form for={:message} submit={@message} :if={@mode == :text}>
 	<Field name="text" class="input-box">
 	    <TextArea class="compose"
 		      opts={autofocus: true, placeholder: gettext("Markdown syntax supported") }/>
@@ -85,8 +83,7 @@
 		    type="button" :on-click={@click_toggle}>{gettext("image/file")}</button>
 	</div>
     </Form>
-    {#elseif @mode == :image}
-    <div class="image-container">
+    <div class="image-container" :if={@mode == :image}>
 	<div id="image-box" class="input-box">
 	    {#if !attached(@attachment)}
 	    <label id="image-notice" for="image-attach">
@@ -114,6 +111,4 @@
 		    type="button" :on-click={@click_toggle}>{gettext("text")}</button>
 	</div>
     </div>
-    {/if}
 </div>
-{/if}
