@@ -172,6 +172,9 @@ button[disabled] {
 	    hr {
 		@apply border-t-2 border-gray-400;
 	    }
+	    .code {
+		@apply font-mono;
+	    }
 	}
 	.wrapper {
 	    .panel {

@@ -35,7 +35,7 @@
 	    </i>
 	</h4>
 	<h4>
-	    {gettext("The room's code is: ")}<i>{@name}</i>.
+	    {gettext("The room's code is: ")}<span class="code">{@name}</span>.
 	</h4>
 	<h4>
 	    {gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
