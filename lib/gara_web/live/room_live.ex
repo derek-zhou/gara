@@ -73,18 +73,19 @@ defmodule GaraWeb.RoomLive do
                   |> put_flash(:error, gettext("No space in room"))
                   |> push_event("leave", %{})
 
-                {^old_id, nick, participants, messages} ->
+                {^old_id, nick, participants, messages, idle_percentage} ->
                   socket
                   |> assign(
                     uid: old_id,
                     nick: nick,
                     room_status: :joined,
                     participants: participants,
-                    messages: messages
+                    messages: messages,
+                    idle_percentage: idle_percentage
                   )
                   |> put_flash(:info, gettext("Welcome back, ") <> nick)
 
-                {id, nick, participants, messages} ->
+                {id, nick, participants, messages, idle_percentage} ->
                   {:ok, token} = Guardian.build_token(id, room_name)
 
                   socket
@@ -93,7 +94,8 @@ defmodule GaraWeb.RoomLive do
                     nick: nick,
                     room_status: :joined,
                     participants: participants,
-                    messages: messages
+                    messages: messages,
+                    idle_percentage: idle_percentage
                   )
                   |> push_event("set_token", %{token: token})
                   |> put_flash(
@@ -123,8 +125,8 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_info({:tick, idle_counter, idle_limit}, socket) do
-    {:noreply, assign(socket, idle_percentage: Float.floor(idle_counter / idle_limit * 100))}
+  def handle_info({:tick, idle_percentage}, socket) do
+    {:noreply, assign(socket, idle_percentage: idle_percentage)}
   end
 
   def handle_info({:DOWN, _, _, _, _}, socket) do

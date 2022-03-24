@@ -24,7 +24,8 @@ config :gara, GaraWeb.Endpoint,
 
 config :gara,
   room_capacity: 3,
-  idle_limit: 3,
+  idle_limit: 5,
+  init_idle: 4,
   max_rooms: 3,
   max_history: 10
 

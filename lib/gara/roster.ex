@@ -46,6 +46,8 @@ defmodule Gara.Roster do
   Join the roster. return the {new_id, new_roster}, or {:error, reason}
   """
   def join(%__MODULE__{next_id: id, name_map: names, info_map: infos} = roster, pid) do
+    idle_counter = Defaults.default(:init_idle)
+
     cond do
       map_size(infos) >= Defaults.default(:room_capacity) ->
         {:error, :system_limit}
@@ -58,7 +60,7 @@ defmodule Gara.Roster do
            roster
            | next_id: id + 1,
              name_map: Map.put_new(names, id, nick),
-             info_map: Map.put_new(infos, id, {pid, 0})
+             info_map: Map.put_new(infos, id, {pid, idle_counter})
          }}
     end
   end
@@ -125,8 +127,9 @@ defmodule Gara.Roster do
             []
 
           true ->
-            send(pid, {:tick, idle_counter + 1, idle_limit})
-            [{id, {pid, idle_counter + 1}}]
+            idle_counter = idle_counter + 1
+            send(pid, {:tick, Float.floor(idle_counter / idle_limit * 100)})
+            [{id, {pid, idle_counter}}]
         end
       end)
 
@@ -145,6 +148,18 @@ defmodule Gara.Roster do
   """
   def participants(%__MODULE__{info_map: infos, name_map: names}) do
     Enum.map(infos, fn {id, _} -> names[id] end)
+  end
+
+  @doc """
+  return the idle_percentage of this id
+  """
+  def idle_percentage(%__MODULE__{info_map: infos}, id) do
+    idle_limit = Defaults.default(:idle_limit)
+
+    case Map.get(infos, id) do
+      nil -> 0
+      {_pid, idle_counter} -> Float.floor(idle_counter / idle_limit * 100)
+    end
   end
 
   defp gen_new_nick(list) do

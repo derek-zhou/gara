@@ -272,6 +272,7 @@ defmodule Gara.Room do
         participants = Roster.participants(roster)
         # to avoid unbounded messages
         messages = Enum.take(messages, Defaults.default(:max_history))
+        idle_percentage = Roster.idle_percentage(roster, id)
 
         history =
           Enum.map(messages, fn {mid, time, id, msg} ->
@@ -283,7 +284,7 @@ defmodule Gara.Room do
 
         {
           :reply,
-          {id, nick, participants, history},
+          {id, nick, participants, history, idle_percentage},
           %{state | roster: roster, messages: messages, msg_id: msg_id + 1}
         }
     end
