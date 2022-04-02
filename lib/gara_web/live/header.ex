@@ -8,7 +8,7 @@ defmodule GaraWeb.Header do
 
   prop tz_offset, :integer, default: 0
   prop name, :string, required: true
-  prop stat, :map, required: true
+  prop stat, :any, required: true
   prop room_status, :atom, default: :unknown
   prop mode, :atom, default: :text
   prop show_info, :boolean, default: false

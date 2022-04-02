@@ -14,7 +14,7 @@ defmodule GaraWeb.RoomLive do
   # states
   data room_name, :string, default: ""
   data room_pid, :pid, default: nil
-  data room_stat, :map, default: nil
+  data room_stat, :any, default: nil
   data participants, :list, default: []
   # :unkoown, :existed, :joined or :hangup
   data room_status, :atom, default: :unknown
