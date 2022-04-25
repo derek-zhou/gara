@@ -13,9 +13,6 @@ a {
 a:focus, a:hover {
     @apply text-gray-600;
 }
-span {
-    @apply whitespace-nowrap;
-}
 @screen md {
     body {
         @apply mx-0;
