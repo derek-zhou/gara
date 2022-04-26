@@ -64,10 +64,11 @@ defmodule GaraWeb.RoomLive do
               values = get_connect_params(socket)
               socket = fetch_tz_offset(socket, values)
               old_id = fetch_token(values, room_name)
+              preferred_nick = fetch_preferred_nick(values)
               fetch_locale(values)
               Process.monitor(pid)
 
-              case Room.join(pid, old_id) do
+              case Room.join(pid, old_id, preferred_nick) do
                 {:error, _} ->
                   socket
                   |> put_flash(:error, gettext("No space in room"))
@@ -84,6 +85,20 @@ defmodule GaraWeb.RoomLive do
                     idle_percentage: idle_percentage
                   )
                   |> put_flash(:info, gettext("Welcome back, ") <> nick)
+
+                {id, ^preferred_nick, participants, messages, idle_percentage} ->
+                  {:ok, token} = Guardian.build_token(id, room_name)
+
+                  socket
+                  |> assign(
+                    uid: id,
+                    nick: preferred_nick,
+                    room_status: :joined,
+                    participants: participants,
+                    messages: messages,
+                    idle_percentage: idle_percentage
+                  )
+                  |> push_event("set_token", %{token: token})
 
                 {id, nick, participants, messages, idle_percentage} ->
                   {:ok, token} = Guardian.build_token(id, room_name)
@@ -210,6 +225,7 @@ defmodule GaraWeb.RoomLive do
           :noreply,
           socket
           |> assign(nick: new_nick, show_info: false, idle_percentage: 0)
+          |> push_event("set_preferred_nick", %{nick: new_nick})
           |> clear_flash()
         }
 
@@ -389,6 +405,9 @@ defmodule GaraWeb.RoomLive do
   end
 
   defp fetch_token(_, _), do: nil
+
+  defp fetch_preferred_nick(%{"preferred_nick" => nick}), do: nick
+  defp fetch_preferred_nick(_), do: nil
 
   defp accept_chunk(
          %Socket{assigns: %{attachment: {size, name, offset, data}}} = socket,

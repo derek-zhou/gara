@@ -45,7 +45,11 @@ defmodule Gara.Roster do
   @doc """
   Join the roster. return the {new_id, new_roster}, or {:error, reason}
   """
-  def join(%__MODULE__{next_id: id, name_map: names, info_map: infos} = roster, pid) do
+  def join(
+        %__MODULE__{next_id: id, name_map: names, info_map: infos} = roster,
+        pid,
+        preferred_nick \\ nil
+      ) do
     idle_counter = Defaults.default(:init_idle)
 
     cond do
@@ -53,7 +57,14 @@ defmodule Gara.Roster do
         {:error, :system_limit}
 
       true ->
-        nick = names |> Map.values() |> gen_new_nick()
+        list = Map.values(names)
+
+        nick =
+          cond do
+            preferred_nick == nil -> gen_new_nick(list)
+            Enum.member?(list, preferred_nick) -> gen_new_nick(list)
+            true -> preferred_nick
+          end
 
         {id,
          %{
@@ -66,12 +77,12 @@ defmodule Gara.Roster do
   end
 
   @doc """
-  Join the roster to replace the id. return the {new_id, new_roster}, or {:error, reason} 
+  Rejoin the roster to replace the id. return the {new_id, new_roster}, or {:error, reason}
   """
-  def join(%__MODULE__{info_map: infos} = roster, pid, id) do
+  def rejoin(%__MODULE__{info_map: infos} = roster, pid, id, preferred_nick \\ nil) do
     case Map.get(infos, id) do
       nil ->
-        join(roster, pid)
+        join(roster, pid, preferred_nick)
 
       {old_pid, _} ->
         send(old_pid, :hangup)

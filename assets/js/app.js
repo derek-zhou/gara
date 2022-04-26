@@ -67,6 +67,9 @@ function local_state() {
 	if (token)
 	    ret["token"] = token;
     }
+    preferred_nick = localStorage.getItem("gara_preferred_nick");
+    if (preferred_nick)
+	ret["preferred_nick"] = preferred_nick;
     return ret;
 }
 
@@ -83,6 +86,9 @@ Hooks.Main = {
 		else
 		    localStorage.removeItem(key);
 	    }
+	});
+	this.handleEvent("set_preferred_nick", ({nick}) => {
+	    localStorage.setItem("gara_preferred_nick", nick);
 	});
 	this.handleEvent("leave", () => {
 	    let room = get_room();

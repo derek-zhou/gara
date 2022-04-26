@@ -69,7 +69,9 @@ defmodule Gara.Room do
   join the room with existing id. Returns {id, nick, participants, history} if successful,
   {:error, reason} if not
   """
-  def join(room, id \\ nil), do: GenServer.call(room, {:join, self(), id})
+  def join(room, id \\ nil, preferred_nick \\ nil) do
+    GenServer.call(room, {:join, self(), id, preferred_nick})
+  end
 
   @doc """
   rename the user. Returns :ok if successful, :error if not
@@ -258,11 +260,11 @@ defmodule Gara.Room do
 
   @impl true
   def handle_call(
-        {:join, pid, id},
+        {:join, pid, id, preferred_nick},
         _from,
         %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
-    case Roster.join(roster, pid, id) do
+    case Roster.rejoin(roster, pid, id, preferred_nick) do
       {:error, reason} ->
         Logger.warn("Room #{name}: room full")
         {:reply, {:error, reason}, state}
