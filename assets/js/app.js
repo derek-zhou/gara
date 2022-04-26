@@ -67,7 +67,7 @@ function local_state() {
 	if (token)
 	    ret["token"] = token;
     }
-    preferred_nick = localStorage.getItem("gara_preferred_nick");
+    let preferred_nick = localStorage.getItem("gara_preferred_nick");
     if (preferred_nick)
 	ret["preferred_nick"] = preferred_nick;
     return ret;

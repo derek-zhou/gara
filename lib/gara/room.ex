@@ -316,10 +316,19 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def handle_call(:stat, _from, %__MODULE__{topic: topic, since: since, roster: roster} = state) do
+  def handle_call(
+        :stat,
+        _from,
+        %__MODULE__{name: name, topic: topic, since: since, roster: roster} = state
+      ) do
     {:reply,
-     %{topic: topic, since: since, people: Roster.fullsize(roster), active: Roster.size(roster)},
-     state}
+     %{
+       name: name,
+       topic: topic,
+       since: since,
+       people: Roster.fullsize(roster),
+       active: Roster.size(roster)
+     }, state}
   end
 
   defp update_messages([], _mid, _msg, _roster), do: []
