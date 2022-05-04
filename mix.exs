@@ -35,7 +35,7 @@ defmodule Gara.MixProject do
     [
       {:guardian, "~> 2.1"},
       {:surface, "~> 0.7.3"},
-      {:earmark, "~> 1.4"},
+      {:md, path: "../md"},
       {:cookie_jar, "~> 1.1"},
       {:httpoison, "~> 1.8"},
       {:phoenix, "~> 1.6.6"},
