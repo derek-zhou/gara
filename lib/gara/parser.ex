@@ -3,6 +3,8 @@ defmodule Gara.Parser do
 
   alias Md.Parser.Syntax.Void
 
+  require Logger
+
   @default_syntax Map.put(Void.syntax(), :settings, Void.settings())
 
   @syntax @default_syntax
@@ -12,7 +14,7 @@ defmodule Gara.Parser do
               {"&", %{text: "&amp;"}}
             ],
             escape: [
-              {"\\", %{}}
+              {<<92>>, %{}}
             ],
             comment: [
               {"<!--", %{closing: "-->"}}
@@ -22,11 +24,14 @@ defmodule Gara.Parser do
               {"  \n", %{tag: :br}},
               {"  \n", %{tag: :br}}
             ],
+            magnet: [
+              {"#", %{transform: &Gara.Parser.hash_tag/2}}
+            ],
             block: [
-              {"```", %{tag: [:pre, :code], mode: :raw, pop: %{code: :class}}}
+              {"```", %{tag: [:pre, :code], pop: %{code: :class}}}
             ],
             shift: [
-              {"    ", %{tag: [:div, :code], attributes: %{class: "pre"}, mode: {:inner, :raw}}}
+              {"    ", %{tag: [:div, :code], attributes: %{class: "pre"}}}
             ],
             pair: [
               {"![",
@@ -66,14 +71,8 @@ defmodule Gara.Parser do
                }}
             ],
             paragraph: [
-              {"#", %{tag: :h1}},
-              {"##", %{tag: :h2}},
-              {"###", %{tag: :h3}},
-              {"####", %{tag: :h4}},
-              {"#####", %{tag: :h5}},
-              {"######", %{tag: :h6}},
               # nested
-              {">", %{tag: :blockquote}}
+              {">", %{tag: [:blockquote, :p]}}
             ],
             list:
               [
@@ -93,4 +92,8 @@ defmodule Gara.Parser do
               {"[^", %{closing: "]", tag: :b, mode: :raw}}
             ]
           })
+
+  def hash_tag(md, text) do
+    {:a, %{href: "#msg_#{text}"}, [md <> text]}
+  end
 end

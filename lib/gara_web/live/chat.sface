@@ -5,6 +5,7 @@
     <div id={"msg_#{msg_id}"}
 	 class={["message", (if from == @nick, do: "self_message", else: "user_message")]}>
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
 	    {gettext("said: ")}
