@@ -229,8 +229,14 @@ defmodule GaraWeb.RoomLive do
           |> clear_flash()
         }
 
-      :error ->
-        {:noreply, put_flash(socket, :error, gettext("The nickname is taken."))}
+      {:error, :eexist} ->
+        {:noreply, put_flash(socket, :error, gettext("The nickname is taken"))}
+
+      {:error, :enodev} ->
+        {:noreply, put_flash(socket, :error, gettext("Room closed already"))}
+
+      {:error, :einval} ->
+        {:noreply, put_flash(socket, :error, gettext("The nickname is invalid"))}
     end
   end
 

@@ -74,7 +74,7 @@ defmodule Gara.Room do
   end
 
   @doc """
-  rename the user. Returns :ok if successful, :error if not
+  rename the user. Returns :ok if successful, {:error, reason} if not
   """
   def rename(room, id, new_nick), do: GenServer.call(room, {:rename, id, new_nick})
 
@@ -299,9 +299,9 @@ defmodule Gara.Room do
         %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
       ) do
     case Roster.rename(roster, id, new_nick) do
-      :error ->
-        Logger.warn("Room #{name}: #{id} rename failed")
-        {:reply, :error, state}
+      {:error, reason} ->
+        Logger.warn("Room #{name}: #{id} rename failed: #{reason}")
+        {:reply, {:error, reason}, state}
 
       {:ok, roster, old_nick} ->
         Logger.info("Room #{name}: #{old_nick}(#{id}) renamed to #{new_nick}")

@@ -20,7 +20,7 @@ defmodule Gara.Parser do
               {"<!--", %{closing: "-->"}}
             ],
             flush: [
-              {"---", %{tag: :hr, rewind: true}},
+              {"---", %{tag: :hr, rewind: :flip_flop}},
               {"  \n", %{tag: :br}},
               {"  \n", %{tag: :br}}
             ],

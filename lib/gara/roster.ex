@@ -63,7 +63,8 @@ defmodule Gara.Roster do
           cond do
             preferred_nick == nil -> gen_new_nick(list)
             Enum.member?(list, preferred_nick) -> gen_new_nick(list)
-            true -> preferred_nick
+            legal_nick?(preferred_nick) -> preferred_nick
+            true -> gen_new_nick(list)
           end
 
         {id,
@@ -103,12 +104,13 @@ defmodule Gara.Roster do
   def rename(%__MODULE__{name_map: names} = roster, id, name) do
     case ping(roster, id) do
       :error ->
-        :error
+        {:error, :enodev}
 
       {:ok, roster} ->
         cond do
           name == names[id] -> {:ok, roster, name}
-          names |> Map.values() |> Enum.member?(name) -> :error
+          names |> Map.values() |> Enum.member?(name) -> {:error, :eexist}
+          !legal_nick?(name) -> {:error, :einval}
           true -> {:ok, %{roster | name_map: %{names | id => name}}, names[id]}
         end
     end
@@ -179,6 +181,15 @@ defmodule Gara.Roster do
     case Enum.member?(list, nick) do
       true -> gen_new_nick(list)
       false -> nick
+    end
+  end
+
+  defp legal_nick?(nick) do
+    cond do
+      nick == "" -> false
+      byte_size(nick) > 24 -> false
+      String.match?(nick, ~r/[[:punct:][:space:][:cntrl:]]+/u) -> false
+      true -> true
     end
   end
 end

@@ -282,6 +282,9 @@ button[disabled] {
 	    .self_message {
 		@apply bg-green-200;
 	    }
+	    .private_message {
+		@apply bg-rose-200;
+	    }
 	    .system_message {
 		@apply bg-gray-200;
 	    }
