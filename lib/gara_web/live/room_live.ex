@@ -158,6 +158,10 @@ defmodule GaraWeb.RoomLive do
     {:noreply, assign(socket, messages: [message])}
   end
 
+  def handle_info({:private_message, _mid, _ts, _nick, _msg} = message, socket) do
+    {:noreply, assign(socket, messages: [message])}
+  end
+
   def handle_info(
         {:leave_message, _mid, _ts, nick} = message,
         %Socket{assigns: %{participants: participants, room_stat: stat}} = socket

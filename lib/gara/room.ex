@@ -41,13 +41,19 @@ defmodule Gara.Room do
   def say(room, id, str) do
     trimmed = String.trim(str)
 
-    is_url =
-      case URI.parse(trimmed) do
-        %URI{scheme: "https", port: 443, userinfo: nil} -> true
-        _ -> false
-      end
+    case URI.parse(trimmed) do
+      %URI{scheme: "https", port: 443, userinfo: nil} ->
+        GenServer.cast(room, {:post, id, trimmed})
 
-    GenServer.cast(room, {:say, id, Message.parse(str), is_url, trimmed})
+      _ ->
+        case Message.parse(str) do
+          {msg, []} ->
+            GenServer.cast(room, {:say, id, msg})
+
+          {msg, recipients} ->
+            GenServer.cast(room, {:whisper, id, msg, recipients})
+        end
+    end
   end
 
   @doc """
@@ -159,7 +165,7 @@ defmodule Gara.Room do
 
   @impl true
   def handle_cast(
-        {:say, id, msg, is_url, text},
+        {:post, id, url},
         %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
     case Roster.ping(roster, id) do
@@ -168,12 +174,54 @@ defmodule Gara.Room do
         {:noreply, state}
 
       {:ok, roster} ->
-        if is_url, do: Message.fetch_preview(text, msg_id)
+        Message.fetch_preview(url, msg_id)
+        nick = Roster.get_name(roster, id)
+        now = NaiveDateTime.utc_now()
+        Roster.broadcast(roster, {:user_message, msg_id, now, nick, url})
+        messages = [{msg_id, now, id, url} | messages]
+        {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+    end
+  end
+
+  @impl true
+  def handle_cast(
+        {:say, id, msg},
+        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
+      ) do
+    case Roster.ping(roster, id) do
+      :error ->
+        Logger.warn("Room #{name}: Spurious user message received from #{id}")
+        {:noreply, state}
+
+      {:ok, roster} ->
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
         messages = [{msg_id, now, id, msg} | messages]
-        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
+        {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+    end
+  end
+
+  @impl true
+  def handle_cast(
+        {:whisper, id, msg, tos},
+        %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
+      ) do
+    case Roster.ping(roster, id) do
+      :error ->
+        Logger.warn("Room #{name}: Spurious user message received from #{id}")
+        {:noreply, state}
+
+      {:ok, roster} ->
+        nick = Roster.get_name(roster, id)
+        now = NaiveDateTime.utc_now()
+
+        tos
+        |> MapSet.new()
+        |> MapSet.put(nick)
+        |> Enum.each(&Roster.unicast(roster, &1, {:private_message, msg_id, now, nick, msg}))
+
+        {:noreply, %{state | msg_id: msg_id + 1}}
     end
   end
 

@@ -14,8 +14,21 @@
 	    {raw(content)}
 	</div>
     </div>
+    {#match {:private_message, msg_id, ts, from, content}}
+    <div id={"msg_#{msg_id}"}
+	 class={["message", "private_message"]}>
+	<div class="meta">
+	    <cite>#{msg_id}</cite>
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    <i>{from}</i>
+	    {gettext("said: ")}
+	</div>
+	<div class="content">
+	    {raw(content)}
+	</div>
+    </div>
     {#match {:leave_message, msg_id, ts, from}}
-    <div id={"message_#{msg_id}"} class="message system_message">
+    <div id={"msg_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
@@ -23,7 +36,7 @@
 	</div>
     </div>
     {#match {:join_message, msg_id, ts, from}}
-    <div id={"message_#{msg_id}"} class="message system_message">
+    <div id={"msg_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
@@ -31,7 +44,7 @@
 	</div>
     </div>
     {#match {:rename_message, msg_id, ts, from, to}}
-    <div id={"message_#{msg_id}"} class="message system_message">
+    <div id={"msg_#{msg_id}"} class="message system_message">
 	<div class="meta">
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>

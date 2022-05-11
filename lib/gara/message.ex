@@ -8,9 +8,14 @@ defmodule Gara.Message do
   require Logger
 
   @doc """
-  parse user input into a message
+  parse user input into a {message, recipients} tuple
   """
-  def parse(str), do: Md.generate(str, Parser, format: :none)
+  def parse(str) do
+    {_, res} = Parser.parse(str)
+    str = XmlBuilder.generate(res.ast, foramt: :none)
+    recipients = res.ast |> find_recipients() |> List.flatten()
+    {str, recipients}
+  end
 
   @doc """
   show a simgle image
@@ -210,4 +215,9 @@ defmodule Gara.Message do
       thumbnail: thumbnail
     )
   end
+
+  defp find_recipients(ast) when is_list(ast), do: Enum.map(ast, &find_recipients/1)
+  defp find_recipients({:span, %{"data-mention": name}, _}), do: name
+  defp find_recipients({_, _, contents}), do: find_recipients(contents)
+  defp find_recipients(_), do: []
 end

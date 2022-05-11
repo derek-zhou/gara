@@ -25,6 +25,7 @@ defmodule Gara.Parser do
               {"  \n", %{tag: :br}}
             ],
             magnet: [
+              {"@", %{transform: &Gara.Parser.mention_tag/2}},
               {"#", %{transform: &Gara.Parser.hash_tag/2}}
             ],
             block: [
@@ -94,6 +95,10 @@ defmodule Gara.Parser do
           })
 
   def hash_tag(md, text) do
-    {:a, %{href: "#msg_#{text}"}, [md <> text]}
+    {:a, %{href: "#msg_#{text}", class: "hash-tag"}, [md <> text]}
+  end
+
+  def mention_tag(md, text) do
+    {:span, %{class: "mention-tag", "data-mention": text}, [md <> text]}
   end
 end

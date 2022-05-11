@@ -274,6 +274,12 @@ button[disabled] {
 		    a.attachment {
 			@apply block py-2 italic text-rose-700;
 		    }
+		    .hash-tag {
+			@apply text-purple-700;
+		    }
+		    .mention-tag {
+			@apply font-bold;
+		    }
 		}
 	    }
 	    .user_message {

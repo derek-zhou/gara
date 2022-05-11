@@ -157,6 +157,18 @@ defmodule Gara.Roster do
   end
 
   @doc """
+  unicast a message to a recipient, return :ok
+  """
+  def unicast(%__MODULE__{name_map: names, info_map: infos}, recipient, msg) do
+    Enum.each(infos, fn {id, {pid, _}} ->
+      case names[id] do
+        ^recipient -> send(pid, msg)
+        _ -> :ok
+      end
+    end)
+  end
+
+  @doc """
   Return all active nicks on the roster
   """
   def participants(%__MODULE__{info_map: infos, name_map: names}) do

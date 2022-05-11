@@ -18,9 +18,19 @@ The first type of chatrooms have questionable practice on user privacy, and the 
 * There is no login, everyone can hop on
 * Each room is defined by a unique link to be shared
 * Nothing is persisted anywhere, there is no database or third party service behind
-* A reduced subset of the markdown syntax is supported, so the messages can have nice format
+* A reduced subset of the markdown syntax is supported, so the messages can have a nice format
 
-A typical usage is like this: You are in a social chatroom with many people, and you want to discuss something sensitive or only interesting to a smaller group of people. So you grab a room from Gara and post the link to the room. The people can opt-in to the smaller and safer chatroom by clicking the link. If one is done with it just leave the room. After the last one left, the room would be destroyed with all chat transcript lost.
+A typical use case is like this: You are in a social chatroom with many people, and you want to discuss something sensitive or only interesting to a smaller group of people. So you grab a room from Gara and post the link to the room. The people can opt-in to the smaller and safer chatroom by clicking the link. If one is done with it just leave the room. After the last one left, the room would be destroyed with all chat transcript lost.
+
+## Message formating
+
+Messages in Gara are formated with a simplified Markdown syntax. All simple formating control like bold, italic, strikethrough, etc. are supported. Hyperlinks and inline messages are also supported. Headings and tables are not supported. There are also a few extensions:
+
+A sole URL would be expanded into a Open Graph link preview if possible. URLs as part of a messages are not expanded, nor would they be turned into a hyperlink. Please use Markdown's hyperlink syntax instead.
+
+`#number` would be turned into a link to the numberred message in this chatroom. There should be be space in between the `#` and the number. There should be a space after the number.
+
+`@nickname` would be highlighted, and the message would be turned into a private message that only the mentioned parties would receive. A private message can have multiple recipients. The server will not even keep a copy of a private message in the memory; so if the connection is dropped the private message would disapear.
 
 ## Private chatrooms
 
@@ -46,15 +56,15 @@ Any public chatroom will be destroyed and recreated according to the same policy
 
 The room link is randomly generated and is both unguessable and undiscoverable. The only way to get in is through someone giving you the link. So there should not be any intruders.
 
-Users give no identity to the server. Like in a unregistered IRC, anyone can assume any nickname. Supposedly, the room link is only shared to people more or less know each other and have some level of faith to each other. Natually, people would not pretend to be someone else. And even if they did, it is very hard to esteblish credibility.
+Users give no identity to the server. Like in a unregistered IRC, anyone can assume any nickname. Supposedly, the room link is only shared to people more or less know each other and have some level of faith to each other. Natually, people would not pretend to be someone else. And even if they did, it is very hard to establish credibility.
 
-The only way to see the messages is through each participants' window. After the chat session ended, whatever left on the browser window is the only record one could have. Being quoted out of context is of very limited dager here.
+The only way to see the messages is through each participant's window. After the chat session ended, whatever left on the browser window is the only record one could have. The server does not keep any record. You could still get quoted out of context if someone took a screenshot though.
 
 Although there is no end-to-end encryption, the connection between the user and the server is protected by SSL. The messages are only kept in memory, not persisted anywhere, so a leak is very unlikely. It is possible that someone can operate a rougue server that steal your chat messages though. So, if you have concerns you should only use a Gara server operated by someone you trust.
 
 ## Test instance
 
-I encourage anyone technocally capable to operate their own Gara server. Gara is a standard [Phoenix Liveview](https://www.phoenixframework.org/) application that can be deployed anywhere. Even better, it does not need a database and has no persisted data. There is a couple of Dockerfile in the source repository to faciliate deplyment. I have a deployment on [fly.io](https://fly.io) here: [gara.fly.dev](https://gara.fly.dev), and everyone is welcome to try. Please note this server will be taken offline from time to time, and it is on the free tier of fly.io, so it have a limited capacity.
+I encourage anyone technocally capable to operate their own Gara server. Gara is a standard [Phoenix Liveview](https://www.phoenixframework.org/) application that can be deployed anywhere. Even better, it does not need a database and has no persisted data. There is a couple of Dockerfiles in the source repository to faciliate deplyment. I have a deployment on [fly.io](https://fly.io) here: [gara.fly.dev](https://gara.fly.dev), and everyone is welcome to try. Please note this server will be taken offline from time to time, and it is on the free tier of fly.io, so it have a limited capacity.
 
 To start your Phoenix server:
 
@@ -66,4 +76,4 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 If you want to deploy to fly.io like me, you should read fly.io's document [here](https://fly.io/docs/getting-started/elixir/) and familiar yourself with the process. In addition to the `SECRET_KEY_BASE` mentioned in the doc, Gara needs anther secret: `GUARDIAN_KEY` which is generated with: `mix guardian.gen.secret`. There is no database so you can skip over anything regarding database setup. 
 
-Get a room when there is one and enjoy your private chat! If you have any suggestion, feel free to file an issue or send me a PR here.
+Get a room when there is still one left and enjoy your private chat! If you have any suggestion, feel free to file an issue or send me a PR here.
