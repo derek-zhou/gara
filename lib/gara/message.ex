@@ -12,7 +12,7 @@ defmodule Gara.Message do
   """
   def parse(str) do
     {_, res} = Parser.parse(str)
-    str = XmlBuilder.generate(res.ast, foramt: :none)
+    str = XmlBuilder.generate(res.ast, format: :none)
     recipients = res.ast |> find_recipients() |> List.flatten()
     {str, recipients}
   end
