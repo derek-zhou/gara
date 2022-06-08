@@ -179,7 +179,7 @@ defmodule Gara.Room do
         now = NaiveDateTime.utc_now()
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, url})
         messages = [{msg_id, now, id, url} | messages]
-        {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
     end
   end
 
@@ -198,7 +198,7 @@ defmodule Gara.Room do
         now = NaiveDateTime.utc_now()
         Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
         messages = [{msg_id, now, id, msg} | messages]
-        {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
     end
   end
 
@@ -221,7 +221,7 @@ defmodule Gara.Room do
         |> MapSet.put(nick)
         |> Enum.each(&Roster.unicast(roster, &1, {:private_message, msg_id, now, nick, msg}))
 
-        {:noreply, %{state | msg_id: msg_id + 1}}
+        {:noreply, %{state | roster: roster, msg_id: msg_id + 1}}
     end
   end
 
