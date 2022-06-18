@@ -5,6 +5,8 @@ defmodule GaraWeb.PageController do
 
   plug :no_layout
 
+  def index(conn, %{"url" => url}), do: referrer_index(conn, url)
+
   def index(conn, _params) do
     case get_req_header(conn, "referer") do
       [url | _] -> referrer_index(conn, url)
