@@ -45,6 +45,9 @@ defmodule Gara.Room do
       %URI{scheme: "https", port: 443, userinfo: nil} ->
         GenServer.cast(room, {:post, id, trimmed})
 
+      %URI{scheme: "http", port: 80, userinfo: nil} ->
+        GenServer.cast(room, {:post, id, trimmed})
+
       _ ->
         case Message.parse(str) do
           {msg, []} ->
@@ -177,7 +180,8 @@ defmodule Gara.Room do
         Message.fetch_preview(url, msg_id)
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
-        Roster.broadcast(roster, {:user_message, msg_id, now, nick, url})
+        msg = "<a href=\"#{url}\">#{url}</a>"
+        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
         messages = [{msg_id, now, id, url} | messages]
         {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
     end
