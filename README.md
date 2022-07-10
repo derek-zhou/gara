@@ -28,7 +28,7 @@ Messages in Gara are formated with a simplified Markdown syntax. All simple form
 
 A sole URL would be expanded into a Open Graph link preview if possible. URLs as part of a messages are not expanded, nor would they be turned into a hyperlink. Please use Markdown's hyperlink syntax instead.
 
-`#number` would be turned into a link to the numberred message in this chatroom. There should be be space in between the `#` and the number. There should be a space after the number.
+`#number` would be turned into a link to the numberred message in this chatroom. There should _not_ be any space in between the `#` and the number. There should be a space after the number.
 
 `@nickname` would be highlighted, and the message would be turned into a private message that only the mentioned parties would receive. A private message can have multiple recipients. The server will not even keep a copy of a private message in the memory; so if the connection is dropped the private message would disapear.
 
@@ -38,7 +38,7 @@ The topic string that you give does not need to be unique. Each time someone typ
 
 ## Public chatrooms
 
-It is also possible to make a public chatroom tied to one specific URL. Gara will detect if the topic string looks like an URL. If it does, then whoever type the exactly same URL later will join the same room. This way, there is no need to pass another URL through a back channel.
+It is also possible to make a public chatroom tied to one specific URL. Gara will detect if the topic string looks like an URL (any thing start with `https://`, doesn't need to be a real URL). If it does, then whoever type the exactly same URL later will join the same room. This way, there is no need to pass another URL through a back channel.
 
 Gara will infer the URL if you click a link to the homepage of Gara from a web page, by looking the [referer header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer). Each unique URL in the world would get a dedicated chatroom with just a plain link. Isn't it neat?
 
@@ -56,7 +56,7 @@ Any public chatroom will be destroyed and recreated according to the same policy
 
 The room link is randomly generated and is both unguessable and undiscoverable. The only way to get in is through someone giving you the link. So there should not be any intruders.
 
-Users give no identity to the server. Like in a unregistered IRC, anyone can assume any nickname. Supposedly, the room link is only shared to people more or less know each other and have some level of faith to each other. Natually, people would not pretend to be someone else. And even if they did, it is very hard to establish credibility.
+Users give no identity to the server. Like in a unregistered IRC, anyone can assume any nickname. Supposedly, the room link is only shared to people more or less know each other and have some level of trust to each other. Natually, people would not pretend to be someone else. And even if they did, it is very hard to establish credibility.
 
 The only way to see the messages is through each participant's window. After the chat session ended, whatever left on the browser window is the only record one could have. The server does not keep any record. You could still get quoted out of context if someone took a screenshot though.
 
