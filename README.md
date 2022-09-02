@@ -50,7 +50,9 @@ One thing to keep in mind is you have to make sure the referer header is intact.
 
 Try it here: [Join the chat in Gara!](https://gara.fly.dev/)
 
-Any public chatroom will be destroyed and recreated according to the same policy of a private chat room; we don't persist any data in the server-side.
+If you use any path that is not used by the application itself, then it is also a public chatroom by the same name. So, a link to `https://gara.fly.dev/i/love/you/` is a public chatroom too.
+
+Any public chatroom will be destroyed and recreated according to the same policy of a private chat room; we don't persist any data in the server-side. Also, a public chatroom can be more easily found out by trial and error, so be aware of the risk.
 
 ## Security considerations
 

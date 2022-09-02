@@ -14,31 +14,32 @@ defmodule GaraWeb.PageController do
     end
   end
 
+  def catch_all(conn, _params) do
+    new_room(conn, "https://" <> conn.host <> conn.request_path)
+  end
+
+  defp new_room(conn, topic) do
+    case Room.new_room(topic) do
+      nil ->
+        local_index(conn)
+
+      :ignore ->
+        case Registry.lookup(RoomsByPublicTopic, topic) do
+          [] -> local_index(conn)
+          [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+        end
+
+      name ->
+        redirect(conn, to: Routes.room_path(conn, :chat, name))
+    end
+  end
+
   defp referrer_index(conn, url) do
     cond do
-      url == "" ->
-        local_index(conn)
-
-      String.starts_with?(url, "/") ->
-        local_index(conn)
-
-      String.starts_with?(url, Routes.page_url(conn, :index)) ->
-        local_index(conn)
-
-      true ->
-        case Room.new_room(url) do
-          nil ->
-            local_index(conn)
-
-          :ignore ->
-            case Registry.lookup(RoomsByPublicTopic, url) do
-              [] -> local_index(conn)
-              [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
-            end
-
-          name ->
-            redirect(conn, to: Routes.room_path(conn, :chat, name))
-        end
+      url == "" -> local_index(conn)
+      String.starts_with?(url, "/") -> local_index(conn)
+      String.starts_with?(url, Routes.page_url(conn, :index)) -> local_index(conn)
+      true -> new_room(conn, url)
     end
   end
 
@@ -58,23 +59,8 @@ defmodule GaraWeb.PageController do
     trimmed = String.trim(topic)
 
     case Registry.lookup(Rooms, trimmed) do
-      [] ->
-        case Room.new_room(trimmed) do
-          nil ->
-            redirect(conn, to: Routes.page_path(conn, :index))
-
-          :ignore ->
-            case Registry.lookup(RoomsByPublicTopic, trimmed) do
-              [] -> redirect(conn, to: Routes.page_path(conn, :index))
-              [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
-            end
-
-          name ->
-            redirect(conn, to: Routes.room_path(conn, :chat, name))
-        end
-
-      _ ->
-        redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
+      [] -> new_room(conn, trimmed)
+      _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
     end
   end
 

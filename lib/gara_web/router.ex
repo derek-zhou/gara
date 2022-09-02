@@ -12,6 +12,13 @@ defmodule GaraWeb.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", GaraWeb do
+    pipe_through [:api]
+
+    get "/stat", ApiController, :stat
+    get "/stat/:name", ApiController, :stat
+  end
+
   scope "/", GaraWeb do
     pipe_through :browser
 
@@ -19,12 +26,8 @@ defmodule GaraWeb.Router do
     post "/create", PageController, :create
     live "/room/:name", RoomLive, :chat
     live_dashboard "/dashboard", metrics: GaraWeb.Telemetry
-  end
 
-  scope "/api", GaraWeb do
-    pipe_through [:api]
-
-    get "/stat", ApiController, :stat
-    get "/stat/:name", ApiController, :stat
+    # the catch all route has to be the last
+    get "/*path", PageController, :catch_all
   end
 end
