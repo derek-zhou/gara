@@ -7,7 +7,6 @@ defmodule Gara.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -33,7 +32,7 @@ defmodule Gara.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:guardian, "~> 2.1"},
+      {:guardian, "~> 2.2.4"},
       {:surface, "~> 0.7.3"},
       {:md, "~> 0.7.6"},
       {:string_naming, "~> 0.7.3"},
