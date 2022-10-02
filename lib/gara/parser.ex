@@ -22,7 +22,9 @@ defmodule Gara.Parser do
             flush: [
               {"---", %{tag: :hr, rewind: :flip_flop}},
               {"  \n", %{tag: :br}},
-              {"  \n", %{tag: :br}}
+              {"  \n", %{tag: :br}},
+              {"  \r\n", %{tag: :br}},
+              {"  \r\n", %{tag: :br}}
             ],
             magnet: [
               {"@", %{transform: &Gara.Parser.mention_tag/2}},
