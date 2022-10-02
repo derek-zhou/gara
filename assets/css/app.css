@@ -173,10 +173,8 @@ button[disabled] {
 		@apply font-mono;
 	    }
 	}
-	.wrapper {
-	    .panel {
-		@apply hidden;
-	    }
+	.panel[hidden] {
+	    @apply hidden;
 	}
 	.write {
 	    form {
