@@ -55,13 +55,14 @@ config :gara,
 
 # Watch static and templates for browser reloading.
 config :gara, GaraWeb.Endpoint,
+  reloadable_compilers: [:phoenix, :elixir, :surface],
   live_reload: [
     patterns: [
       ~r"priv/static/.*(js|css)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/gara_web/(live|views)/.*(ex)$",
       ~r"lib/gara_web/templates/.*(eex)$",
-      ~r"lib/gara_web/live/.*(sface)$"
+      ~r"lib/gara_web/(live|components)/.*(ex|js|sface)$"
     ]
   ]
 

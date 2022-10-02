@@ -84,7 +84,7 @@
 	</div>
     </Form>
     <div class="image-container" :if={@mode == :image}>
-	<div id="image-box" class="input-box">
+	<div id="image-box" class="input-box" :hook>
 	    {#if !attached(@attachment)}
 	    <label id="image-notice" for="image-attach">
 		{gettext("Click to select a picture or a file")}
@@ -101,8 +101,7 @@
 	       href={@preview_url}>{attachment_name(@attachment)}</a>
 	    {/case}
 	    {/if}
-	    <FileInput name="image-attach" id="image-attach"
-		       opts={"phx-hook": "ImageAttach"}/>
+	    <FileInput name="image-attach" id="image-attach" />
 	</div>
 	<div class="toolbar">
 	    <button class={"button", disabled: @uploading}
