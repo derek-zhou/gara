@@ -138,8 +138,8 @@ button[disabled] {
             .button {
 		@apply flex-none cursor-pointer text-white bg-purple-600;
             }
-            .button-danger {
-		@apply bg-red-600;
+            .button-other {
+		@apply bg-gray-600;
             }
 	}
 	.roster-panel {

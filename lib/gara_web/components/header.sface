@@ -77,35 +77,57 @@
 	<div class="toolbar">
 	    <input class={"button", disabled: @uploading}
 		   type="submit" value={gettext("send")}>
-	    <button class={"button", "button-danger"}
-		    type="button" :on-click={@click_toggle}>{gettext("image/file")}</button>
+	    <button class={"button", "button-other"}
+		    type="button" :on-click={@click_image}>{gettext("image")}</button>
+	    <button class={"button", "button-other"}
+		    type="button" :on-click={@click_file}>{gettext("file")}</button>
 	</div>
     </Form>
     <div class="image-container" :if={@mode == :image}>
 	<div id="image-box" class="input-box" :hook>
 	    {#if !attached(@attachment)}
 	    <label id="image-notice" for="image-attach">
-		{gettext("Click to select a picture or a file")}
+		{gettext("Click to select a picture")}
 	    </label>
 	    {#elseif @uploading}
 	    <div class="progress"
 		 style={"width:#{percentage(@attachment)}%"}/>
 	    {#else}
-	    {#case attachment_type(@attachment)}
-	    {#match :image}
 	    <img alt="preview" src={@preview_url}>
-	    {#match :file}
-	    <a class="attachment notice" download={attachment_name(@attachment)}
-	       href={@preview_url}>{attachment_name(@attachment)}</a>
-	    {/case}
 	    {/if}
-	    <FileInput name="image-attach" id="image-attach" />
+	    <FileInput name="image-attach" id="image-attach" opts={accept: "image/*"}/>
 	</div>
 	<div class="toolbar">
-	    <button class={"button", disabled: @uploading}
-		   type="button"  :on-click={@send_image}>{gettext("send")}</button>
-	    <button class={"button", "button-danger", disabled: @uploading}
-		    type="button" :on-click={@click_toggle}>{gettext("text")}</button>
+	    <button class={"button", disabled: @uploading || @attachment == nil}
+		   type="button"  :on-click={@send_attachment}>{gettext("send")}</button>
+	    <button class={"button", "button-other", disabled: @uploading}
+		    type="button" :on-click={@click_text}>{gettext("text")}</button>
+	    <button class={"button", "button-other", disabled: @uploading}
+		    type="button" :on-click={@click_file}>{gettext("file")}</button>
+	</div>
+    </div>
+    <div class="image-container" :if={@mode == :file}>
+	<div id="file-box" class="input-box" :hook>
+	    {#if !attached(@attachment)}
+	    <label id="file-notice" for="file-attach">
+		{gettext("Click to select a file")}
+	    </label>
+	    {#elseif @uploading}
+	    <div class="progress"
+		 style={"width:#{percentage(@attachment)}%"}/>
+	    {#else}
+	    <a class="attachment notice" download={attachment_name(@attachment)}
+	       href={@preview_url}>{attachment_name(@attachment)}</a>
+	    {/if}
+	    <FileInput name="file-attach" id="file-attach" />
+	</div>
+	<div class="toolbar">
+	    <button class={"button", disabled: @uploading || @attachment == nil}
+		   type="button"  :on-click={@send_attachment}>{gettext("send")}</button>
+	    <button class={"button", "button-other", disabled: @uploading}
+		    type="button" :on-click={@click_text}>{gettext("text")}</button>
+	    <button class={"button", "button-other", disabled: @uploading}
+		    type="button" :on-click={@click_image}>{gettext("image")}</button>
 	</div>
     </div>
 </div>

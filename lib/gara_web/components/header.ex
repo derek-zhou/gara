@@ -21,10 +21,12 @@ defmodule GaraWeb.Header do
   prop leave, :event, required: true
   prop rename, :event, required: true
   prop message, :event, required: true
-  prop send_image, :event, required: true
+  prop send_attachment, :event, required: true
   prop click_nick, :event, required: true
   prop click_else, :event, required: true
-  prop click_toggle, :event, required: true
+  prop click_text, :event, required: true
+  prop click_image, :event, required: true
+  prop click_file, :event, required: true
 
   defp date_string(date, tz_offset) do
     date
@@ -36,9 +38,6 @@ defmodule GaraWeb.Header do
 
   defp attached(nil), do: false
   defp attached(_), do: true
-
-  defp attachment_type({_, nil, _, _}), do: :image
-  defp attachment_type(_), do: :file
 
   defp attachment_name({_, name, _, _}), do: name
 

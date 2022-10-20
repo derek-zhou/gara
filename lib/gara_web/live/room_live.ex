@@ -21,10 +21,10 @@ defmodule GaraWeb.RoomLive do
   data nick, :string, default: ""
   data uid, :integer, default: 0
   data idle_percentage, :integer, default: 0
-  # :text or :image
+  # :text, :image or :file
   data input_mode, :atom, default: :text
   # upload
-  # {size, name, offset, chunks} if name is nil thaen it is an image
+  # {size, name, offset, chunks} if name is nil then it is an image
   data attachment, :tuple, default: nil
   data preview_url, :string, default: ""
   data uploading, :boolean, default: false
@@ -260,7 +260,7 @@ defmodule GaraWeb.RoomLive do
   end
 
   def handle_event(
-        "send_image",
+        "send_attachment",
         _params,
         %Socket{
           assigns: %{
@@ -312,15 +312,25 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_event("click_toggle", _, %Socket{assigns: %{input_mode: :text}} = socket) do
-    {:noreply, assign(socket, input_mode: :image)}
+  def handle_event("click_image", _, %Socket{assigns: %{uploading: false}} = socket) do
+    {
+      :noreply,
+      socket
+      |> assign(input_mode: :image, attachment: nil)
+      |> push_event("clear_attachment", %{})
+    }
   end
 
-  def handle_event(
-        "click_toggle",
-        _,
-        %Socket{assigns: %{input_mode: :image, uploading: false}} = socket
-      ) do
+  def handle_event("click_file", _, %Socket{assigns: %{uploading: false}} = socket) do
+    {
+      :noreply,
+      socket
+      |> assign(input_mode: :file, attachment: nil)
+      |> push_event("clear_attachment", %{})
+    }
+  end
+
+  def handle_event("click_text", _, %Socket{assigns: %{uploading: false}} = socket) do
     {
       :noreply,
       socket
