@@ -10,183 +10,200 @@
 msgid ""
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/welcome.sface:17
+#: lib/gara_web/components/welcome.sface:17
+#, elixir-autogen, elixir-format
 msgid "All"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:4
+#: lib/gara_web/components/header.sface:4
+#, elixir-autogen, elixir-format
 msgid "Back to the lobby"
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:74
+#, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:44 lib/gara_web/live/room_live.ex:45
-#: lib/gara_web/live/room_live.ex:236
+#: lib/gara_web/live/room_live.ex:44
+#: lib/gara_web/live/room_live.ex:45
+#: lib/gara_web/live/room_live.ex:240
+#, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:152
+#, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:138
+#, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:41
+#: lib/gara_web/components/header.sface:40
+#, elixir-autogen, elixir-format
 msgid "The room have been opened since "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:28
+#: lib/gara_web/components/header.sface:27
+#, elixir-autogen, elixir-format
 msgid "The topic is: "
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:87
+#, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:211
+#: lib/gara_web/live/room_live.ex:215
+#, elixir-autogen, elixir-format
 msgid "You left"
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:121
+#, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:47
+#: lib/gara_web/components/header.sface:46
+#, elixir-autogen, elixir-format
 msgid "Your new nickname: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:44
+#: lib/gara_web/components/header.sface:43
+#, elixir-autogen, elixir-format
 msgid "Your nickname is "
 msgstr ""
 
-#, elixir-format
 #: lib/gara_web/live/room_live.ex:118
+#, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/welcome.sface:9
+#: lib/gara_web/components/welcome.sface:9
+#, elixir-autogen, elixir-format
 msgid "Your topic: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/chat.sface:30
+#: lib/gara_web/components/chat.sface:43
+#, elixir-autogen, elixir-format
 msgid "joined"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:58
+#: lib/gara_web/components/header.sface:57
+#, elixir-autogen, elixir-format
 msgid "leave"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/chat.sface:22
+#: lib/gara_web/components/chat.sface:35
+#, elixir-autogen, elixir-format
 msgid "left"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:51
+#: lib/gara_web/components/header.sface:50
+#, elixir-autogen, elixir-format
 msgid "rename"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/chat.sface:38
+#: lib/gara_web/components/chat.sface:51
+#, elixir-autogen, elixir-format
 msgid "renamed to"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/welcome.sface:6
+#: lib/gara_web/components/welcome.sface:6
+#, elixir-autogen, elixir-format
 msgid "rooms occupied"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/welcome.sface:17
+#: lib/gara_web/components/welcome.sface:17
+#, elixir-autogen, elixir-format
 msgid "rooms occupied, comeback later"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/chat.sface:11
+#: lib/gara_web/components/chat.sface:11
+#: lib/gara_web/components/chat.sface:24
+#, elixir-autogen, elixir-format
 msgid "said: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:81 lib/gara_web/live/header.sface:109
+#: lib/gara_web/components/header.sface:79
+#: lib/gara_web/components/header.sface:102
+#: lib/gara_web/components/header.sface:126
+#, elixir-autogen, elixir-format
 msgid "send"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/controllers/page_controller.ex:50
+#: lib/gara_web/controllers/page_controller.ex:53
+#, elixir-autogen, elixir-format
 msgid "The Lobby"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:65
+#: lib/gara_web/components/header.sface:63
+#, elixir-autogen, elixir-format
 msgid "people are here: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:111
+#: lib/gara_web/components/header.sface:104
+#: lib/gara_web/components/header.sface:128
+#, elixir-autogen, elixir-format
 msgid "text"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/welcome.sface:20
+#: lib/gara_web/components/welcome.sface:20
+#, elixir-autogen, elixir-format
 msgid "You were in the following rooms: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:55
+#: lib/gara_web/components/header.sface:54
+#, elixir-autogen, elixir-format
 msgid "Leave the room. Your transcript will be frozen."
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:83
-msgid "image/file"
-msgstr ""
-
-#, elixir-format
-#: lib/gara_web/live/header.sface:38
+#: lib/gara_web/components/header.sface:37
+#, elixir-autogen, elixir-format
 msgid "The room's code is: "
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:331
+#: lib/gara_web/live/room_live.ex:345
+#, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/header.sface:90
-msgid "Click to select a picture or a file"
-msgstr ""
-
-#, elixir-format
-#: lib/gara_web/live/header.sface:77
+#: lib/gara_web/components/header.sface:75
+#, elixir-autogen, elixir-format
 msgid "Markdown syntax supported"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:239
+#: lib/gara_web/live/room_live.ex:243
+#, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr ""
 
-#, elixir-format
-#: lib/gara_web/live/room_live.ex:233
+#: lib/gara_web/live/room_live.ex:237
+#, elixir-autogen, elixir-format
 msgid "The nickname is taken"
+msgstr ""
+
+#: lib/gara_web/components/header.sface:113
+#, elixir-autogen, elixir-format
+msgid "Click to select a file"
+msgstr ""
+
+#: lib/gara_web/components/header.sface:90
+#, elixir-autogen, elixir-format
+msgid "Click to select a picture"
+msgstr ""
+
+#: lib/gara_web/components/header.sface:83
+#: lib/gara_web/components/header.sface:106
+#, elixir-autogen, elixir-format
+msgid "file"
+msgstr ""
+
+#: lib/gara_web/components/header.sface:81
+#: lib/gara_web/components/header.sface:130
+#, elixir-autogen, elixir-format
+msgid "image"
 msgstr ""
