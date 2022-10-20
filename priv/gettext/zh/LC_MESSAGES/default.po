@@ -188,14 +188,14 @@ msgid "The nickname is taken"
 msgstr "这个昵称已有人占用了"
 
 #: lib/gara_web/components/header.sface:113
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Click to select a file"
-msgstr "请点击选择你的图片或文件"
+msgstr "请点击选择你的文件"
 
 #: lib/gara_web/components/header.sface:90
-#, elixir-autogen, elixir-format, fuzzy
+#, elixir-autogen, elixir-format
 msgid "Click to select a picture"
-msgstr "请点击选择你的图片或文件"
+msgstr "请点击选择你的图片"
 
 #: lib/gara_web/components/header.sface:83
 #: lib/gara_web/components/header.sface:106
