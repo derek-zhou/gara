@@ -1,9 +1,3 @@
-<div class="hero" :if={@room_status == :unknown || @room_status == :hangup}>
-    <Link class="button" to={Routes.page_path(Endpoint, :index)}
-	  opts={referrerpolicy: "no-referrer"}>
-        {gettext("Back to the lobby")}
-    </Link>
-</div>
 <div class="header" :if={@room_status != :unknown}>
     <span class="topic">
 	{#if is_url(@stat.topic)}

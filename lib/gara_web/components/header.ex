@@ -1,10 +1,8 @@
 defmodule GaraWeb.Header do
   use Surface.Component
   import GaraWeb.Gettext
-  alias Surface.Components.{Form, Link}
+  alias Surface.Components.Form
   alias Surface.Components.Form.{Field, Label, TextInput, FileInput, TextArea}
-  alias GaraWeb.Endpoint
-  alias GaraWeb.Router.Helpers, as: Routes
 
   prop tz_offset, :integer, default: 0
   prop name, :string, required: true

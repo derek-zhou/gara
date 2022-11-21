@@ -5,6 +5,7 @@ defmodule GaraWeb.RoomLive do
 
   alias Gara.{Room, Rooms}
   alias Phoenix.LiveView.Socket
+  alias Surface.Components.Link
   alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
   alias GaraWeb.Router.Helpers, as: Routes
 

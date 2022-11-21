@@ -1,4 +1,10 @@
 <Main messages={@flash}>
+    <div class="hero" :if={@room_status == :unknown || @room_status == :hangup}>
+	<Link class="button" to={Routes.page_path(Endpoint, :index)}
+	      opts={referrerpolicy: "no-referrer"}>
+        {gettext("Back to the lobby")}
+        </Link>
+    </div>
     <Header :if={@nick != ""}
 	    tz_offset={@tz_offset} name={@room_name} stat={@room_stat}
     	    room_status={@room_status} participants={@participants} nick={@nick}
