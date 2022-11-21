@@ -129,7 +129,7 @@ defmodule GaraWeb.RoomLive do
               end
 
             true ->
-              assign(socket, messages: stat.history)
+              assign(socket, messages: Enum.reverse(stat.history))
           end
       end
 
