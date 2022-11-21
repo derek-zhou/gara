@@ -1,5 +1,6 @@
 <Main messages={@flash}>
-    <Header tz_offset={@tz_offset} name={@room_name} stat={@room_stat}
+    <Header :if={@nick != ""}
+	    tz_offset={@tz_offset} name={@room_name} stat={@room_stat}
     	    room_status={@room_status} participants={@participants} nick={@nick}
 	    idle_percentage={@idle_percentage} show_info={@show_info}
 	    click_nick="click_nick" click_else="click_else"
