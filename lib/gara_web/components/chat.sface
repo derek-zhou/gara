@@ -1,4 +1,4 @@
-<div class="transcript" id="transcript" phx-update="prepend">
+<article class="transcript" id="transcript" phx-update="prepend">
     {#for message <- @messages}
     {#case message}
     {#match {:user_message, msg_id, ts, from, content}}
@@ -54,4 +54,4 @@
     </div>
     {/case}
     {/for}
-</div>
+</article>

@@ -15,11 +15,11 @@ defmodule GaraWeb.PageController do
   end
 
   def catch_all(conn, _params) do
-    new_room(conn, "https://" <> conn.host <> conn.request_path)
+    new_room(conn, "https://" <> conn.host <> conn.request_path, true)
   end
 
-  defp new_room(conn, topic) do
-    case Room.new_room(topic) do
+  defp new_room(conn, topic, canonical? \\ false) do
+    case Room.new_room(topic, canonical?) do
       nil ->
         local_index(conn)
 

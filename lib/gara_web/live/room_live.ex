@@ -33,6 +33,7 @@ defmodule GaraWeb.RoomLive do
 
   # for GUI
   data show_info, :boolean, default: false
+  data page_url, :string, default: ""
 
   def mount(%{"name" => room_name}, _session, %Socket{assigns: %{live_action: :chat}} = socket) do
     socket = assign(socket, room_name: room_name)
@@ -55,7 +56,11 @@ defmodule GaraWeb.RoomLive do
               room_pid: pid,
               room_stat: stat,
               page_title: "(#{stat.active}) #{stat.topic}",
-              page_url: Routes.room_url(Endpoint, :chat, room_name),
+              page_url:
+                if(stat.canonical?,
+                  do: stat.topic,
+                  else: Routes.room_url(Endpoint, :chat, room_name)
+                ),
               room_status: :existed
             )
 
@@ -123,7 +128,7 @@ defmodule GaraWeb.RoomLive do
               end
 
             true ->
-              socket
+              assign(socket, messages: stat.history)
           end
       end
 

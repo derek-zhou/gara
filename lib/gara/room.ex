@@ -5,17 +5,26 @@ defmodule Gara.Room do
   use GenServer, restart: :transient
   alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
 
-  defstruct [:name, :topic, :roster, :since, messages: [], msg_id: 0, img_id: 0]
+  defstruct [
+    :name,
+    :topic,
+    :roster,
+    :since,
+    messages: [],
+    msg_id: 0,
+    img_id: 0,
+    canonical?: false
+  ]
 
   @doc """
   create a new room for the given topic. return the room name if success or nil
   """
-  def new_room(topic) do
+  def new_room(topic, canonical? \\ false) do
     name = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
 
     case DynamicSupervisor.start_child(
            RoomSupervisor,
-           {__MODULE__, %{name: name, topic: topic}}
+           {__MODULE__, %{name: name, topic: topic, canonical?: canonical?}}
          ) do
       {:ok, _} -> name
       :ignore -> :ignore
@@ -31,8 +40,10 @@ defmodule Gara.Room do
     }
   end
 
-  def start_link(%{name: name, topic: topic}) do
-    GenServer.start_link(__MODULE__, {name, topic}, name: {:via, Registry, {Rooms, name}})
+  def start_link(%{name: name, topic: topic, canonical?: canonical?}) do
+    GenServer.start_link(__MODULE__, {name, topic, canonical?},
+      name: {:via, Registry, {Rooms, name}}
+    )
   end
 
   @doc """
@@ -99,20 +110,20 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def init({name, topic}) do
+  def init({name, topic, canonical?}) do
     case is_public_topic(topic) do
       true ->
         case Registry.register(RoomsByPublicTopic, topic, name) do
-          {:ok, _} -> init_inner(name, topic)
+          {:ok, _} -> init_inner(name, topic, canonical?)
           {:error, {:already_registered, _pid}} -> :ignore
         end
 
       false ->
-        init_inner(name, topic)
+        init_inner(name, topic, false)
     end
   end
 
-  defp init_inner(name, topic) do
+  defp init_inner(name, topic, canonical?) do
     Process.flag(:trap_exit, true)
     Process.flag(:max_heap_size, 100_000)
     Process.send_after(self(), :tick, @tick_interval)
@@ -123,7 +134,13 @@ defmodule Gara.Room do
 
     {
       :ok,
-      %__MODULE__{name: name, topic: topic, since: NaiveDateTime.utc_now(), roster: %Roster{}}
+      %__MODULE__{
+        name: name,
+        topic: topic,
+        since: NaiveDateTime.utc_now(),
+        roster: %Roster{},
+        canonical?: canonical?
+      }
     }
   end
 
@@ -324,8 +341,6 @@ defmodule Gara.Room do
       {id, roster} ->
         nick = Roster.get_name(roster, id)
         participants = Roster.participants(roster)
-        # to avoid unbounded messages
-        messages = Enum.take(messages, Defaults.default(:max_history))
         idle_percentage = Roster.idle_percentage(roster, id)
 
         history =
@@ -339,7 +354,7 @@ defmodule Gara.Room do
         {
           :reply,
           {id, nick, participants, history, idle_percentage},
-          %{state | roster: roster, messages: messages, msg_id: msg_id + 1}
+          %{state | roster: roster, msg_id: msg_id + 1}
         }
     end
   end
@@ -368,18 +383,24 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def handle_call(
-        :stat,
-        _from,
-        %__MODULE__{name: name, topic: topic, since: since, roster: roster} = state
-      ) do
+  def handle_call(:stat, _from, state) do
+    # to avoid unbounded messages
+    messages = Enum.take(state.messages, Defaults.default(:max_history))
+
+    history =
+      Enum.map(messages, fn {mid, time, id, msg} ->
+        {:user_message, mid, time, Roster.get_name(state.roster, id), msg}
+      end)
+
     {:reply,
      %{
-       name: name,
-       topic: topic,
-       since: since,
-       people: Roster.fullsize(roster),
-       active: Roster.size(roster)
+       name: state.name,
+       topic: state.topic,
+       since: state.since,
+       people: Roster.fullsize(state.roster),
+       active: Roster.size(state.roster),
+       history: history,
+       canonical?: state.canonical?
      }, state}
   end
 
