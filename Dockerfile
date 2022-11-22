@@ -1,1 +1,1 @@
-Dockerfile_2steps
+Dockerfile_1step
