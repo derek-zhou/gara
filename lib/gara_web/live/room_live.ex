@@ -6,7 +6,7 @@ defmodule GaraWeb.RoomLive do
   alias Gara.{Room, Rooms}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
-  alias GaraWeb.{Endpoint, Main, Header, Chat, Guardian}
+  alias GaraWeb.{Endpoint, Main, Header, Chat, History, Guardian}
   alias GaraWeb.Router.Helpers, as: Routes
 
   # client side state
@@ -29,6 +29,7 @@ defmodule GaraWeb.RoomLive do
   data attachment, :tuple, default: nil
   data preview_url, :string, default: ""
   data uploading, :boolean, default: false
+  data history, :list, default: []
   # temporary state
   data messages, :list, default: []
 
@@ -87,6 +88,7 @@ defmodule GaraWeb.RoomLive do
                     nick: nick,
                     room_status: :joined,
                     participants: participants,
+                    history: [],
                     messages: messages,
                     idle_percentage: idle_percentage
                   )
@@ -101,6 +103,7 @@ defmodule GaraWeb.RoomLive do
                     nick: preferred_nick,
                     room_status: :joined,
                     participants: participants,
+                    history: [],
                     messages: messages,
                     idle_percentage: idle_percentage
                   )
@@ -115,6 +118,7 @@ defmodule GaraWeb.RoomLive do
                     nick: nick,
                     room_status: :joined,
                     participants: participants,
+                    history: [],
                     messages: messages,
                     idle_percentage: idle_percentage
                   )
@@ -129,7 +133,7 @@ defmodule GaraWeb.RoomLive do
               end
 
             true ->
-              assign(socket, page_title: stat.topic, messages: Enum.reverse(stat.history))
+              assign(socket, page_title: stat.topic, history: Enum.reverse(stat.history))
           end
       end
 

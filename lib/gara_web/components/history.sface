@@ -1,0 +1,16 @@
+<article class="transcript" id="history">
+    {#for {:user_message, msg_id, ts, from, content} <- @messages}
+    <div id={"msg_#{msg_id}"}
+	 class={["message", "user_message"]}>
+	<div class="meta">
+	    <cite>#{msg_id}</cite>
+	    <b>{date_string(ts)}</b>
+	    <i>{from}</i>
+	    {gettext("said: ")}
+	</div>
+	<div class="content">
+	    {raw(content)}
+	</div>
+    </div>
+    {/for}
+</article>

@@ -14,5 +14,6 @@
 	    uploading={@uploading} mode={@input_mode}
 	    click_text="click_text" click_image="click_image" click_file="click_file"
 	    preview_url={@preview_url} attachment={@attachment} />
-    <Chat tz_offset={@tz_offset} messages={@messages} nick={@nick} />
+    <Chat :if={@nick != ""} tz_offset={@tz_offset} messages={@messages} nick={@nick} />
+    <History :if={@nick == ""} messages={@history} />
 </Main>
