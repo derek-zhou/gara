@@ -69,7 +69,7 @@ defmodule GaraWeb.RoomLive do
               if connected?(socket), do: Process.send_after(self(), :count_down, 60_000)
 
               assign(socket,
-                page_title: topic,
+                page_title: "(zzz) #{topic}",
                 waiting_minutes: minutes,
                 room_status: :waiting
               )
@@ -165,7 +165,10 @@ defmodule GaraWeb.RoomLive do
               end
 
             true ->
-              assign(socket, page_title: stat.topic, history: Enum.reverse(stat.history))
+              assign(socket,
+                page_title: "#{stat.topic} -- GARA",
+                history: Enum.reverse(stat.history)
+              )
           end
       end
 
