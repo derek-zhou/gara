@@ -3,7 +3,7 @@ defmodule Gara.WaitingRooms do
   @ets_waiting_rooms :roastidious_waiting_rooms
 
   alias :ets, as: ETS
-  alias Gara.{Defaults, Room}
+  alias Gara.{Defaults, Room, Rooms}
 
   @doc """
   init the data structures
@@ -40,11 +40,18 @@ defmodule Gara.WaitingRooms do
       [{^name, topic, _timeout}] ->
         case Room.new_room(name, topic, false) do
           :ignore ->
-            {:ok, name}
+            case Registry.lookup(Rooms, name) do
+              [] -> {:error, :expired}
+              [{pid, _}] -> {:ok, pid}
+            end
 
           ^name ->
             ETS.delete(@ets_waiting_rooms, name)
-            {:ok, name}
+
+            case Registry.lookup(Rooms, name) do
+              [] -> {:error, :expired}
+              [{pid, _}] -> {:ok, pid}
+            end
 
           nil ->
             {:error, :capacity}

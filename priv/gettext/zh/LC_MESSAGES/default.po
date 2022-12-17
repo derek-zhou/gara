@@ -21,26 +21,26 @@ msgstr "所有"
 msgid "Back to the lobby"
 msgstr "回大厅吧"
 
-#: lib/gara_web/live/room_live.ex:113
+#: lib/gara_web/live/room_live.ex:148
 #, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr "包房里没空了"
 
-#: lib/gara_web/live/room_live.ex:50
-#: lib/gara_web/live/room_live.ex:51
-#: lib/gara_web/live/room_live.ex:63
-#: lib/gara_web/live/room_live.ex:64
-#: lib/gara_web/live/room_live.ex:297
+#: lib/gara_web/live/room_live.ex:79
+#: lib/gara_web/live/room_live.ex:80
+#: lib/gara_web/live/room_live.ex:92
+#: lib/gara_web/live/room_live.ex:93
+#: lib/gara_web/live/room_live.ex:314
 #, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr "包房已关闭"
 
-#: lib/gara_web/live/room_live.ex:209
+#: lib/gara_web/live/room_live.ex:226
 #, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr "服务器死机了"
 
-#: lib/gara_web/live/room_live.ex:180
+#: lib/gara_web/live/room_live.ex:208
 #, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr "你被踢下线了"
@@ -55,17 +55,17 @@ msgstr "包房开放始于"
 msgid "The topic is: "
 msgstr "聊天话题是："
 
-#: lib/gara_web/live/room_live.ex:127
+#: lib/gara_web/live/room_live.ex:162
 #, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr "欢迎回来，"
 
-#: lib/gara_web/live/room_live.ex:272
+#: lib/gara_web/live/room_live.ex:289
 #, elixir-autogen, elixir-format
 msgid "You left"
 msgstr "你离开了"
 
-#: lib/gara_web/live/room_live.ex:163
+#: lib/gara_web/live/room_live.ex:198
 #, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr "你可以点击右上角修改"
@@ -80,7 +80,7 @@ msgstr "你的新昵称："
 msgid "Your nickname is "
 msgstr "你的昵称是 "
 
-#: lib/gara_web/live/room_live.ex:160
+#: lib/gara_web/live/room_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
 msgstr "你的临时昵称是："
@@ -170,7 +170,7 @@ msgstr "离开包房。你的聊天记录会不再更新。"
 msgid "The room's code is: "
 msgstr "房间代码是: "
 
-#: lib/gara_web/live/room_live.ex:402
+#: lib/gara_web/live/room_live.ex:419
 #, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr "文件太大"
@@ -180,12 +180,12 @@ msgstr "文件太大"
 msgid "Markdown syntax supported"
 msgstr "支持Markdown语法"
 
-#: lib/gara_web/live/room_live.ex:300
+#: lib/gara_web/live/room_live.ex:317
 #, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr "这个昵称不能用"
 
-#: lib/gara_web/live/room_live.ex:294
+#: lib/gara_web/live/room_live.ex:311
 #, elixir-autogen, elixir-format
 msgid "The nickname is taken"
 msgstr "这个昵称已有人占用了"
@@ -212,12 +212,6 @@ msgstr "文件"
 msgid "image"
 msgstr "图片"
 
-#: lib/gara_web/live/room_live.ex:57
-#: lib/gara_web/live/room_live.ex:58
-#, elixir-autogen, elixir-format
-msgid "All rooms occupied, comeback later"
-msgstr "所有包房都被占了，下次请早"
-
 #: lib/gara_web/components/countdown.sface:5
 #, elixir-autogen, elixir-format
 msgid "Room will open in: "
@@ -239,3 +233,9 @@ msgstr "分钟"
 #, elixir-autogen, elixir-format
 msgid "Open after "
 msgstr "等候："
+
+#: lib/gara_web/live/room_live.ex:86
+#: lib/gara_web/live/room_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "All rooms are occupied, please come back later"
+msgstr "所有包房都被占了，下次请早"

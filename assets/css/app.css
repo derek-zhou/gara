@@ -94,7 +94,7 @@ button[disabled] {
 	.hero {
 	    @apply flex flex-row justify-center text-lg;
 	    em {
-		@apply text-2xl font-bold px-2;
+		@apply text-2xl text-yellow-50 font-bold px-2;
 	    }
 	    img {
 		@apply block;

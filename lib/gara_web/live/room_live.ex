@@ -11,6 +11,8 @@ defmodule GaraWeb.RoomLive do
 
   # client side state
   data tz_offset, :integer, default: 0
+  data preferred_nick, :any, default: nil
+  data client_id, :any, default: nil
 
   # states
   data room_name, :string, default: ""
@@ -39,140 +41,164 @@ defmodule GaraWeb.RoomLive do
   data page_url, :string, default: ""
 
   def mount(%{"name" => room_name}, _session, %Socket{assigns: %{live_action: :chat}} = socket) do
-    socket = assign(socket, room_name: room_name)
+    {
+      :ok,
+      socket
+      |> assign(room_name: room_name)
+      |> maybe_fetch_params(room_name)
+      |> mount_room(room_name),
+      temporary_assigns: [messages: []]
+    }
+  end
 
-    socket =
-      case Registry.lookup(Rooms, room_name) do
-        [] ->
-          case WaitingRooms.knock(room_name) do
-            {:error, :no_entry} ->
-              socket
-              |> put_flash(:error, gettext("Room closed already"))
-              |> assign(page_title: gettext("Room closed already"))
-              |> push_event("set_token", %{token: ""})
-              |> push_event("leave", %{})
+  defp mount_room(socket, room_name) do
+    case Registry.lookup(Rooms, room_name) do
+      [] -> mount_waiting_room(socket, room_name)
+      [{pid, _}] -> mount_chat_room(socket, pid, room_name)
+    end
+  end
 
-            {:error, :capacity} ->
-              socket
-              |> put_flash(:error, gettext("All rooms occupied, comeback later"))
-              |> assign(page_title: gettext("All rooms occupied, comeback later"))
-              |> push_event("leave", %{})
+  defp maybe_fetch_params(socket, room_name) do
+    if connected?(socket) do
+      values = get_connect_params(socket)
 
-            {:error, :expired} ->
-              socket
-              |> put_flash(:error, gettext("Room closed already"))
-              |> assign(page_title: gettext("Room closed already"))
-              |> push_event("set_token", %{token: ""})
-              |> push_event("leave", %{})
+      socket
+      |> fetch_tz_offset(values)
+      |> fetch_preferred_nick(values)
+      |> fetch_locale(values)
+      |> fetch_token(values, room_name)
+    else
+      socket
+    end
+  end
 
-            {:wait, minutes, topic} ->
-              if connected?(socket), do: Process.send_after(self(), :count_down, 60_000)
+  defp mount_waiting_room(socket, room_name) do
+    case WaitingRooms.knock(room_name) do
+      {:error, :no_entry} ->
+        socket
+        |> put_flash(:error, gettext("Room closed already"))
+        |> assign(page_title: gettext("Room closed already"))
+        |> push_event("set_token", %{token: ""})
+        |> push_event("leave", %{})
 
-              assign(socket,
-                page_title: "(zzz) #{topic}",
-                waiting_minutes: minutes,
-                room_status: :waiting
-              )
+      {:error, :capacity} ->
+        socket
+        |> put_flash(:error, gettext("All rooms are occupied, please come back later"))
+        |> assign(page_title: gettext("All rooms are occupied, please come back later"))
+        |> push_event("leave", %{})
 
-            {:ok, room_name} ->
-              push_navigate(socket,
-                to: Routes.room_path(Endpoint, :chat, room_name),
-                replace: true
-              )
-          end
+      {:error, :expired} ->
+        socket
+        |> put_flash(:error, gettext("Room closed already"))
+        |> assign(page_title: gettext("Room closed already"))
+        |> push_event("set_token", %{token: ""})
+        |> push_event("leave", %{})
 
-        [{pid, _}] ->
-          stat = Room.stat(pid)
+      {:wait, minutes, topic} ->
+        if connected?(socket), do: Process.send_after(self(), :count_down, 60_000)
+        mtext = gettext("minutes")
 
-          socket =
-            socket
-            |> assign(
-              room_pid: pid,
-              room_stat: stat,
-              page_title: "(#{stat.active}) #{stat.topic}",
-              page_url:
-                if(stat.canonical?,
-                  do: stat.topic,
-                  else: Routes.room_url(Endpoint, :chat, room_name)
-                ),
-              room_status: :exist
-            )
+        assign(socket,
+          page_title: "(zzz #{minutes} #{mtext}) #{topic}",
+          waiting_minutes: minutes,
+          room_status: :waiting
+        )
 
-          cond do
-            connected?(socket) ->
-              values = get_connect_params(socket)
-              socket = fetch_tz_offset(socket, values)
-              old_id = fetch_token(values, room_name)
-              preferred_nick = fetch_preferred_nick(values)
-              fetch_locale(values)
-              Process.monitor(pid)
+      {:ok, pid} ->
+        mount_chat_room(socket, pid, room_name)
+    end
+  end
 
-              case Room.join(pid, old_id, preferred_nick) do
-                {:error, _} ->
-                  socket
-                  |> put_flash(:error, gettext("No space in room"))
-                  |> push_event("leave", %{})
+  defp mount_chat_room(socket, pid, room_name) do
+    stat = Room.stat(pid)
 
-                {^old_id, nick, participants, messages, idle_percentage} ->
-                  socket
-                  |> assign(
-                    uid: old_id,
-                    nick: nick,
-                    room_status: :joined,
-                    participants: participants,
-                    history: [],
-                    messages: messages,
-                    idle_percentage: idle_percentage
-                  )
-                  |> put_flash(:info, gettext("Welcome back, ") <> nick)
+    socket
+    |> assign(
+      room_pid: pid,
+      room_stat: stat,
+      page_title: "(#{stat.active}) #{stat.topic}",
+      page_url:
+        if(stat.canonical?,
+          do: stat.topic,
+          else: Routes.room_url(Endpoint, :chat, room_name)
+        ),
+      room_status: :exist,
+      page_title: "#{stat.topic} -- GARA",
+      history: Enum.reverse(stat.history)
+    )
+    |> maybe_join(pid, room_name)
+  end
 
-                {id, ^preferred_nick, participants, messages, idle_percentage} ->
-                  {:ok, token} = Guardian.build_token(id, room_name)
+  defp maybe_join(socket, pid, room_name) do
+    cond do
+      connected?(socket) -> mount_join_room(socket, pid, room_name)
+      true -> socket
+    end
+  end
 
-                  socket
-                  |> assign(
-                    uid: id,
-                    nick: preferred_nick,
-                    room_status: :joined,
-                    participants: participants,
-                    history: [],
-                    messages: messages,
-                    idle_percentage: idle_percentage
-                  )
-                  |> push_event("set_token", %{token: token})
+  defp mount_join_room(
+         %Socket{assigns: %{preferred_nick: preferred_nick, client_id: old_id}} = socket,
+         pid,
+         room_name
+       ) do
+    Process.monitor(pid)
 
-                {id, nick, participants, messages, idle_percentage} ->
-                  {:ok, token} = Guardian.build_token(id, room_name)
+    case Room.join(pid, old_id, preferred_nick) do
+      {:error, _} ->
+        socket
+        |> put_flash(:error, gettext("No space in room"))
+        |> push_event("leave", %{})
 
-                  socket
-                  |> assign(
-                    uid: id,
-                    nick: nick,
-                    room_status: :joined,
-                    participants: participants,
-                    history: [],
-                    messages: messages,
-                    idle_percentage: idle_percentage
-                  )
-                  |> push_event("set_token", %{token: token})
-                  |> put_flash(
-                    :info,
-                    gettext("Your temporary nickname is: ") <>
-                      nick <>
-                      ". " <>
-                      gettext("You should change it by clicking the top right corner")
-                  )
-              end
+      {^old_id, nick, participants, messages, idle_percentage} ->
+        socket
+        |> assign(
+          uid: old_id,
+          nick: nick,
+          room_status: :joined,
+          participants: participants,
+          history: [],
+          messages: messages,
+          idle_percentage: idle_percentage
+        )
+        |> put_flash(:info, gettext("Welcome back, ") <> nick)
 
-            true ->
-              assign(socket,
-                page_title: "#{stat.topic} -- GARA",
-                history: Enum.reverse(stat.history)
-              )
-          end
-      end
+      {id, ^preferred_nick, participants, messages, idle_percentage} ->
+        {:ok, token} = Guardian.build_token(id, room_name)
 
-    {:ok, socket, temporary_assigns: [messages: []]}
+        socket
+        |> assign(
+          uid: id,
+          nick: preferred_nick,
+          room_status: :joined,
+          participants: participants,
+          history: [],
+          messages: messages,
+          idle_percentage: idle_percentage
+        )
+        |> push_event("set_token", %{token: token})
+
+      {id, nick, participants, messages, idle_percentage} ->
+        {:ok, token} = Guardian.build_token(id, room_name)
+
+        socket
+        |> assign(
+          uid: id,
+          nick: nick,
+          room_status: :joined,
+          participants: participants,
+          history: [],
+          messages: messages,
+          idle_percentage: idle_percentage
+        )
+        |> push_event("set_token", %{token: token})
+        |> put_flash(
+          :info,
+          gettext("Your temporary nickname is: ") <>
+            nick <>
+            ". " <>
+            gettext("You should change it by clicking the top right corner")
+        )
+    end
   end
 
   def handle_info(:hangup, socket) do
@@ -185,19 +211,8 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: 1, room_name: n}} = socket) do
-    {
-      :noreply,
-      push_navigate(socket,
-        to: Routes.room_path(Endpoint, :chat, n),
-        replace: true
-      )
-    }
-  end
-
-  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: minutes}} = socket) do
-    Process.send_after(self(), :count_down, 60_000)
-    {:noreply, assign(socket, waiting_minutes: minutes - 1)}
+  def handle_info(:count_down, %Socket{assigns: %{room_name: name}} = socket) do
+    {:noreply, mount_waiting_room(socket, name)}
   end
 
   def handle_info({:tick, idle_percentage}, socket) do
@@ -444,14 +459,19 @@ defmodule GaraWeb.RoomLive do
 
   defp fetch_tz_offset(socket, _), do: socket
 
-  defp fetch_locale(%{"language" => language}) do
+  defp fetch_locale(socket, %{"language" => language}) do
     case language |> language_to_locale() |> validate_locale() do
       nil -> :ok
       locale -> Gettext.put_locale(GaraWeb.Gettext, locale)
     end
+
+    socket
   end
 
-  defp fetch_locale(_), do: Gettext.put_locale(GaraWeb.Gettext, "en")
+  defp fetch_locale(socket, _) do
+    Gettext.put_locale(GaraWeb.Gettext, "en")
+    socket
+  end
 
   defp language_to_locale(language) do
     String.replace(language, "-", "_", global: false)
@@ -477,17 +497,20 @@ defmodule GaraWeb.RoomLive do
     end
   end
 
-  defp fetch_token(%{"token" => token}, room_name) do
+  defp fetch_token(socket, %{"token" => token}, room_name) do
     case Guardian.decode_token(token) do
-      {id, ^room_name} -> id
-      _ -> nil
+      {id, ^room_name} -> assign(socket, client_id: id)
+      _ -> socket
     end
   end
 
-  defp fetch_token(_, _), do: nil
+  defp fetch_token(socket, _, _), do: socket
 
-  defp fetch_preferred_nick(%{"preferred_nick" => nick}), do: nick
-  defp fetch_preferred_nick(_), do: nil
+  defp fetch_preferred_nick(socket, %{"preferred_nick" => nick}) do
+    assign(socket, preferred_nick: nick)
+  end
+
+  defp fetch_preferred_nick(socket, _), do: socket
 
   defp accept_chunk(
          %Socket{assigns: %{attachment: {size, name, offset, data}}} = socket,

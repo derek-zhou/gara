@@ -20,26 +20,26 @@ msgstr ""
 msgid "Back to the lobby"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:113
+#: lib/gara_web/live/room_live.ex:148
 #, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:50
-#: lib/gara_web/live/room_live.ex:51
-#: lib/gara_web/live/room_live.ex:63
-#: lib/gara_web/live/room_live.ex:64
-#: lib/gara_web/live/room_live.ex:297
+#: lib/gara_web/live/room_live.ex:79
+#: lib/gara_web/live/room_live.ex:80
+#: lib/gara_web/live/room_live.ex:92
+#: lib/gara_web/live/room_live.ex:93
+#: lib/gara_web/live/room_live.ex:314
 #, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:209
+#: lib/gara_web/live/room_live.ex:226
 #, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:180
+#: lib/gara_web/live/room_live.ex:208
 #, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr ""
@@ -54,17 +54,17 @@ msgstr ""
 msgid "The topic is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:127
+#: lib/gara_web/live/room_live.ex:162
 #, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:272
+#: lib/gara_web/live/room_live.ex:289
 #, elixir-autogen, elixir-format
 msgid "You left"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:163
+#: lib/gara_web/live/room_live.ex:198
 #, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr ""
@@ -79,7 +79,7 @@ msgstr ""
 msgid "Your nickname is "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:160
+#: lib/gara_web/live/room_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
 msgstr ""
@@ -169,7 +169,7 @@ msgstr ""
 msgid "The room's code is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:402
+#: lib/gara_web/live/room_live.ex:419
 #, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr ""
@@ -179,12 +179,12 @@ msgstr ""
 msgid "Markdown syntax supported"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:300
+#: lib/gara_web/live/room_live.ex:317
 #, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:294
+#: lib/gara_web/live/room_live.ex:311
 #, elixir-autogen, elixir-format
 msgid "The nickname is taken"
 msgstr ""
@@ -211,12 +211,6 @@ msgstr ""
 msgid "image"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:57
-#: lib/gara_web/live/room_live.ex:58
-#, elixir-autogen, elixir-format
-msgid "All rooms occupied, comeback later"
-msgstr ""
-
 #: lib/gara_web/components/countdown.sface:5
 #, elixir-autogen, elixir-format
 msgid "Room will open in: "
@@ -237,4 +231,10 @@ msgstr ""
 #: lib/gara_web/components/welcome.sface:13
 #, elixir-autogen, elixir-format
 msgid "Open after "
+msgstr ""
+
+#: lib/gara_web/live/room_live.ex:86
+#: lib/gara_web/live/room_live.ex:87
+#, elixir-autogen, elixir-format
+msgid "All rooms are occupied, please come back later"
 msgstr ""
