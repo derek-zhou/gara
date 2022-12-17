@@ -1,7 +1,7 @@
 defmodule GaraWeb.PageController do
   use GaraWeb, :controller
 
-  alias Gara.{Room, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
+  alias Gara.{Room, WaitingRooms, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
 
   plug :no_layout
 
@@ -55,12 +55,25 @@ defmodule GaraWeb.PageController do
     |> render("welcome.html")
   end
 
-  def create(conn, %{"create" => %{"topic" => topic}}) do
+  def create(conn, %{"create" => %{"topic" => topic, "hours" => hours, "minutes" => minutes}}) do
     trimmed = String.trim(topic)
+    minutes = String.to_integer(hours) * 60 + String.to_integer(minutes)
 
-    case Registry.lookup(Rooms, trimmed) do
-      [] -> new_room(conn, trimmed)
-      _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
+    minutes =
+      cond do
+        minutes < 0 -> 0
+        minutes > 1439 -> 1440
+        true -> minutes
+      end
+
+    if minutes == 0 do
+      case Registry.lookup(Rooms, trimmed) do
+        [] -> new_room(conn, trimmed)
+        _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
+      end
+    else
+      name = WaitingRooms.open(trimmed, minutes)
+      redirect(conn, to: Routes.room_path(conn, :chat, name))
     end
   end
 

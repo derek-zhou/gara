@@ -3,7 +3,7 @@ defmodule GaraWeb.RoomLive do
   import GaraWeb.Gettext
   require Logger
 
-  alias Gara.{Room, Rooms}
+  alias Gara.{Room, Rooms, WaitingRooms}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
   alias GaraWeb.{Endpoint, Main, Header, Chat, History, Guardian}
@@ -17,11 +17,12 @@ defmodule GaraWeb.RoomLive do
   data room_pid, :pid, default: nil
   data room_stat, :any, default: nil
   data participants, :list, default: []
-  # :unkoown, :existed, :joined or :hangup
+  # :unkoown, :exist, :joined, :hangup or :waiting
   data room_status, :atom, default: :unknown
   data nick, :string, default: ""
   data uid, :integer, default: 0
   data idle_percentage, :integer, default: 0
+  data waiting_minutes, :integer, default: 0
   # :text, :image or :file
   data input_mode, :atom, default: :text
   # upload
@@ -43,11 +44,51 @@ defmodule GaraWeb.RoomLive do
     socket =
       case Registry.lookup(Rooms, room_name) do
         [] ->
-          socket
-          |> put_flash(:error, gettext("Room closed already"))
-          |> assign(page_title: gettext("Room closed already"))
-          |> push_event("set_token", %{token: ""})
-          |> push_event("leave", %{})
+          case WaitingRooms.knock(room_name) do
+            {:error, :no_entry} ->
+              socket
+              |> put_flash(:error, gettext("Room closed already"))
+              |> assign(page_title: gettext("Room closed already"))
+              |> push_event("set_token", %{token: ""})
+              |> push_event("leave", %{})
+
+            {:error, :capacity} ->
+              socket
+              |> put_flash(:error, gettext("All rooms occupied, comeback later"))
+              |> assign(page_title: gettext("All rooms occupied, comeback later"))
+              |> push_event("leave", %{})
+
+            {:error, :expired} ->
+              socket
+              |> put_flash(:error, gettext("Room closed already"))
+              |> assign(page_title: gettext("Room closed already"))
+              |> push_event("set_token", %{token: ""})
+              |> push_event("leave", %{})
+
+            {:wait, minutes, topic} ->
+              hours = div(minutes, 60)
+              mins = rem(minutes, 60)
+              if connected?(socket), do: Process.send_after(self(), :count_down, 60_000)
+
+              socket
+              |> put_flash(
+                :info,
+                gettext("Room will open in: ") <>
+                  "#{hours}" <>
+                  gettext(" hours ") <> "#{mins}" <> gettext(" minutes")
+              )
+              |> assign(
+                page_title: topic,
+                waiting_minutes: minutes,
+                room_status: :waiting
+              )
+
+            {:ok, room_name} ->
+              push_navigate(socket,
+                to: Routes.room_path(Endpoint, :chat, room_name),
+                replace: true
+              )
+          end
 
         [{pid, _}] ->
           stat = Room.stat(pid)
@@ -63,7 +104,7 @@ defmodule GaraWeb.RoomLive do
                   do: stat.topic,
                   else: Routes.room_url(Endpoint, :chat, room_name)
                 ),
-              room_status: :existed
+              room_status: :exist
             )
 
           cond do
@@ -147,6 +188,34 @@ defmodule GaraWeb.RoomLive do
       |> assign(room_status: :hangup)
       |> put_flash(:warning, gettext("Server hangup"))
       |> push_event("leave", %{})
+    }
+  end
+
+  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: 0, room_name: n}} = socket) do
+    {
+      :noreply,
+      push_navigate(socket,
+        to: Routes.room_path(Endpoint, :chat, n),
+        replace: true
+      )
+    }
+  end
+
+  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: minutes}} = socket) do
+    hours = div(minutes, 60)
+    mins = rem(minutes, 60)
+    Process.send_after(self(), :count_down, 60_000)
+
+    {
+      :noreply,
+      socket
+      |> put_flash(
+        :info,
+        gettext("Room will open in: ") <>
+          "#{hours}" <>
+          gettext(" hours ") <> "#{mins}" <> gettext(" minutes")
+      )
+      |> assign(waiting_minutes: minutes - 1)
     }
   end
 

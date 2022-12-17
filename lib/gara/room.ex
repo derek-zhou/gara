@@ -17,11 +17,22 @@ defmodule Gara.Room do
   ]
 
   @doc """
+  create a new room name
+  """
+  def new_room_name(), do: 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
+
+  @doc """
   create a new room for the given topic. return the room name if success or nil
   """
   def new_room(topic, canonical? \\ false) do
-    name = 6 |> :crypto.strong_rand_bytes() |> Base.url_encode64()
+    new_room(new_room_name(), topic, canonical?)
+  end
 
+  @doc """
+  create a new room for the given topic and pre-allocated rom name.
+  return the room name if success or nil
+  """
+  def new_room(name, topic, canonical?) do
     case DynamicSupervisor.start_child(
            RoomSupervisor,
            {__MODULE__, %{name: name, topic: topic, canonical?: canonical?}}
@@ -41,9 +52,12 @@ defmodule Gara.Room do
   end
 
   def start_link(%{name: name, topic: topic, canonical?: canonical?}) do
-    GenServer.start_link(__MODULE__, {name, topic, canonical?},
-      name: {:via, Registry, {Rooms, name}}
-    )
+    case GenServer.start_link(__MODULE__, {name, topic, canonical?},
+           name: {:via, Registry, {Rooms, name}}
+         ) do
+      {:ok, pid} -> {:ok, pid}
+      {:error, {:already_started, _pid}} -> :ignore
+    end
   end
 
   @doc """

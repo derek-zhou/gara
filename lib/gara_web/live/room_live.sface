@@ -5,7 +5,7 @@
         {gettext("Back to the lobby")}
         </Link>
     </div>
-    <Header :if={@nick != ""}
+    <Header :if={@room_status == :joined}
 	    tz_offset={@tz_offset} name={@room_name} stat={@room_stat}
     	    room_status={@room_status} participants={@participants} nick={@nick}
 	    idle_percentage={@idle_percentage} show_info={@show_info}
@@ -14,6 +14,7 @@
 	    uploading={@uploading} mode={@input_mode}
 	    click_text="click_text" click_image="click_image" click_file="click_file"
 	    preview_url={@preview_url} attachment={@attachment} />
-    <Chat :if={@nick != ""} tz_offset={@tz_offset} messages={@messages} nick={@nick} />
-    <History :if={@nick == ""} messages={@history} />
+    <Chat :if={@room_status == :joined || @room_status == :hangup}
+	  tz_offset={@tz_offset} messages={@messages} nick={@nick} />
+    <History :if={@room_status == :exist} messages={@history} />
 </Main>

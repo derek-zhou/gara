@@ -9,6 +9,17 @@
 	    <Label>{gettext("Your topic: ")}</Label>
 	    <TextInput />
 	</Field>
+	<div class="line">
+	    <Label>{gettext("After ")}</Label>
+	    <Field name="hours">
+		<NumberInput value="0" opts={min: 0, max: 23}/>
+		<Label>{gettext("hours")}</Label>
+	    </Field>
+	    <Field name="minutes">
+		<NumberInput value="0" opts={min: 0, max: 59} />
+		<Label>{gettext("minutes")}</Label>
+	    </Field>
+	</div>
 	<div class="toolbar">
 	    <input class="button" type="submit" value="Get a room already!">
 	</div>

@@ -114,8 +114,14 @@ button[disabled] {
             input[type="text"] {
 		@apply w-80 leading-relaxed border rounded text-black;
             }
+            input[type="number"] {
+		@apply w-12 leading-relaxed border rounded text-black;
+            }
 	    .field {
 		@apply mb-2 flex flex-row flex-wrap justify-center;
+	    }
+	    .line {
+		@apply justify-center flex flex-row mb-2 space-x-2;
 	    }
 	    hr {
 		@apply mb-2 border-gray-200;
