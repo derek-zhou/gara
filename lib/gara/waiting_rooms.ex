@@ -17,7 +17,7 @@ defmodule Gara.WaitingRooms do
   """
   def open(topic, minutes) do
     name = Room.new_room_name()
-    timeout = System.monotonic_time(:second) + minutes * 60
+    timeout = System.monotonic_time(:second) + minutes * 60 + 59
     ETS.insert(@ets_waiting_rooms, {name, topic, timeout})
     name
   end
@@ -30,8 +30,8 @@ defmodule Gara.WaitingRooms do
     limit = Defaults.default(:idle_limit) * 60
 
     case ETS.lookup(@ets_waiting_rooms, name) do
-      [{^name, topic, timeout}] when timeout > now ->
-        {:wait, div(timeout + 59 - now, 60), topic}
+      [{^name, topic, timeout}] when timeout > now + 59 ->
+        {:wait, div(timeout - now, 60), topic}
 
       [{^name, _topic, timeout}] when timeout <= now - limit ->
         ETS.delete(@ets_waiting_rooms, name)

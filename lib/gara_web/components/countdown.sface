@@ -1,0 +1,7 @@
+<div class="hero">
+    <img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara_room.jpg")}>
+</div>
+<div class="hero">
+    {gettext("Room will open in: ")} <em>{div(@minutes, 60)} </em>
+    {gettext("hours")} <em>{rem(@minutes, 60)} </em>{gettext("minutes")}
+</div>

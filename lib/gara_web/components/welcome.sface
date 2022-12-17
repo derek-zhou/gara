@@ -10,7 +10,7 @@
 	    <TextInput />
 	</Field>
 	<div class="line">
-	    <Label>{gettext("After ")}</Label>
+	    <Label>{gettext("Open after ")}</Label>
 	    <Field name="hours">
 		<NumberInput value="0" opts={min: 0, max: 23}/>
 		<Label>{gettext("hours")}</Label>

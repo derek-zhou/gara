@@ -92,7 +92,10 @@ button[disabled] {
 	    }
 	}
 	.hero {
-	    @apply flex flex-row justify-center;
+	    @apply flex flex-row justify-center text-lg;
+	    em {
+		@apply text-2xl font-bold px-2;
+	    }
 	    img {
 		@apply block;
 	    }
@@ -121,7 +124,7 @@ button[disabled] {
 		@apply mb-2 flex flex-row flex-wrap justify-center;
 	    }
 	    .line {
-		@apply justify-center flex flex-row mb-2 space-x-2;
+		@apply justify-center flex flex-row mb-2;
 	    }
 	    hr {
 		@apply mb-2 border-gray-200;

@@ -11,74 +11,76 @@ msgstr ""
 "Language: zh\n"
 "Plural-Forms: nplurals=1\n"
 
-#: lib/gara_web/components/welcome.sface:17
+#: lib/gara_web/components/welcome.sface:28
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "所有"
 
-#: lib/gara_web/components/header.sface:4
+#: lib/gara_web/live/room_live.sface:6
 #, elixir-autogen, elixir-format
 msgid "Back to the lobby"
 msgstr "回大厅吧"
 
-#: lib/gara_web/live/room_live.ex:74
+#: lib/gara_web/live/room_live.ex:113
 #, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr "包房里没空了"
 
-#: lib/gara_web/live/room_live.ex:44
-#: lib/gara_web/live/room_live.ex:45
-#: lib/gara_web/live/room_live.ex:240
+#: lib/gara_web/live/room_live.ex:50
+#: lib/gara_web/live/room_live.ex:51
+#: lib/gara_web/live/room_live.ex:63
+#: lib/gara_web/live/room_live.ex:64
+#: lib/gara_web/live/room_live.ex:297
 #, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr "包房已关闭"
 
-#: lib/gara_web/live/room_live.ex:152
+#: lib/gara_web/live/room_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr "服务器死机了"
 
-#: lib/gara_web/live/room_live.ex:138
+#: lib/gara_web/live/room_live.ex:180
 #, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr "你被踢下线了"
 
-#: lib/gara_web/components/header.sface:40
+#: lib/gara_web/components/header.sface:34
 #, elixir-autogen, elixir-format
 msgid "The room have been opened since "
 msgstr "包房开放始于"
 
-#: lib/gara_web/components/header.sface:27
+#: lib/gara_web/components/header.sface:21
 #, elixir-autogen, elixir-format
 msgid "The topic is: "
 msgstr "聊天话题是："
 
-#: lib/gara_web/live/room_live.ex:87
+#: lib/gara_web/live/room_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr "欢迎回来，"
 
-#: lib/gara_web/live/room_live.ex:215
+#: lib/gara_web/live/room_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "You left"
 msgstr "你离开了"
 
-#: lib/gara_web/live/room_live.ex:121
+#: lib/gara_web/live/room_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr "你可以点击右上角修改"
 
-#: lib/gara_web/components/header.sface:46
+#: lib/gara_web/components/header.sface:40
 #, elixir-autogen, elixir-format
 msgid "Your new nickname: "
 msgstr "你的新昵称："
 
-#: lib/gara_web/components/header.sface:43
+#: lib/gara_web/components/header.sface:37
 #, elixir-autogen, elixir-format
 msgid "Your nickname is "
 msgstr "你的昵称是 "
 
-#: lib/gara_web/live/room_live.ex:118
+#: lib/gara_web/live/room_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
 msgstr "你的临时昵称是："
@@ -93,7 +95,7 @@ msgstr "聊点啥："
 msgid "joined"
 msgstr "已上线"
 
-#: lib/gara_web/components/header.sface:57
+#: lib/gara_web/components/header.sface:51
 #, elixir-autogen, elixir-format
 msgid "leave"
 msgstr "离开"
@@ -103,7 +105,7 @@ msgstr "离开"
 msgid "left"
 msgstr "走了"
 
-#: lib/gara_web/components/header.sface:50
+#: lib/gara_web/components/header.sface:44
 #, elixir-autogen, elixir-format
 msgid "rename"
 msgstr "改名"
@@ -118,20 +120,21 @@ msgstr "改名为"
 msgid "rooms occupied"
 msgstr "个包房已占用"
 
-#: lib/gara_web/components/welcome.sface:17
+#: lib/gara_web/components/welcome.sface:28
 #, elixir-autogen, elixir-format
 msgid "rooms occupied, comeback later"
 msgstr "个包房都被占了，下次请早"
 
 #: lib/gara_web/components/chat.sface:11
 #: lib/gara_web/components/chat.sface:24
+#: lib/gara_web/components/history.sface:9
 #, elixir-autogen, elixir-format
 msgid "said: "
 msgstr "说："
 
-#: lib/gara_web/components/header.sface:79
-#: lib/gara_web/components/header.sface:102
-#: lib/gara_web/components/header.sface:126
+#: lib/gara_web/components/header.sface:73
+#: lib/gara_web/components/header.sface:96
+#: lib/gara_web/components/header.sface:120
 #, elixir-autogen, elixir-format
 msgid "send"
 msgstr "发送"
@@ -141,70 +144,98 @@ msgstr "发送"
 msgid "The Lobby"
 msgstr "大厅"
 
-#: lib/gara_web/components/header.sface:63
+#: lib/gara_web/components/header.sface:57
 #, elixir-autogen, elixir-format
 msgid "people are here: "
 msgstr "个人在这里: "
 
-#: lib/gara_web/components/header.sface:104
-#: lib/gara_web/components/header.sface:128
+#: lib/gara_web/components/header.sface:98
+#: lib/gara_web/components/header.sface:122
 #, elixir-autogen, elixir-format
 msgid "text"
 msgstr "文字"
 
-#: lib/gara_web/components/welcome.sface:20
+#: lib/gara_web/components/welcome.sface:31
 #, elixir-autogen, elixir-format
 msgid "You were in the following rooms: "
 msgstr "你访问过下列房间："
 
-#: lib/gara_web/components/header.sface:54
+#: lib/gara_web/components/header.sface:48
 #, elixir-autogen, elixir-format
 msgid "Leave the room. Your transcript will be frozen."
 msgstr "离开包房。你的聊天记录会不再更新。"
 
-#: lib/gara_web/components/header.sface:37
+#: lib/gara_web/components/header.sface:31
 #, elixir-autogen, elixir-format
 msgid "The room's code is: "
 msgstr "房间代码是: "
 
-#: lib/gara_web/live/room_live.ex:345
+#: lib/gara_web/live/room_live.ex:402
 #, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr "文件太大"
 
-#: lib/gara_web/components/header.sface:75
+#: lib/gara_web/components/header.sface:69
 #, elixir-autogen, elixir-format
 msgid "Markdown syntax supported"
 msgstr "支持Markdown语法"
 
-#: lib/gara_web/live/room_live.ex:243
+#: lib/gara_web/live/room_live.ex:300
 #, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr "这个昵称不能用"
 
-#: lib/gara_web/live/room_live.ex:237
+#: lib/gara_web/live/room_live.ex:294
 #, elixir-autogen, elixir-format
 msgid "The nickname is taken"
 msgstr "这个昵称已有人占用了"
 
-#: lib/gara_web/components/header.sface:113
+#: lib/gara_web/components/header.sface:107
 #, elixir-autogen, elixir-format
 msgid "Click to select a file"
 msgstr "请点击选择你的文件"
 
-#: lib/gara_web/components/header.sface:90
+#: lib/gara_web/components/header.sface:84
 #, elixir-autogen, elixir-format
 msgid "Click to select a picture"
 msgstr "请点击选择你的图片"
 
-#: lib/gara_web/components/header.sface:83
-#: lib/gara_web/components/header.sface:106
+#: lib/gara_web/components/header.sface:77
+#: lib/gara_web/components/header.sface:100
 #, elixir-autogen, elixir-format
 msgid "file"
 msgstr "文件"
 
-#: lib/gara_web/components/header.sface:81
-#: lib/gara_web/components/header.sface:130
+#: lib/gara_web/components/header.sface:75
+#: lib/gara_web/components/header.sface:124
 #, elixir-autogen, elixir-format
 msgid "image"
 msgstr "图片"
+
+#: lib/gara_web/live/room_live.ex:57
+#: lib/gara_web/live/room_live.ex:58
+#, elixir-autogen, elixir-format
+msgid "All rooms occupied, comeback later"
+msgstr "所有包房都被占了，下次请早"
+
+#: lib/gara_web/components/countdown.sface:5
+#, elixir-autogen, elixir-format
+msgid "Room will open in: "
+msgstr "包房还未开放，须等候："
+
+#: lib/gara_web/components/countdown.sface:6
+#: lib/gara_web/components/welcome.sface:16
+#, elixir-autogen, elixir-format
+msgid "hours"
+msgstr "小时"
+
+#: lib/gara_web/components/countdown.sface:6
+#: lib/gara_web/components/welcome.sface:20
+#, elixir-autogen, elixir-format
+msgid "minutes"
+msgstr "分钟"
+
+#: lib/gara_web/components/welcome.sface:13
+#, elixir-autogen, elixir-format
+msgid "Open after "
+msgstr "等候："

@@ -1,4 +1,5 @@
 <Main messages={@flash}>
+    <Countdown :if={@room_status == :waiting} minutes={@waiting_minutes} />
     <div class="hero" :if={@room_status == :unknown || @room_status == :hangup}>
 	<Link class="button" to={Routes.page_path(Endpoint, :index)}
 	      opts={referrerpolicy: "no-referrer"}>

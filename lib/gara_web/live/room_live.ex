@@ -6,7 +6,7 @@ defmodule GaraWeb.RoomLive do
   alias Gara.{Room, Rooms, WaitingRooms}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
-  alias GaraWeb.{Endpoint, Main, Header, Chat, History, Guardian}
+  alias GaraWeb.{Endpoint, Main, Header, Chat, History, Guardian, Countdown}
   alias GaraWeb.Router.Helpers, as: Routes
 
   # client side state
@@ -66,18 +66,9 @@ defmodule GaraWeb.RoomLive do
               |> push_event("leave", %{})
 
             {:wait, minutes, topic} ->
-              hours = div(minutes, 60)
-              mins = rem(minutes, 60)
               if connected?(socket), do: Process.send_after(self(), :count_down, 60_000)
 
-              socket
-              |> put_flash(
-                :info,
-                gettext("Room will open in: ") <>
-                  "#{hours}" <>
-                  gettext(" hours ") <> "#{mins}" <> gettext(" minutes")
-              )
-              |> assign(
+              assign(socket,
                 page_title: topic,
                 waiting_minutes: minutes,
                 room_status: :waiting
@@ -191,7 +182,7 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: 0, room_name: n}} = socket) do
+  def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: 1, room_name: n}} = socket) do
     {
       :noreply,
       push_navigate(socket,
@@ -202,21 +193,8 @@ defmodule GaraWeb.RoomLive do
   end
 
   def handle_info(:count_down, %Socket{assigns: %{waiting_minutes: minutes}} = socket) do
-    hours = div(minutes, 60)
-    mins = rem(minutes, 60)
     Process.send_after(self(), :count_down, 60_000)
-
-    {
-      :noreply,
-      socket
-      |> put_flash(
-        :info,
-        gettext("Room will open in: ") <>
-          "#{hours}" <>
-          gettext(" hours ") <> "#{mins}" <> gettext(" minutes")
-      )
-      |> assign(waiting_minutes: minutes - 1)
-    }
+    {:noreply, assign(socket, waiting_minutes: minutes - 1)}
   end
 
   def handle_info({:tick, idle_percentage}, socket) do
