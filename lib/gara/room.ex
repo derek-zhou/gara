@@ -56,6 +56,7 @@ defmodule Gara.Room do
            name: {:via, Registry, {Rooms, name}}
          ) do
       {:ok, pid} -> {:ok, pid}
+      :ignore -> :ignore
       {:error, {:already_started, _pid}} -> :ignore
     end
   end
