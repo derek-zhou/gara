@@ -1,7 +1,7 @@
-import "phoenix_html";
-import {Socket} from "phoenix";
-import {LiveSocket} from "phoenix_live_view";
-import Hooks from "./_hooks";
+import "./phoenix_html.js";
+import {Socket} from "./phoenix.js";
+import {LiveSocket} from "./phoenix_live_view.js";
+import Hooks from "./_hooks/index.js";
 import {list_room, get_token, get_preferred_nick} from "./states.js";
 
 function show_progress_bar() {

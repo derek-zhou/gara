@@ -33,8 +33,9 @@ defmodule Gara.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:guardian, "~> 2.2.4"},
-      {:surface, "~> 0.9.1"},
+      {:surface, path: "../surface"},
+      {:phoenix_copy, "~> 0.1.3"},
+      {:guardian, "~> 2.3.1"},
       {:md, "~> 0.9.1"},
       {:string_naming, "~> 0.7.3"},
       {:cookie_jar, "~> 1.1"},
@@ -42,7 +43,7 @@ defmodule Gara.MixProject do
       {:phoenix, "~> 1.6.6"},
       {:phoenix_html, "~> 3.2"},
       {:phoenix_live_reload, "~> 1.3.1", only: :dev},
-      {:phoenix_live_view, "~> 0.18.0"},
+      {:phoenix_live_view, "== 0.18.16"},
       {:floki, ">= 0.33.0"},
       {:phoenix_live_dashboard, "~> 0.7.0"},
       {:telemetry_metrics, "~> 0.6"},
@@ -61,7 +62,8 @@ defmodule Gara.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "cmd npm install --prefix assets"]
+      start: ["compile", "phx.copy default", "phx.server"],
+      deploy: ["compile", "phx.copy default", "phx.digest", "release --overwrite"]
     ]
   end
 end

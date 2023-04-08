@@ -15,11 +15,7 @@ config :gara, GaraWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "ILXRBu2Lt+YJiMCwBdcAgQ0xEXCW8+HDsMZmkOLBni4z0P7tJw1OYxss2wC5xo+Q",
   watchers: [
-    npm: [
-      "run",
-      "watch",
-      cd: Path.expand("../assets", __DIR__)
-    ]
+    asset_copy: {Phoenix.Copy, :watch, [:default]}
   ]
 
 config :gara,
