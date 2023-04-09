@@ -35,7 +35,7 @@
     </h4>
     <hr />
     <h3>{gettext("Your nickname is ")}<i>{@nick}</i></h3>
-    <Form for={:rename} submit={@rename}>
+    <Form for={%{}} as={:rename} submit={@rename}>
 	<Field name="name" class="field">
 	    <Label>{gettext("Your new nickname: ")}</Label>
 	    <TextInput />
@@ -46,7 +46,7 @@
     </Form>
     <hr />
     <h3>{gettext("Leave the room. Your transcript will be frozen.")}</h3>
-    <Form for={:leave} submit={@leave}>
+    <Form for={%{}} as={:leave} submit={@leave}>
 	<div class="toolbar">
 	    <input class="button button-danger" type="submit" value={gettext("leave")}>
 	</div>
@@ -63,7 +63,7 @@
     </ul>
 </div>
 <div class="write" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
-    <Form for={:message} submit={@message} :if={@mode == :text}>
+    <Form for={%{}} as={:message} submit={@message} :if={@mode == :text}>
 	<Field name="text" class="input-box">
 	    <TextArea class="compose"
 		      opts={autofocus: true, placeholder: gettext("Markdown syntax supported") }/>

@@ -4,7 +4,7 @@
     </div>
     {#if @occupied < @rooms}
     <div class="info"><i>{@occupied}/{@rooms}</i> {gettext("rooms occupied")}</div>
-    <Form for={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
+    <Form for={%{}} as={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
 	<Field name="topic" class="field">
 	    <Label>{gettext("Your topic: ")}</Label>
 	    <TextInput />
