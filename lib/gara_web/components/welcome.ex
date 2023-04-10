@@ -3,7 +3,7 @@ defmodule GaraWeb.Welcome do
   import GaraWeb.Gettext
 
   alias Surface.Components.Form
-  alias Surface.Components.Form.{Field, Label, TextInput, NumberInput}
+  alias Surface.Components.Form.{Field, Label, TextInput, NumberInput, Checkbox}
   alias GaraWeb.Router.Helpers, as: Routes
   alias GaraWeb.Endpoint
 

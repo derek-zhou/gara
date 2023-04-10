@@ -5,19 +5,21 @@
     {#if @occupied < @rooms}
     <div class="info"><i>{@occupied}/{@rooms}</i> {gettext("rooms occupied")}</div>
     <Form for={%{}} as={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
-	<Field name="topic" class="field">
-	    <Label>{gettext("Your topic: ")}</Label>
-	    <TextInput />
-	</Field>
-	<div class="line">
-	    <Label>{gettext("Open after ")}</Label>
-	    <Field name="hours">
-		<NumberInput value="0" opts={min: 0, max: 23}/>
-		<Label>{gettext("hours")}</Label>
+	<div class="flex">
+	    <Field name="topic">
+		<Label>{gettext("Your topic:")}</Label>
+		<TextInput />
 	    </Field>
-	    <Field name="minutes">
+	    <Label field="delay" class="toggle">{gettext("Delay open:")}</Label>
+	    <Checkbox field="delay" />
+	    <div class="flex-break" />
+	    <Field class="expandable" name="hours">
+		<Label>{gettext("Hours:")}</Label>
+		<NumberInput value="0" opts={min: 0, max: 23}/>
+	    </Field>
+	    <Field class="expandable" name="minutes">
+		<Label>{gettext("Minutes:")}</Label>
 		<NumberInput value="0" opts={min: 0, max: 59} />
-		<Label>{gettext("minutes")}</Label>
 	    </Field>
 	</div>
 	<div class="toolbar">

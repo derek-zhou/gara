@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 
-#: lib/gara_web/components/welcome.sface:28
+#: lib/gara_web/components/welcome.sface:30
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr ""
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Back to the lobby"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:148
+#: lib/gara_web/live/room_live.ex:149
 #, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr ""
@@ -29,17 +29,17 @@ msgstr ""
 #: lib/gara_web/live/room_live.ex:80
 #: lib/gara_web/live/room_live.ex:92
 #: lib/gara_web/live/room_live.ex:93
-#: lib/gara_web/live/room_live.ex:314
+#: lib/gara_web/live/room_live.ex:315
 #, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:226
+#: lib/gara_web/live/room_live.ex:227
 #, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:208
+#: lib/gara_web/live/room_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr ""
@@ -54,17 +54,17 @@ msgstr ""
 msgid "The topic is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:162
+#: lib/gara_web/live/room_live.ex:163
 #, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:289
+#: lib/gara_web/live/room_live.ex:290
 #, elixir-autogen, elixir-format
 msgid "You left"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:198
+#: lib/gara_web/live/room_live.ex:199
 #, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr ""
@@ -79,14 +79,9 @@ msgstr ""
 msgid "Your nickname is "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:195
+#: lib/gara_web/live/room_live.ex:196
 #, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
-msgstr ""
-
-#: lib/gara_web/components/welcome.sface:9
-#, elixir-autogen, elixir-format
-msgid "Your topic: "
 msgstr ""
 
 #: lib/gara_web/components/chat.sface:43
@@ -119,7 +114,7 @@ msgstr ""
 msgid "rooms occupied"
 msgstr ""
 
-#: lib/gara_web/components/welcome.sface:28
+#: lib/gara_web/components/welcome.sface:30
 #, elixir-autogen, elixir-format
 msgid "rooms occupied, comeback later"
 msgstr ""
@@ -154,7 +149,7 @@ msgstr ""
 msgid "text"
 msgstr ""
 
-#: lib/gara_web/components/welcome.sface:31
+#: lib/gara_web/components/welcome.sface:33
 #, elixir-autogen, elixir-format
 msgid "You were in the following rooms: "
 msgstr ""
@@ -169,7 +164,7 @@ msgstr ""
 msgid "The room's code is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:419
+#: lib/gara_web/live/room_live.ex:420
 #, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr ""
@@ -179,12 +174,12 @@ msgstr ""
 msgid "Markdown syntax supported"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:317
+#: lib/gara_web/live/room_live.ex:318
 #, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:311
+#: lib/gara_web/live/room_live.ex:312
 #, elixir-autogen, elixir-format
 msgid "The nickname is taken"
 msgstr ""
@@ -217,24 +212,38 @@ msgid "Room will open in: "
 msgstr ""
 
 #: lib/gara_web/components/countdown.sface:6
-#: lib/gara_web/components/welcome.sface:16
 #, elixir-autogen, elixir-format
 msgid "hours"
 msgstr ""
 
 #: lib/gara_web/components/countdown.sface:6
-#: lib/gara_web/components/welcome.sface:20
+#: lib/gara_web/live/room_live.ex:99
 #, elixir-autogen, elixir-format
 msgid "minutes"
-msgstr ""
-
-#: lib/gara_web/components/welcome.sface:13
-#, elixir-autogen, elixir-format
-msgid "Open after "
 msgstr ""
 
 #: lib/gara_web/live/room_live.ex:86
 #: lib/gara_web/live/room_live.ex:87
 #, elixir-autogen, elixir-format
 msgid "All rooms are occupied, please come back later"
+msgstr ""
+
+#: lib/gara_web/components/welcome.sface:13
+#, elixir-autogen, elixir-format
+msgid "Delay open:"
+msgstr ""
+
+#: lib/gara_web/components/welcome.sface:17
+#, elixir-autogen, elixir-format
+msgid "Hours:"
+msgstr ""
+
+#: lib/gara_web/components/welcome.sface:21
+#, elixir-autogen, elixir-format
+msgid "Minutes:"
+msgstr ""
+
+#: lib/gara_web/components/welcome.sface:10
+#, elixir-autogen, elixir-format
+msgid "Your topic:"
 msgstr ""

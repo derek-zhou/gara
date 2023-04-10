@@ -55,25 +55,21 @@ defmodule GaraWeb.PageController do
     |> render("welcome.html")
   end
 
-  def create(conn, %{"create" => %{"topic" => topic, "hours" => hours, "minutes" => minutes}}) do
+  def create(conn, %{
+        "create" => %{"topic" => topic, "delay" => "true", "hours" => hours, "minutes" => minutes}
+      }) do
     trimmed = String.trim(topic)
     minutes = String.to_integer(hours) * 60 + String.to_integer(minutes)
+    name = WaitingRooms.open(trimmed, minutes)
+    redirect(conn, to: Routes.room_path(conn, :chat, name))
+  end
 
-    minutes =
-      cond do
-        minutes < 0 -> 0
-        minutes > 1439 -> 1440
-        true -> minutes
-      end
+  def create(conn, %{"create" => %{"topic" => topic}}) do
+    trimmed = String.trim(topic)
 
-    if minutes == 0 do
-      case Registry.lookup(Rooms, trimmed) do
-        [] -> new_room(conn, trimmed)
-        _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
-      end
-    else
-      name = WaitingRooms.open(trimmed, minutes)
-      redirect(conn, to: Routes.room_path(conn, :chat, name))
+    case Registry.lookup(Rooms, trimmed) do
+      [] -> new_room(conn, trimmed)
+      _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
     end
   end
 
