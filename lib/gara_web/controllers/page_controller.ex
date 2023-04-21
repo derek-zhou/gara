@@ -26,19 +26,19 @@ defmodule GaraWeb.PageController do
       :ignore ->
         case Registry.lookup(RoomsByPublicTopic, topic) do
           [] -> local_index(conn)
-          [{_pid, name}] -> redirect(conn, to: Routes.room_path(conn, :chat, name))
+          [{_pid, name}] -> redirect(conn, to: ~p"/room/#{name}")
         end
 
       name ->
-        redirect(conn, to: Routes.room_path(conn, :chat, name))
+        redirect(conn, to: ~p"/room/#{name}")
     end
   end
 
   defp referrer_index(conn, url) do
     cond do
       url == "" -> local_index(conn)
-      String.starts_with?(url, "/") -> local_index(conn)
-      String.starts_with?(url, Routes.page_url(conn, :index)) -> local_index(conn)
+      String.starts_with?(url, ~p"/") -> local_index(conn)
+      String.starts_with?(url, url(~p"/")) -> local_index(conn)
       true -> new_room(conn, url)
     end
   end
@@ -51,7 +51,7 @@ defmodule GaraWeb.PageController do
     |> assign(:rooms, rooms)
     |> assign(:occupied, occupied)
     |> assign(:page_title, gettext("The Lobby"))
-    |> assign(:page_url, Routes.page_url(conn, :index))
+    |> assign(:page_url, url(~p"/"))
     |> render("welcome.html")
   end
 
@@ -61,7 +61,7 @@ defmodule GaraWeb.PageController do
     trimmed = String.trim(topic)
     minutes = String.to_integer(hours) * 60 + String.to_integer(minutes)
     name = WaitingRooms.open(trimmed, minutes)
-    redirect(conn, to: Routes.room_path(conn, :chat, name))
+    redirect(conn, to: ~p"/room/#{name}")
   end
 
   def create(conn, %{"create" => %{"topic" => topic}}) do
@@ -69,7 +69,7 @@ defmodule GaraWeb.PageController do
 
     case Registry.lookup(Rooms, trimmed) do
       [] -> new_room(conn, trimmed)
-      _ -> redirect(conn, to: Routes.room_path(conn, :chat, trimmed))
+      _ -> redirect(conn, to: ~p"/room/#{trimmed}")
     end
   end
 

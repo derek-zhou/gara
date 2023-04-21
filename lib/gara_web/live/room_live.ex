@@ -3,11 +3,15 @@ defmodule GaraWeb.RoomLive do
   import GaraWeb.Gettext
   require Logger
 
+  use Phoenix.VerifiedRoutes,
+    router: GaraWeb.Router,
+    endpoint: GaraWeb.Endpoint,
+    statics: ~w(css images js)
+
   alias Gara.{Room, Rooms, WaitingRooms}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
-  alias GaraWeb.{Endpoint, Main, Header, Chat, History, Guardian, Countdown}
-  alias GaraWeb.Router.Helpers, as: Routes
+  alias GaraWeb.{Main, Header, Chat, History, Guardian, Countdown}
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -111,17 +115,14 @@ defmodule GaraWeb.RoomLive do
 
   defp mount_chat_room(socket, pid, room_name) do
     stat = Room.stat(pid)
+    page_url = if stat.canonical?, do: stat.topic, else: url(~p"/room/#{room_name}")
 
     socket
     |> assign(
       room_pid: pid,
       room_stat: stat,
       page_title: "(#{stat.active}) #{stat.topic}",
-      page_url:
-        if(stat.canonical?,
-          do: stat.topic,
-          else: Routes.room_url(Endpoint, :chat, room_name)
-        ),
+      page_url: page_url,
       room_status: :exist,
       page_title: "#{stat.topic} -- GARA",
       history: Enum.reverse(stat.history)

@@ -1,10 +1,10 @@
 <div class="content">
     <div class="hero">
-	<img alt="small karaoke room" src={Routes.static_path(Endpoint, "/images/gara_room.jpg")}>
+	<img alt="small karaoke room" src={~p"/images/gara_room.jpg"}>
     </div>
     {#if @occupied < @rooms}
     <div class="info"><i>{@occupied}/{@rooms}</i> {gettext("rooms occupied")}</div>
-    <Form for={%{}} as={:create} method="POST" action={Routes.page_path(Endpoint, :create)}>
+    <Form for={%{}} as={:create} method="POST" action={~p"/create"}>
 	<div class="flex">
 	    <Field name="topic">
 		<Label>{gettext("Your topic:")}</Label>

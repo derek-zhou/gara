@@ -21,9 +21,13 @@ defmodule GaraWeb do
     quote do
       use Phoenix.Controller, namespace: GaraWeb
 
+      use Phoenix.VerifiedRoutes,
+        router: GaraWeb.Router,
+        endpoint: GaraWeb.Endpoint,
+        statics: ~w(css images js)
+
       import Plug.Conn
       import GaraWeb.Gettext
-      alias GaraWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -81,6 +85,11 @@ defmodule GaraWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
+      use Phoenix.VerifiedRoutes,
+        router: GaraWeb.Router,
+        endpoint: GaraWeb.Endpoint,
+        statics: ~w(css images js)
+
       # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
       import Phoenix.LiveView.Helpers
 
@@ -89,7 +98,6 @@ defmodule GaraWeb do
 
       import GaraWeb.ErrorHelpers
       import GaraWeb.Gettext
-      alias GaraWeb.Router.Helpers, as: Routes
     end
   end
 

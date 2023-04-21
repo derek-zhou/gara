@@ -2,8 +2,10 @@ defmodule GaraWeb.Countdown do
   use Surface.Component
   import GaraWeb.Gettext
 
-  alias GaraWeb.Router.Helpers, as: Routes
-  alias GaraWeb.Endpoint
+  use Phoenix.VerifiedRoutes,
+    router: GaraWeb.Router,
+    endpoint: GaraWeb.Endpoint,
+    statics: ~w(css images js)
 
   prop minutes, :integer, required: true
 end

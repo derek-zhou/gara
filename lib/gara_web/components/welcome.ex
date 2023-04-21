@@ -4,8 +4,11 @@ defmodule GaraWeb.Welcome do
 
   alias Surface.Components.Form
   alias Surface.Components.Form.{Field, Label, TextInput, NumberInput, Checkbox}
-  alias GaraWeb.Router.Helpers, as: Routes
-  alias GaraWeb.Endpoint
+
+  use Phoenix.VerifiedRoutes,
+    router: GaraWeb.Router,
+    endpoint: GaraWeb.Endpoint,
+    statics: ~w(css images js)
 
   prop rooms, :integer, required: true
   prop occupied, :integer, default: 0

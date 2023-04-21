@@ -9,11 +9,11 @@
     <meta property="og:site_name" content="Get a room already!" />
     <meta property="og:url" content={assigns[:page_url] || ""} />
     <meta property="og:type" content="article" />
-    <meta property="og:image" content={Routes.static_url(@conn, "/images/gara_room.jpg")} />
+    <meta property="og:image" content={~p"/images/gara_room.jpg"} />
     <%= live_title_tag assigns[:page_title] || "Welcome, and Get a room already!" %>
-    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/css/preflight.css")}/>
-    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/css/app.css")}/>
-    <script defer phx-track-static type="module" src={Routes.static_path(@conn, "/js/app.js")}></script>
+    <link phx-track-static rel="stylesheet" href={~p"/css/preflight.css"}/>
+    <link phx-track-static rel="stylesheet" href={~p"/css/app.css"}/>
+    <script defer phx-track-static type="module" src={~p"/js/app.js"}></script>
   </head>
   <body>
     <div class="progress-bar" id="app-progress-bar"></div>
