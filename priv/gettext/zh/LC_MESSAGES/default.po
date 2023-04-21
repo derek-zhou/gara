@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Language: zh\n"
-"Plural-Forms: nplurals=1\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
 #: lib/gara_web/components/welcome.sface:30
 #, elixir-autogen, elixir-format

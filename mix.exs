@@ -7,7 +7,7 @@ defmodule Gara.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: Mix.compilers() ++ [:phoenix, :surface],
+      compilers: Mix.compilers() ++ [:surface],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -33,6 +33,7 @@ defmodule Gara.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bandit, ">= 0.7.7"},
       {:surface, path: "../surface"},
       {:phoenix_copy, "~> 0.1.3"},
       {:guardian, "~> 2.3.1"},
@@ -40,17 +41,17 @@ defmodule Gara.MixProject do
       {:string_naming, "~> 0.7.3"},
       {:cookie_jar, "~> 1.1"},
       {:httpoison, "~> 1.8"},
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.7.2"},
       {:phoenix_html, "~> 3.2"},
-      {:phoenix_live_reload, "~> 1.3.1", only: :dev},
+      {:phoenix_live_reload, "~> 1.4.1", only: :dev},
       {:phoenix_live_view, "== 0.18.16"},
+      {:phoenix_view, "~> 2.0"},
       {:floki, ">= 0.33.0"},
-      {:phoenix_live_dashboard, "~> 0.7.0"},
+      {:phoenix_live_dashboard, "~> 0.7.2"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
-      {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:jason, "~> 1.2"}
     ]
   end
 

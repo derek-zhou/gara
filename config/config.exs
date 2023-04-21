@@ -9,6 +9,7 @@ import Config
 
 # Configures the endpoint
 config :gara, GaraWeb.Endpoint,
+  adapter: Bandit.PhoenixAdapter,
   url: [host: "localhost"],
   render_errors: [view: GaraWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Gara.PubSub,
