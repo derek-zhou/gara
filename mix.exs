@@ -5,7 +5,7 @@ defmodule Gara.MixProject do
     [
       app: :gara,
       version: "0.1.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers() ++ [:surface],
       start_permanent: Mix.env() == :prod,
@@ -38,18 +38,14 @@ defmodule Gara.MixProject do
       {:phoenix_copy, "~> 0.1.3"},
       {:guardian, "~> 2.3.1"},
       {:md, "~> 0.9.1"},
-      {:string_naming, "~> 0.7.3"},
       {:cookie_jar, "~> 1.1"},
       {:httpoison, "~> 1.8"},
       {:phoenix, "~> 1.7.2"},
       {:phoenix_html, "~> 3.2"},
       {:phoenix_live_reload, "~> 1.4.1", only: :dev},
-      {:phoenix_live_view, "== 0.18.16"},
       {:phoenix_view, "~> 2.0"},
       {:floki, ">= 0.33.0"},
       {:phoenix_live_dashboard, "~> 0.7.2"},
-      {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"}
     ]
@@ -64,7 +60,13 @@ defmodule Gara.MixProject do
   defp aliases do
     [
       start: ["compile", "phx.copy default", "phx.server"],
-      deploy: ["compile", "phx.copy default", "phx.digest", "release --overwrite"]
+      deploy: [
+        "compile",
+        "phx.digest.clean",
+        "phx.copy default",
+        "phx.digest",
+        "release --overwrite"
+      ]
     ]
   end
 end
