@@ -37,9 +37,9 @@ defmodule GaraWeb.Header do
   defp attached(nil), do: false
   defp attached(_), do: true
 
-  defp attachment_name({_, name, _, _}), do: name
+  defp attachment_name({_, name, _}), do: name
 
-  defp percentage({size, _, offset, _}) when size > 0, do: floor(offset / size * 100)
+  defp percentage({size, _, offset}) when size > 0, do: floor(offset / size * 100)
   defp percentage(_), do: 100
 
   defp is_url(str) do

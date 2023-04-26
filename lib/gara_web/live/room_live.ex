@@ -32,7 +32,7 @@ defmodule GaraWeb.RoomLive do
   # :text, :image or :file
   data input_mode, :atom, default: :text
   # upload
-  # {size, name, offset, chunks} if name is nil then it is an image
+  # {size, name, offset} if name is nil then it is an image
   data attachment, :tuple, default: nil
   data preview_url, :string, default: ""
   data uploading, :boolean, default: false
@@ -343,13 +343,13 @@ defmodule GaraWeb.RoomLive do
             room_pid: room,
             uid: uid,
             uploading: false,
-            attachment: {_, name, _, data}
+            attachment: {_, name, _}
           }
         } = socket
       ) do
     case name do
-      nil -> Room.flaunt(room, uid, data)
-      _ -> Room.attach(room, uid, name, data)
+      nil -> Room.flaunt(room, uid)
+      _ -> Room.attach(room, uid, name)
     end
 
     {
@@ -430,7 +430,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(attachment: {size, name, 0, []}, preview_url: url, uploading: true)
+      |> assign(attachment: {size, name, 0}, preview_url: url, uploading: true)
       |> clear_flash()
       |> push_event("read_attachment", %{offset: 0})
     }
@@ -444,7 +444,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(attachment: {size, nil, 0, []}, preview_url: url, uploading: true)
+      |> assign(attachment: {size, nil, 0}, preview_url: url, uploading: true)
       |> clear_flash()
       |> push_event("read_attachment", %{offset: 0})
     }
@@ -514,10 +514,17 @@ defmodule GaraWeb.RoomLive do
   defp fetch_preferred_nick(socket, _), do: socket
 
   defp accept_chunk(
-         %Socket{assigns: %{attachment: {size, name, offset, data}}} = socket,
+         %Socket{
+           assigns: %{
+             room_pid: room,
+             uid: uid,
+             attachment: {size, name, offset}
+           }
+         } = socket,
          chunk
        ) do
     chunk = Base.decode64!(chunk)
+    Room.stash(room, uid, chunk, offset)
     offset = offset + byte_size(chunk)
 
     cond do
@@ -526,13 +533,13 @@ defmodule GaraWeb.RoomLive do
 
       offset == size ->
         assign(socket,
-          attachment: {size, name, offset, Enum.reverse([chunk | data])},
+          attachment: {size, name, offset},
           uploading: false
         )
 
       true ->
         socket
-        |> assign(attachment: {size, name, offset, [chunk | data]})
+        |> assign(attachment: {size, name, offset})
         |> push_event("read_attachment", %{offset: offset})
     end
   end

@@ -86,14 +86,19 @@ defmodule Gara.Room do
   end
 
   @doc """
-  flaunt an image, Returns :ok
+  stash data in a temp file, returns :ok
   """
-  def flaunt(room, id, content), do: GenServer.cast(room, {:flaunt, id, content})
+  def stash(room, id, content, offset), do: GenServer.cast(room, {:stash, id, content, offset})
 
   @doc """
-  attach a file, Returns :ok
+  flaunt an image from the temp file, returns :ok
   """
-  def attach(room, id, name, content), do: GenServer.cast(room, {:attach, id, name, content})
+  def flaunt(room, id), do: GenServer.cast(room, {:flaunt, id})
+
+  @doc """
+  attach a file from the temp file, returns :ok
+  """
+  def attach(room, id, name), do: GenServer.cast(room, {:attach, id, name})
 
   @doc """
   leave the room. Returns :ok
@@ -262,8 +267,16 @@ defmodule Gara.Room do
   end
 
   @impl true
+  def handle_cast({:stash, id, content, offset}, %__MODULE__{name: name} = state) do
+    dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    mode = if offset == 0, do: [:write, :raw], else: [:append, :raw]
+    File.open(dest, mode, &IO.binwrite(&1, content))
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_cast(
-        {:flaunt, id, content},
+        {:flaunt, id},
         %__MODULE__{
           name: name,
           roster: roster,
@@ -278,8 +291,9 @@ defmodule Gara.Room do
         {:noreply, state}
 
       {:ok, roster} ->
+        src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
         dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
-        File.write!(dest, content)
+        File.rename!(src, dest)
         msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
@@ -295,7 +309,7 @@ defmodule Gara.Room do
 
   @impl true
   def handle_cast(
-        {:attach, id, filename, content},
+        {:attach, id, filename},
         %__MODULE__{
           name: name,
           roster: roster,
@@ -310,8 +324,9 @@ defmodule Gara.Room do
         {:noreply, state}
 
       {:ok, roster} ->
+        src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
         dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.bin"])
-        File.write!(dest, content)
+        File.rename!(src, dest)
         msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
         nick = Roster.get_name(roster, id)
         now = NaiveDateTime.utc_now()
