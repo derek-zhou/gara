@@ -296,7 +296,7 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event(
         "rename",
-        %{"rename" => %{"name" => new_nick}},
+        %{"name" => new_nick},
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
     case Room.rename(room, uid, new_nick) do
@@ -322,7 +322,7 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event(
         "message",
-        %{"message" => %{"text" => text}},
+        %{"text" => text},
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
     Room.say(room, uid, text)

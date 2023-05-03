@@ -55,22 +55,20 @@ defmodule GaraWeb.PageController do
     |> render("welcome.html")
   end
 
-  def create(conn, %{
-        "create" => %{"topic" => topic, "delay" => "true", "hours" => hours, "minutes" => minutes}
-      }) do
-    trimmed = String.trim(topic)
-    minutes = String.to_integer(hours) * 60 + String.to_integer(minutes)
-    name = WaitingRooms.open(trimmed, minutes)
-    redirect(conn, to: ~p"/room/#{name}")
-  end
-
-  def create(conn, %{"create" => %{"topic" => topic}}) do
+  def create(conn, %{"topic" => topic, "delay" => "false"}) do
     trimmed = String.trim(topic)
 
     case Registry.lookup(Rooms, trimmed) do
       [] -> new_room(conn, trimmed)
       _ -> redirect(conn, to: ~p"/room/#{trimmed}")
     end
+  end
+
+  def create(conn, %{"topic" => topic, "hours" => hours, "minutes" => minutes}) do
+    trimmed = String.trim(topic)
+    minutes = String.to_integer(hours) * 60 + String.to_integer(minutes)
+    name = WaitingRooms.open(trimmed, minutes)
+    redirect(conn, to: ~p"/room/#{name}")
   end
 
   defp no_layout(conn, _opts), do: put_layout(conn, false)

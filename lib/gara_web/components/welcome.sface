@@ -4,7 +4,7 @@
     </div>
     {#if @occupied < @rooms}
     <div class="info"><i>{@occupied}/{@rooms}</i> {gettext("rooms occupied")}</div>
-    <Form for={%{}} as={:create} method="POST" action={~p"/create"}>
+    <Form for={%{}} method="POST" action={~p"/create"}>
 	<div class="flex">
 	    <Field name="topic">
 		<Label>{gettext("Your topic:")}</Label>
