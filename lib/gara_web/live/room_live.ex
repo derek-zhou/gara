@@ -415,7 +415,7 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_event("attach", %{"size" => size}, socket) when size > 10_000_000 do
+  def handle_event("attach", %{"size" => size}, socket) when size > 100_000_000 do
     {
       :noreply,
       put_flash(socket, :error, gettext("File too big"))
