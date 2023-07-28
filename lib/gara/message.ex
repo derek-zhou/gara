@@ -31,7 +31,7 @@ defmodule Gara.Message do
   """
   def attach(name, path) do
     """
-    <a class="attachment" download="#{name}" href="#{path}">#{name}</a>
+    <a class="attachment" target="_blank" download="#{name}" href="#{path}">#{name}</a>
     """
   end
 
