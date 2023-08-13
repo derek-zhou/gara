@@ -3,7 +3,7 @@ defmodule Gara.Roster do
   Manage a roster of people
   """
 
-  alias Gara.Defaults
+  alias Gara.{Defaults, Participant}
 
   @syllable_head ["b", "p", "m", "f", "t", "d", "n", "l", "g", "h", "r", "c", "s"]
   @syllable_core ["a", "e", "i", "o", "u"]
@@ -42,16 +42,11 @@ defmodule Gara.Roster do
   """
   def fullsize(%__MODULE__{name_map: names}), do: map_size(names)
 
-  @doc """
-  Join the roster. return the {new_id, new_roster}, or {:error, reason}
-  """
-  def join(
-        %__MODULE__{next_id: id, name_map: names, info_map: infos} = roster,
-        pid,
-        preferred_nick \\ nil
-      ) do
-    idle_counter = Defaults.default(:init_idle)
-
+  defp join(
+         %__MODULE__{next_id: id, name_map: names, info_map: infos} = roster,
+         pid,
+         preferred_nick
+       ) do
     cond do
       map_size(infos) >= Defaults.default(:room_capacity) ->
         {:error, :system_limit}
@@ -72,7 +67,11 @@ defmodule Gara.Roster do
            roster
            | next_id: id + 1,
              name_map: Map.put_new(names, id, nick),
-             info_map: Map.put_new(infos, id, {pid, idle_counter})
+             info_map:
+               Map.put_new(infos, id, %Participant{
+                 pid: pid,
+                 idle_counter: Defaults.default(:init_idle)
+               })
          }}
     end
   end
@@ -80,14 +79,24 @@ defmodule Gara.Roster do
   @doc """
   Rejoin the roster to replace the id. return the {new_id, new_roster}, or {:error, reason}
   """
-  def rejoin(%__MODULE__{info_map: infos} = roster, pid, id, preferred_nick \\ nil) do
+  def rejoin(
+        %__MODULE__{info_map: infos} = roster,
+        pid,
+        id,
+        preferred_nick \\ nil,
+        locked? \\ false
+      ) do
     case Map.get(infos, id) do
       nil ->
-        join(roster, pid, preferred_nick)
+        if locked? do
+          {:error, :system_limit}
+        else
+          join(roster, pid, preferred_nick)
+        end
 
-      {old_pid, _} ->
+      %Participant{pid: old_pid} ->
         send(old_pid, :hangup)
-        {id, %{roster | info_map: %{infos | id => {pid, 0}}}}
+        {id, put_in(roster[:info_map][id], %Participant{pid: pid})}
     end
   end
 
@@ -122,7 +131,7 @@ defmodule Gara.Roster do
   def ping(%__MODULE__{info_map: infos} = roster, id) do
     case Map.get(infos, id) do
       nil -> :error
-      {pid, _} -> {:ok, %{roster | info_map: %{infos | id => {pid, 0}}}}
+      _ -> {:ok, put_in(roster[:info_map][id][:idle_counter], 0)}
     end
   end
 
@@ -133,16 +142,16 @@ defmodule Gara.Roster do
     idle_limit = Defaults.default(:idle_limit)
 
     new_infos =
-      Enum.flat_map(infos, fn {id, {pid, idle_counter}} ->
+      Enum.flat_map(infos, fn {id, info} ->
         cond do
-          idle_counter >= idle_limit ->
-            send(pid, :hangup)
+          info.idle_counter >= idle_limit ->
+            send(info.pid, :hangup)
             []
 
           true ->
-            idle_counter = idle_counter + 1
-            send(pid, {:tick, Float.floor(idle_counter / idle_limit * 100)})
-            [{id, {pid, idle_counter}}]
+            idle_counter = info.idle_counter + 1
+            send(info.pid, {:tick, Float.floor(idle_counter / idle_limit * 100)})
+            [{id, %{info | idle_counter: idle_counter}}]
         end
       end)
 
@@ -153,16 +162,16 @@ defmodule Gara.Roster do
   broadcast a message to every one, return :ok
   """
   def broadcast(%__MODULE__{info_map: infos}, msg) do
-    Enum.each(infos, fn {_id, {pid, _}} -> send(pid, msg) end)
+    Enum.each(infos, fn {_id, info} -> send(info.pid, msg) end)
   end
 
   @doc """
   unicast a message to a recipient, return :ok
   """
   def unicast(%__MODULE__{name_map: names, info_map: infos}, recipient, msg) do
-    Enum.each(infos, fn {id, {pid, _}} ->
+    Enum.each(infos, fn {id, info} ->
       case names[id] do
-        ^recipient -> send(pid, msg)
+        ^recipient -> send(info.pid, msg)
         _ -> :ok
       end
     end)
@@ -183,7 +192,7 @@ defmodule Gara.Roster do
 
     case Map.get(infos, id) do
       nil -> 0
-      {_pid, idle_counter} -> Float.floor(idle_counter / idle_limit * 100)
+      %Participant{idle_counter: idle_counter} -> Float.floor(idle_counter / idle_limit * 100)
     end
   end
 

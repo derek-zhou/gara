@@ -13,7 +13,8 @@ defmodule Gara.Room do
     messages: [],
     msg_id: 0,
     img_id: 0,
-    canonical?: false
+    canonical?: false,
+    locked?: false
   ]
 
   @doc """
@@ -361,9 +362,15 @@ defmodule Gara.Room do
   def handle_call(
         {:join, pid, id, preferred_nick},
         _from,
-        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
+        %__MODULE__{
+          name: name,
+          roster: roster,
+          messages: messages,
+          msg_id: msg_id,
+          locked?: locked?
+        } = state
       ) do
-    case Roster.rejoin(roster, pid, id, preferred_nick) do
+    case Roster.rejoin(roster, pid, id, preferred_nick, locked?) do
       {:error, reason} ->
         Logger.warn("Room #{name}: room full")
         {:reply, {:error, reason}, state}
