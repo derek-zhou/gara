@@ -67,11 +67,7 @@ defmodule Gara.Roster do
            roster
            | next_id: id + 1,
              name_map: Map.put_new(names, id, nick),
-             info_map:
-               Map.put_new(infos, id, %Participant{
-                 pid: pid,
-                 idle_counter: Defaults.default(:init_idle)
-               })
+             info_map: Map.put_new(infos, id, Participant.new(pid))
          }}
     end
   end
@@ -96,7 +92,7 @@ defmodule Gara.Roster do
 
       %Participant{pid: old_pid} ->
         send(old_pid, :hangup)
-        {id, put_in(roster[:info_map][id], %Participant{pid: pid})}
+        {id, put_in(roster[:info_map][id], Participant.renew(pid))}
     end
   end
 
@@ -131,7 +127,7 @@ defmodule Gara.Roster do
   def ping(%__MODULE__{info_map: infos} = roster, id) do
     case Map.get(infos, id) do
       nil -> :error
-      _ -> {:ok, put_in(roster[:info_map][id][:idle_counter], 0)}
+      info -> {:ok, put_in(roster[:info_map][id], Participant.clear_idle_counter(info))}
     end
   end
 
@@ -149,9 +145,9 @@ defmodule Gara.Roster do
             []
 
           true ->
-            idle_counter = info.idle_counter + 1
-            send(info.pid, {:tick, Float.floor(idle_counter / idle_limit * 100)})
-            [{id, %{info | idle_counter: idle_counter}}]
+            info = Participant.inc_idle_counter(info)
+            send(info.pid, {:tick, idle_percentage(info)})
+            [{id, info}]
         end
       end)
 
@@ -188,12 +184,14 @@ defmodule Gara.Roster do
   return the idle_percentage of this id
   """
   def idle_percentage(%__MODULE__{info_map: infos}, id) do
-    idle_limit = Defaults.default(:idle_limit)
-
     case Map.get(infos, id) do
       nil -> 0
-      %Participant{idle_counter: idle_counter} -> Float.floor(idle_counter / idle_limit * 100)
+      info -> idle_percentage(info)
     end
+  end
+
+  defp idle_percentage(info) do
+    Float.floor(info.idle_counter / Defaults.default(:idle_limit) * 100)
   end
 
   defp gen_new_nick(list) do
