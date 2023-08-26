@@ -35,6 +35,20 @@
 	    {gettext("left")}
 	</div>
     </div>
+    {#match {:lock_message, msg_id, ts, true}}
+    <div id={"msg_#{msg_id}"} class="message system_message">
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    {gettext("room is now locked")}
+	</div>
+    </div>
+    {#match {:lock_message, msg_id, ts, false}}
+    <div id={"msg_#{msg_id}"} class="message system_message">
+	<div class="meta">
+	    <b>{date_string(ts, @tz_offset)}</b>
+	    {gettext("room is now unlocked")}
+	</div>
+    </div>
     {#match {:join_message, msg_id, ts, from}}
     <div id={"msg_#{msg_id}"} class="message system_message">
 	<div class="meta">

@@ -22,6 +22,8 @@ defmodule GaraWeb.RoomLive do
   data room_name, :string, default: ""
   data room_pid, :pid, default: nil
   data room_stat, :any, default: nil
+  data room_locked?, :boolean, default: false
+  data want_locked?, :boolean, default: false
   data participants, :list, default: []
   # :unkoown, :exist, :joined, :hangup or :waiting
   data room_status, :atom, default: :unknown
@@ -150,7 +152,7 @@ defmodule GaraWeb.RoomLive do
         |> put_flash(:error, gettext("No space in room"))
         |> push_event("leave", %{})
 
-      {^old_id, nick, participants, messages, idle_percentage} ->
+      {^old_id, nick, participants, messages, idle_percentage, want_locked?} ->
         socket
         |> assign(
           uid: old_id,
@@ -159,6 +161,7 @@ defmodule GaraWeb.RoomLive do
           participants: participants,
           history: [],
           messages: messages,
+          want_locked?: want_locked?,
           idle_percentage: idle_percentage
         )
         |> put_flash(:info, gettext("Welcome back, ") <> nick)
@@ -254,6 +257,10 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
+  def handle_info({:lock_message, _mid, _ts, v} = message, socket) do
+    {:noreply, assign(socket, messages: [message], room_locked?: v)}
+  end
+
   def handle_info(
         {:join_message, _mid, _ts, nick} = message,
         %Socket{assigns: %{participants: participants, room_stat: stat}} = socket
@@ -292,6 +299,16 @@ defmodule GaraWeb.RoomLive do
       |> push_event("set_token", %{token: ""})
       |> push_event("leave", %{})
     }
+  end
+
+  def handle_event("lock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
+    Room.try_lock(room, uid)
+    {:npreply, assign(socket, want_locked?: true)}
+  end
+
+  def handle_event("unlock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
+    Room.try_unlock(room, uid)
+    {:npreply, assign(socket, want_locked?: false)}
   end
 
   def handle_event(

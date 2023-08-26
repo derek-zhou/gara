@@ -155,6 +155,15 @@ defmodule Gara.Roster do
   end
 
   @doc """
+  return the ids ther in the first roster but not in the second
+  """
+  def diff(%__MODULE__{info_map: old}, %__MODULE__{info_map: new}) do
+    old
+    |> Map.keys()
+    |> Enum.reject(&Map.has_key?(new, &1))
+  end
+
+  @doc """
   broadcast a message to every one, return :ok
   """
   def broadcast(%__MODULE__{info_map: infos}, msg) do
@@ -181,12 +190,39 @@ defmodule Gara.Roster do
   end
 
   @doc """
-  return the idle_percentage of this id
+  one id votes to lock the room. return roster
   """
-  def idle_percentage(%__MODULE__{info_map: infos}, id) do
+  def lock(%__MODULE__{info_map: infos} = roster, id) do
     case Map.get(infos, id) do
-      nil -> 0
-      info -> idle_percentage(info)
+      nil -> roster
+      info -> %{roster | info_map: Map.put(infos, id, info.lock())}
+    end
+  end
+
+  @doc """
+  one id votes to unlock the room. return roster
+  """
+  def unlock(%__MODULE__{info_map: infos} = roster, id) do
+    case Map.get(infos, id) do
+      nil -> roster
+      info -> %{roster | info_map: Map.put(infos, id, info.unlock())}
+    end
+  end
+
+  @doc """
+  poll the consensus of locking, if all voted to change return true, otherwise, false
+  """
+  def poll(%__MODULE__{info_map: infos}, current) do
+    Enum.all?(infos, fn {_, info} -> info.want_locked? != current end)
+  end
+
+  @doc """
+  return the {idle_percentage, want_locked?} of this id
+  """
+  def participant_info(%__MODULE__{info_map: infos}, id) do
+    case Map.get(infos, id) do
+      nil -> {0, false}
+      info -> {idle_percentage(info), info.want_locked?}
     end
   end
 

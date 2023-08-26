@@ -107,7 +107,8 @@ defmodule Gara.Room do
   def leave(room, id), do: GenServer.cast(room, {:leave, id})
 
   @doc """
-  join the room with existing id. Returns {id, nick, participants, history} if successful,
+  join the room with existing id.
+  Returns {id, nick, participants, history, idle_percentage, want_locked?} if successful,
   {:error, reason} if not
   """
   def join(room, id \\ nil, preferred_nick \\ nil) do
@@ -118,6 +119,16 @@ defmodule Gara.Room do
   rename the user. Returns :ok if successful, {:error, reason} if not
   """
   def rename(room, id, new_nick), do: GenServer.call(room, {:rename, id, new_nick})
+
+  @doc """
+  try to lock the room. Return :ok
+  """
+  def try_lock(room, id), do: GenServer.cast(room, {:lock, id})
+
+  @doc """
+  try to unlock the room. Return :ok
+  """
+  def try_unlock(room, id), do: GenServer.cast(room, {:unlock, id})
 
   @doc """
   return a stat of the room in a map, or nil if room not found
@@ -183,16 +194,22 @@ defmodule Gara.Room do
 
   @impl true
   def handle_info(:tick, %__MODULE__{name: name, roster: roster} = state) do
-    roster = Roster.tick(roster)
+    new_roster = Roster.tick(roster)
 
-    case Roster.size(roster) do
+    state =
+      roster
+      |> Roster.diff(new_roster)
+      |> Enum.reduce(%{state | roster: new_roster}, &drop_one(&2, &1))
+      |> repoll()
+
+    case Roster.size(state.roster) do
       0 ->
         Logger.info("Room #{name}: room is empty")
         {:stop, :normal, state}
 
       _ ->
         Process.send_after(self(), :tick, @tick_interval)
-        {:noreply, %{state | roster: roster}}
+        {:noreply, state}
     end
   end
 
@@ -342,20 +359,23 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def handle_cast(
-        {:leave, id},
-        %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
-      ) do
-    case Roster.get_name(roster, id) do
-      nil ->
-        Logger.warn("Room #{name}: Spurious leave message received from #{id}")
-        {:noreply, state}
+  def handle_cast({:leave, id}, state) do
+    state = state |> drop_one(id) |> repoll()
 
-      nick ->
-        roster = Roster.leave(roster, id)
-        Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
-        {:noreply, %{state | roster: roster, msg_id: msg_id + 1}}
+    case Roster.size(state.roster) do
+      0 -> {:stop, :normal, state}
+      _ -> {:noreply, state}
     end
+  end
+
+  @impl true
+  def handle_cast({:lock, id}, state) do
+    {:noreply, repoll(%{state | roster: Roster.lock(state.roster, id)})}
+  end
+
+  @impl true
+  def handle_cast({:unlock, id}, state) do
+    {:noreply, repoll(%{state | roster: Roster.unlock(state.roster, id)})}
   end
 
   @impl true
@@ -378,7 +398,7 @@ defmodule Gara.Room do
       {id, roster} ->
         nick = Roster.get_name(roster, id)
         participants = Roster.participants(roster)
-        idle_percentage = Roster.idle_percentage(roster, id)
+        {idle_percentage, want_locked?} = Roster.participant_info(roster, id)
 
         history =
           Enum.map(messages, fn {mid, time, id, msg} ->
@@ -390,7 +410,7 @@ defmodule Gara.Room do
 
         {
           :reply,
-          {id, nick, participants, history, idle_percentage},
+          {id, nick, participants, history, idle_percentage, want_locked?},
           %{state | roster: roster, msg_id: msg_id + 1}
         }
     end
@@ -439,6 +459,28 @@ defmodule Gara.Room do
        history: history,
        canonical?: state.canonical?
      }, state}
+  end
+
+  defp drop_one(%__MODULE__{name: name, roster: roster, msg_id: msg_id} = state, id) do
+    case Roster.get_name(roster, id) do
+      nil ->
+        Logger.warn("Room #{name}: Spurious leave message received from #{id}")
+        state
+
+      nick ->
+        roster = Roster.leave(roster, id)
+        Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
+        %{state | roster: roster, msg_id: msg_id + 1}
+    end
+  end
+
+  defp repoll(%__MODULE__{roster: roster, msg_id: msg_id, locked?: locked?} = state) do
+    if Roster.poll(roster, locked?) do
+      Roster.broadcast(roster, {:lock_message, msg_id, NaiveDateTime.utc_now(), !locked?})
+      %{state | msg_id: msg_id + 1, locked?: !locked?}
+    else
+      state
+    end
   end
 
   defp update_messages([], _mid, _msg, _roster), do: []
