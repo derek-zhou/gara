@@ -36,7 +36,6 @@ defmodule Gara.MixProject do
       {:bandit, ">= 0.7.7"},
       {:surface, path: "../surface"},
       {:phoenix_copy, "~> 0.1.3"},
-      {:guardian, "~> 2.3.1"},
       {:md, "~> 0.9.1"},
       {:cookie_jar, "~> 1.1"},
       {:httpoison, "~> 1.8"},

@@ -15,7 +15,6 @@ defmodule GaraWeb.Header do
   prop participants, :list, default: []
   prop nick, :string, required: true
   prop preview_url, :string, default: ""
-  prop idle_percentage, :integer, default: 0
   prop leave, :event, required: true
   prop rename, :event, required: true
   prop message, :event, required: true

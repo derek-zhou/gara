@@ -11,7 +11,7 @@ defmodule GaraWeb.RoomLive do
   alias Gara.{Room, Rooms, WaitingRooms}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
-  alias GaraWeb.{Main, Header, Chat, History, Guardian, Countdown}
+  alias GaraWeb.{Main, Header, Chat, History, Countdown}
 
   # client side state
   data tz_offset, :integer, default: 0
@@ -28,8 +28,7 @@ defmodule GaraWeb.RoomLive do
   # :unkoown, :exist, :joined, :hangup or :waiting
   data room_status, :atom, default: :unknown
   data nick, :string, default: ""
-  data uid, :integer, default: 0
-  data idle_percentage, :integer, default: 0
+  data uid, :any, default: nil
   data waiting_minutes, :integer, default: 0
   # :text, :image or :file
   data input_mode, :atom, default: :text
@@ -51,7 +50,7 @@ defmodule GaraWeb.RoomLive do
       :ok,
       socket
       |> assign(room_name: room_name)
-      |> maybe_fetch_params(room_name)
+      |> maybe_fetch_params()
       |> mount_room(room_name),
       temporary_assigns: [messages: []]
     }
@@ -64,7 +63,7 @@ defmodule GaraWeb.RoomLive do
     end
   end
 
-  defp maybe_fetch_params(socket, room_name) do
+  defp maybe_fetch_params(socket) do
     if connected?(socket) do
       values = get_connect_params(socket)
 
@@ -72,7 +71,7 @@ defmodule GaraWeb.RoomLive do
       |> fetch_tz_offset(values)
       |> fetch_preferred_nick(values)
       |> fetch_locale(values)
-      |> fetch_token(values, room_name)
+      |> fetch_token(values)
     else
       socket
     end
@@ -129,20 +128,16 @@ defmodule GaraWeb.RoomLive do
       page_title: "#{stat.topic} -- GARA",
       history: Enum.reverse(stat.history)
     )
-    |> maybe_join(pid, room_name)
+    |> maybe_join(pid)
   end
 
-  defp maybe_join(socket, pid, room_name) do
-    cond do
-      connected?(socket) -> mount_join_room(socket, pid, room_name)
-      true -> socket
-    end
+  defp maybe_join(socket, pid) do
+    if connected?(socket), do: mount_join_room(socket, pid), else: socket
   end
 
   defp mount_join_room(
          %Socket{assigns: %{preferred_nick: preferred_nick, client_id: old_id}} = socket,
-         pid,
-         room_name
+         pid
        ) do
     Process.monitor(pid)
 
@@ -152,37 +147,20 @@ defmodule GaraWeb.RoomLive do
         |> put_flash(:error, gettext("No space in room"))
         |> push_event("leave", %{})
 
-      {^old_id, nick, participants, messages, idle_percentage, want_locked?} ->
-        socket
-        |> assign(
-          uid: old_id,
-          nick: nick,
-          room_status: :joined,
-          participants: participants,
-          history: [],
-          messages: messages,
-          want_locked?: want_locked?,
-          idle_percentage: idle_percentage
-        )
-        |> put_flash(:info, gettext("Welcome back, ") <> nick)
-
-      {id, ^preferred_nick, participants, messages, idle_percentage} ->
-        {:ok, token} = Guardian.build_token(id, room_name)
-
-        socket
-        |> assign(
-          uid: id,
-          nick: preferred_nick,
-          room_status: :joined,
-          participants: participants,
-          history: [],
-          messages: messages,
-          idle_percentage: idle_percentage
-        )
-        |> push_event("set_token", %{token: token})
-
-      {id, nick, participants, messages, idle_percentage} ->
-        {:ok, token} = Guardian.build_token(id, room_name)
+      {id, nick, participants, messages, want_locked?} ->
+        socket =
+          if nick == preferred_nick do
+            put_flash(socket, :info, gettext("Welcome back, ") <> nick)
+          else
+            put_flash(
+              socket,
+              :info,
+              gettext("Your temporary nickname is: ") <>
+                nick <>
+                ". " <>
+                gettext("You should change it by clicking the top right corner")
+            )
+          end
 
         socket
         |> assign(
@@ -192,16 +170,9 @@ defmodule GaraWeb.RoomLive do
           participants: participants,
           history: [],
           messages: messages,
-          idle_percentage: idle_percentage
+          want_locked?: want_locked?
         )
-        |> push_event("set_token", %{token: token})
-        |> put_flash(
-          :info,
-          gettext("Your temporary nickname is: ") <>
-            nick <>
-            ". " <>
-            gettext("You should change it by clicking the top right corner")
-        )
+        |> push_event("set_token", %{token: IO.iodata_to_binary(:erlang.ref_to_list(id))})
     end
   end
 
@@ -217,10 +188,6 @@ defmodule GaraWeb.RoomLive do
 
   def handle_info(:count_down, %Socket{assigns: %{room_name: name}} = socket) do
     {:noreply, mount_waiting_room(socket, name)}
-  end
-
-  def handle_info({:tick, idle_percentage}, socket) do
-    {:noreply, assign(socket, idle_percentage: idle_percentage)}
   end
 
   def handle_info({:DOWN, _, _, _, _}, socket) do
@@ -321,7 +288,7 @@ defmodule GaraWeb.RoomLive do
         {
           :noreply,
           socket
-          |> assign(nick: new_nick, show_info: false, idle_percentage: 0)
+          |> assign(nick: new_nick, show_info: false)
           |> push_event("set_preferred_nick", %{nick: new_nick})
           |> clear_flash()
         }
@@ -343,13 +310,7 @@ defmodule GaraWeb.RoomLive do
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
     Room.say(room, uid, text)
-
-    {
-      :noreply,
-      socket
-      |> assign(idle_percentage: 0)
-      |> clear_flash()
-    }
+    {:noreply, clear_flash(socket)}
   end
 
   def handle_event(
@@ -372,7 +333,7 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(idle_percentage: 0, input_mode: :text, attachment: nil)
+      |> assign(input_mode: :text, attachment: nil)
       |> push_event("clear_attachment", %{})
       |> clear_flash()
     }
@@ -515,14 +476,17 @@ defmodule GaraWeb.RoomLive do
     end
   end
 
-  defp fetch_token(socket, %{"token" => token}, room_name) do
-    case Guardian.decode_token(token) do
-      {id, ^room_name} -> assign(socket, client_id: id)
-      _ -> socket
+  defp fetch_token(socket, %{"token" => token}) do
+    try do
+      id = token |> String.to_charlist() |> :erlang.list_to_ref()
+      assign(socket, client_id: id)
+    rescue
+      _ ->
+        socket
     end
   end
 
-  defp fetch_token(socket, _, _), do: socket
+  defp fetch_token(socket, _), do: socket
 
   defp fetch_preferred_nick(socket, %{"preferred_nick" => nick}) do
     assign(socket, preferred_nick: nick)

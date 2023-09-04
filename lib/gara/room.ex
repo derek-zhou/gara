@@ -1,6 +1,4 @@
 defmodule Gara.Room do
-  @tick_interval 60 * 1000
-
   require Logger
   use GenServer, restart: :transient
   alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
@@ -158,7 +156,6 @@ defmodule Gara.Room do
   defp init_inner(name, topic, canonical?) do
     Process.flag(:trap_exit, true)
     Process.flag(:max_heap_size, 100_000)
-    Process.send_after(self(), :tick, @tick_interval)
     Logger.info("Room #{name}: room created with topic: #{topic}")
     upload_dir = Path.join([:code.priv_dir(:gara), "static", "uploads", name])
     File.rm_rf!(upload_dir)
@@ -170,7 +167,7 @@ defmodule Gara.Room do
         name: name,
         topic: topic,
         since: NaiveDateTime.utc_now(),
-        roster: %Roster{},
+        roster: Roster.new(),
         canonical?: canonical?
       }
     }
@@ -193,23 +190,12 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def handle_info(:tick, %__MODULE__{name: name, roster: roster} = state) do
-    new_roster = Roster.tick(roster)
-
-    state =
-      roster
-      |> Roster.diff(new_roster)
-      |> Enum.reduce(%{state | roster: new_roster}, &drop_one(&2, &1))
-      |> repoll()
+  def handle_info({:DOWN, id, :process, _, _}, state) do
+    state = drop_one(state, id)
 
     case Roster.size(state.roster) do
-      0 ->
-        Logger.info("Room #{name}: room is empty")
-        {:stop, :normal, state}
-
-      _ ->
-        Process.send_after(self(), :tick, @tick_interval)
-        {:noreply, state}
+      0 -> {:stop, :normal, state}
+      _ -> {:noreply, state}
     end
   end
 
@@ -224,64 +210,43 @@ defmodule Gara.Room do
   @impl true
   def handle_cast(
         {:post, id, url},
-        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
+        %__MODULE__{roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
-    case Roster.ping(roster, id) do
-      :error ->
-        Logger.warn("Room #{name}: Spurious user message received from #{id}")
-        {:noreply, state}
-
-      {:ok, roster} ->
-        Message.fetch_preview(url, msg_id)
-        nick = Roster.get_name(roster, id)
-        now = NaiveDateTime.utc_now()
-        msg = "<a href=\"#{url}\">#{url}</a>"
-        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-        messages = [{msg_id, now, id, url} | messages]
-        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
-    end
+    nick = Roster.get_name(roster, id)
+    Message.fetch_preview(url, msg_id)
+    now = NaiveDateTime.utc_now()
+    msg = "<a href=\"#{url}\">#{url}</a>"
+    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+    messages = [{msg_id, now, id, url} | messages]
+    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
   end
 
   @impl true
   def handle_cast(
         {:say, id, msg},
-        %__MODULE__{name: name, roster: roster, messages: messages, msg_id: msg_id} = state
+        %__MODULE__{roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
-    case Roster.ping(roster, id) do
-      :error ->
-        Logger.warn("Room #{name}: Spurious user message received from #{id}")
-        {:noreply, state}
-
-      {:ok, roster} ->
-        nick = Roster.get_name(roster, id)
-        now = NaiveDateTime.utc_now()
-        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-        messages = [{msg_id, now, id, msg} | messages]
-        {:noreply, %{state | roster: roster, messages: messages, msg_id: msg_id + 1}}
-    end
+    nick = Roster.get_name(roster, id)
+    now = NaiveDateTime.utc_now()
+    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+    messages = [{msg_id, now, id, msg} | messages]
+    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
   end
 
   @impl true
   def handle_cast(
         {:whisper, id, msg, tos},
-        %__MODULE__{name: name, roster: roster, msg_id: msg_id} = state
+        %__MODULE__{roster: roster, msg_id: msg_id} = state
       ) do
-    case Roster.ping(roster, id) do
-      :error ->
-        Logger.warn("Room #{name}: Spurious user message received from #{id}")
-        {:noreply, state}
+    nick = Roster.get_name(roster, id)
+    now = NaiveDateTime.utc_now()
 
-      {:ok, roster} ->
-        nick = Roster.get_name(roster, id)
-        now = NaiveDateTime.utc_now()
+    tos
+    |> MapSet.new()
+    |> MapSet.put(nick)
+    |> Enum.each(&Roster.unicast(roster, &1, {:private_message, msg_id, now, nick, msg}))
 
-        tos
-        |> MapSet.new()
-        |> MapSet.put(nick)
-        |> Enum.each(&Roster.unicast(roster, &1, {:private_message, msg_id, now, nick, msg}))
-
-        {:noreply, %{state | roster: roster, msg_id: msg_id + 1}}
-    end
+    {:noreply, %{state | msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -303,26 +268,15 @@ defmodule Gara.Room do
           msg_id: msg_id
         } = state
       ) do
-    case Roster.ping(roster, id) do
-      :error ->
-        Logger.warn("Room #{name}: Spurious user message received from #{id}")
-        {:noreply, state}
-
-      {:ok, roster} ->
-        src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
-        dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
-        File.rename!(src, dest)
-        msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
-        nick = Roster.get_name(roster, id)
-        now = NaiveDateTime.utc_now()
-        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-        messages = [{msg_id, now, id, msg} | messages]
-
-        {
-          :noreply,
-          %{state | roster: roster, messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}
-        }
-    end
+    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
+    File.rename!(src, dest)
+    msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
+    nick = Roster.get_name(roster, id)
+    now = NaiveDateTime.utc_now()
+    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+    messages = [{msg_id, now, id, msg} | messages]
+    {:noreply, %{state | messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -336,31 +290,21 @@ defmodule Gara.Room do
           msg_id: msg_id
         } = state
       ) do
-    case Roster.ping(roster, id) do
-      :error ->
-        Logger.warn("Room #{name}: Spurious user message received from #{id}")
-        {:noreply, state}
+    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.bin"])
+    File.rename!(src, dest)
+    msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
+    nick = Roster.get_name(roster, id)
+    now = NaiveDateTime.utc_now()
+    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+    messages = [{msg_id, now, id, msg} | messages]
 
-      {:ok, roster} ->
-        src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
-        dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.bin"])
-        File.rename!(src, dest)
-        msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
-        nick = Roster.get_name(roster, id)
-        now = NaiveDateTime.utc_now()
-        Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-        messages = [{msg_id, now, id, msg} | messages]
-
-        {
-          :noreply,
-          %{state | roster: roster, messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}
-        }
-    end
+    {:noreply, %{state | messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}}
   end
 
   @impl true
   def handle_cast({:leave, id}, state) do
-    state = state |> drop_one(id) |> repoll()
+    state = drop_one(state, id)
 
     case Roster.size(state.roster) do
       0 -> {:stop, :normal, state}
@@ -398,20 +342,20 @@ defmodule Gara.Room do
       {id, roster} ->
         nick = Roster.get_name(roster, id)
         participants = Roster.participants(roster)
-        {idle_percentage, want_locked?} = Roster.participant_info(roster, id)
+        want_lock? = Roster.want_lock?(roster, id)
 
         history =
           Enum.map(messages, fn {mid, time, id, msg} ->
             {:user_message, mid, time, Roster.get_name(roster, id), msg}
           end)
 
-        Logger.info("Room #{name}: #{nick}(#{id}) joined")
+        Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
 
         {
           :reply,
-          {id, nick, participants, history, idle_percentage, want_locked?},
-          %{state | roster: roster, msg_id: msg_id + 1}
+          {id, nick, participants, history, want_lock?},
+          repoll(%{state | roster: roster, msg_id: msg_id + 1})
         }
     end
   end
@@ -424,11 +368,11 @@ defmodule Gara.Room do
       ) do
     case Roster.rename(roster, id, new_nick) do
       {:error, reason} ->
-        Logger.warn("Room #{name}: #{id} rename failed: #{reason}")
+        Logger.warn("Room #{name}: #{inspect(id)} rename failed: #{reason}")
         {:reply, {:error, reason}, state}
 
       {:ok, roster, old_nick} ->
-        Logger.info("Room #{name}: #{old_nick}(#{id}) renamed to #{new_nick}")
+        Logger.info("Room #{name}: #{old_nick}(#{inspect(id)}) renamed to #{new_nick}")
 
         Roster.broadcast(
           roster,
@@ -454,24 +398,12 @@ defmodule Gara.Room do
        name: state.name,
        topic: state.topic,
        since: state.since,
-       people: Roster.fullsize(state.roster),
+       people: Roster.full_size(state.roster),
        active: Roster.size(state.roster),
        history: history,
-       canonical?: state.canonical?
+       canonical?: state.canonical?,
+       locked?: state.locked?
      }, state}
-  end
-
-  defp drop_one(%__MODULE__{name: name, roster: roster, msg_id: msg_id} = state, id) do
-    case Roster.get_name(roster, id) do
-      nil ->
-        Logger.warn("Room #{name}: Spurious leave message received from #{id}")
-        state
-
-      nick ->
-        roster = Roster.leave(roster, id)
-        Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
-        %{state | roster: roster, msg_id: msg_id + 1}
-    end
   end
 
   defp repoll(%__MODULE__{roster: roster, msg_id: msg_id, locked?: locked?} = state) do
@@ -480,6 +412,18 @@ defmodule Gara.Room do
       %{state | msg_id: msg_id + 1, locked?: !locked?}
     else
       state
+    end
+  end
+
+  defp drop_one(%__MODULE__{roster: roster, msg_id: msg_id} = state, id) do
+    case Roster.get_name(roster, id) do
+      nil ->
+        state
+
+      nick ->
+        roster = Roster.leave(roster, id)
+        Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
+        repoll(%{state | roster: roster, msg_id: msg_id + 1})
     end
   end
 

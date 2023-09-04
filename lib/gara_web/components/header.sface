@@ -7,10 +7,6 @@
 	{/if}
     </span>
     <div class="spacer" :on-click={@click_else}></div>
-    <div class="stamina-box" :on-click={@click_else}>
-	<div class="stamina"
-	     style={"width:#{@idle_percentage}%"}/>
-    </div>
     <button class={["nick", (if @show_info, do: "clicked", else: "unclicked")]}
 	    :on-click={@click_nick}
 	    disabled={@room_status != :joined}>

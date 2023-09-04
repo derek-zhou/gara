@@ -8,8 +8,7 @@
     <Header :if={@room_status == :joined}
 	    tz_offset={@tz_offset} name={@room_name} stat={@room_stat}
     	    room_status={@room_status} participants={@participants} nick={@nick}
-	    idle_percentage={@idle_percentage} show_info={@show_info}
-	    click_nick="click_nick" click_else="click_else"
+	    show_info={@show_info} click_nick="click_nick" click_else="click_else"
 	    leave="leave" rename="rename" message="message" send_attachment="send_attachment"
 	    uploading={@uploading} mode={@input_mode}
 	    click_text="click_text" click_image="click_image" click_file="click_file"

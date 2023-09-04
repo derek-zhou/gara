@@ -3,15 +3,19 @@ defmodule Gara.Roster do
   Manage a roster of people
   """
 
-  alias Gara.{Defaults, Participant}
+  alias Gara.Defaults
 
   @syllable_head ["b", "p", "m", "f", "t", "d", "n", "l", "g", "h", "r", "c", "s"]
   @syllable_core ["a", "e", "i", "o", "u"]
   @syllable_tail ["s", "n", "m", "l", "r"]
 
-  defstruct next_id: 0,
-            name_map: %{},
-            info_map: %{}
+  # this struct has maps and sets all keyed off the same opaque index from monitor
+  # all names ever exists in the rosters. Names shall not be reused
+  defstruct name_map: %{},
+            # all participants that have voted to lock the room.
+            lock_set: nil,
+            # all participants that currently are connected
+            pid_map: %{}
 
   @doc """
   Generate a default nick name that is simple to spell and pronounce
@@ -33,25 +37,38 @@ defmodule Gara.Roster do
   def get_name(%__MODULE__{name_map: names}, id), do: names[id]
 
   @doc """
-  count the occupants
-  """
-  def size(%__MODULE__{info_map: infos}), do: map_size(infos)
-
-  @doc """
   count the occupants, active and past
   """
-  def fullsize(%__MODULE__{name_map: names}), do: map_size(names)
+  def full_size(%__MODULE__{name_map: names}), do: map_size(names)
+
+  @doc """
+  count the occupants, active only
+  """
+  def size(%__MODULE__{pid_map: pids}), do: map_size(pids)
+
+  @doc """
+  poll the consensus of locking, if all voted to change return true, otherwise, false
+  """
+  def poll(%__MODULE__{pid_map: pids, lock_set: locks}, locked?) do
+    Enum.all?(pids, fn {id, _} -> MapSet.member?(locks, id) != locked? end)
+  end
+
+  @doc """
+  make a new roster
+  """
+  def new(), do: %__MODULE__{lock_set: MapSet.new()}
 
   defp join(
-         %__MODULE__{next_id: id, name_map: names, info_map: infos} = roster,
+         %__MODULE__{name_map: names, pid_map: pids} = roster,
          pid,
          preferred_nick
        ) do
     cond do
-      map_size(infos) >= Defaults.default(:room_capacity) ->
+      map_size(pids) >= Defaults.default(:room_capacity) ->
         {:error, :system_limit}
 
       true ->
+        id = Process.monitor(pid)
         list = Map.values(names)
 
         nick =
@@ -63,12 +80,7 @@ defmodule Gara.Roster do
           end
 
         {id,
-         %{
-           roster
-           | next_id: id + 1,
-             name_map: Map.put_new(names, id, nick),
-             info_map: Map.put_new(infos, id, Participant.new(pid))
-         }}
+         %{roster | name_map: Map.put_new(names, id, nick), pid_map: Map.put_new(pids, id, pid)}}
     end
   end
 
@@ -76,13 +88,13 @@ defmodule Gara.Roster do
   Rejoin the roster to replace the id. return the {new_id, new_roster}, or {:error, reason}
   """
   def rejoin(
-        %__MODULE__{info_map: infos} = roster,
+        %__MODULE__{name_map: names, pid_map: pids, lock_set: locks} = roster,
         pid,
         id,
         preferred_nick \\ nil,
         locked? \\ false
       ) do
-    case Map.get(infos, id) do
+    case Map.get(names, id) do
       nil ->
         if locked? do
           {:error, :system_limit}
@@ -90,93 +102,69 @@ defmodule Gara.Roster do
           join(roster, pid, preferred_nick)
         end
 
-      %Participant{pid: old_pid} ->
-        send(old_pid, :hangup)
-        {id, put_in(roster[:info_map][id], Participant.renew(pid))}
+      name ->
+        case Map.get(pids, id) do
+          nil -> :ok
+          old_pid -> send(old_pid, :hangup)
+        end
+
+        new_id = Process.monitor(pid)
+        names = names |> Map.delete(id) |> Map.put_new(new_id, name)
+        # pld_pid is removed at hangup time
+        pids = Map.put_new(pids, new_id, pid)
+
+        locks =
+          if MapSet.member?(locks, id) do
+            locks |> MapSet.delete(id) |> MapSet.put(new_id)
+          else
+            locks
+          end
+
+        {new_id, %__MODULE__{name_map: names, pid_map: pids, lock_set: locks}}
     end
   end
 
   @doc """
   leave the roster, return new_roster
   """
-  def leave(%__MODULE__{info_map: infos} = roster, id) do
-    %{roster | info_map: Map.delete(infos, id)}
+  def leave(%__MODULE__{pid_map: pids} = roster, id) do
+    %{roster | pid_map: Map.delete(pids, id)}
   end
 
   @doc """
   rename one people. return {:ok, new_roster, old_nick} if success, :error if something wrong
   """
   def rename(%__MODULE__{name_map: names} = roster, id, name) do
-    case ping(roster, id) do
-      :error ->
+    case Map.get(names, id) do
+      nil ->
         {:error, :enodev}
 
-      {:ok, roster} ->
+      ^name ->
+        {:ok, roster, name}
+
+      old_name ->
         cond do
-          name == names[id] -> {:ok, roster, name}
           names |> Map.values() |> Enum.member?(name) -> {:error, :eexist}
           !legal_nick?(name) -> {:error, :einval}
-          true -> {:ok, %{roster | name_map: %{names | id => name}}, names[id]}
+          true -> {:ok, %{roster | name_map: %{names | id => name}}, old_name}
         end
     end
-  end
-
-  @doc """
-  reset idle counter to 0. return {:ok, new_roster} if success, :error if not found
-  """
-  def ping(%__MODULE__{info_map: infos} = roster, id) do
-    case Map.get(infos, id) do
-      nil -> :error
-      info -> {:ok, put_in(roster[:info_map][id], Participant.clear_idle_counter(info))}
-    end
-  end
-
-  @doc """
-  increment idle counter across the board, if anyone over the limit, force it to leave
-  """
-  def tick(%__MODULE__{info_map: infos} = roster) do
-    idle_limit = Defaults.default(:idle_limit)
-
-    new_infos =
-      Enum.flat_map(infos, fn {id, info} ->
-        cond do
-          info.idle_counter >= idle_limit ->
-            send(info.pid, :hangup)
-            []
-
-          true ->
-            info = Participant.inc_idle_counter(info)
-            send(info.pid, {:tick, idle_percentage(info)})
-            [{id, info}]
-        end
-      end)
-
-    %{roster | info_map: Map.new(new_infos)}
-  end
-
-  @doc """
-  return the ids ther in the first roster but not in the second
-  """
-  def diff(%__MODULE__{info_map: old}, %__MODULE__{info_map: new}) do
-    old
-    |> Map.keys()
-    |> Enum.reject(&Map.has_key?(new, &1))
   end
 
   @doc """
   broadcast a message to every one, return :ok
   """
-  def broadcast(%__MODULE__{info_map: infos}, msg) do
-    Enum.each(infos, fn {_id, info} -> send(info.pid, msg) end)
+  def broadcast(%__MODULE__{pid_map: pids}, msg) do
+    Enum.each(pids, fn {_id, pid} -> send(pid, msg) end)
   end
 
   @doc """
   unicast a message to a recipient, return :ok
   """
-  def unicast(%__MODULE__{name_map: names, info_map: infos}, recipient, msg) do
-    Enum.each(infos, fn {id, info} ->
+  def unicast(%__MODULE__{name_map: names, pid_map: pids}, recipient, msg) do
+    Enum.each(pids, fn {id, pid} ->
       case names[id] do
-        ^recipient -> send(info.pid, msg)
+        ^recipient -> send(pid, msg)
         _ -> :ok
       end
     end)
@@ -185,50 +173,28 @@ defmodule Gara.Roster do
   @doc """
   Return all active nicks on the roster
   """
-  def participants(%__MODULE__{info_map: infos, name_map: names}) do
-    Enum.map(infos, fn {id, _} -> names[id] end)
+  def participants(%__MODULE__{pid_map: pids, name_map: names}) do
+    Enum.map(pids, fn {id, _} -> names[id] end)
   end
 
   @doc """
   one id votes to lock the room. return roster
   """
-  def lock(%__MODULE__{info_map: infos} = roster, id) do
-    case Map.get(infos, id) do
-      nil -> roster
-      info -> %{roster | info_map: Map.put(infos, id, info.lock())}
-    end
+  def lock(%__MODULE__{lock_set: locks} = roster, id) do
+    %{roster | lock_set: MapSet.put(locks, id)}
   end
 
   @doc """
   one id votes to unlock the room. return roster
   """
-  def unlock(%__MODULE__{info_map: infos} = roster, id) do
-    case Map.get(infos, id) do
-      nil -> roster
-      info -> %{roster | info_map: Map.put(infos, id, info.unlock())}
-    end
+  def unlock(%__MODULE__{lock_set: locks} = roster, id) do
+    %{roster | lock_set: MapSet.delete(locks, id)}
   end
 
   @doc """
-  poll the consensus of locking, if all voted to change return true, otherwise, false
+  return if one id want to lock the room
   """
-  def poll(%__MODULE__{info_map: infos}, current) do
-    Enum.all?(infos, fn {_, info} -> info.want_locked? != current end)
-  end
-
-  @doc """
-  return the {idle_percentage, want_locked?} of this id
-  """
-  def participant_info(%__MODULE__{info_map: infos}, id) do
-    case Map.get(infos, id) do
-      nil -> {0, false}
-      info -> {idle_percentage(info), info.want_locked?}
-    end
-  end
-
-  defp idle_percentage(info) do
-    Float.floor(info.idle_counter / Defaults.default(:idle_limit) * 100)
-  end
+  def want_lock?(%__MODULE__{lock_set: locks}, id), do: MapSet.member?(locks, id)
 
   defp gen_new_nick(list) do
     nick = gen_nick()
