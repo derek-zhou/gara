@@ -1,4 +1,6 @@
 defmodule Gara.Message do
+  import GaraWeb.Gettext
+
   @moduledoc """
   message parsing and handling. A message is a string parsed into html string
   """
@@ -32,6 +34,28 @@ defmodule Gara.Message do
   def attach(name, path) do
     """
     <a class="attachment" target="_blank" download="#{name}" href="#{path}">#{name}</a>
+    """
+  end
+
+  @doc """
+  show a link to another chatroom
+  """
+  def advertize(name, topic) do
+    """
+     <div class="card">
+      <div class="thumbnail">
+        <a href="/room/#{name}" data-phx-link="patch" data-phx-link-state="push">
+          <img alt="thumbnail" src="/images/gara_room.jpg">
+        </a>
+      </div>
+      <div class="headline">
+        <span class="title">#{topic}</span>
+        <span class="site"> | #{gettext("Get A Room Already!")}</span>
+      </div>
+      <a class="url" href="/room/#{name}" data-phx-link="patch" data-phx-link-state="push">
+        #{gettext("Room ")}#{name}
+      </a>
+    </div>
     """
   end
 

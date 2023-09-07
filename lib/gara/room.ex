@@ -1,4 +1,6 @@
 defmodule Gara.Room do
+  @timeout_interval 300_000
+
   require Logger
   use GenServer, restart: :transient
   alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
@@ -64,25 +66,16 @@ defmodule Gara.Room do
   say something. Returns :ok
   """
   def say(room, id, str) do
-    trimmed = String.trim(str)
-
-    case URI.parse(trimmed) do
-      %URI{scheme: "https", port: 443, userinfo: nil} ->
-        GenServer.cast(room, {:post, id, trimmed})
-
-      %URI{scheme: "http", port: 80, userinfo: nil} ->
-        GenServer.cast(room, {:post, id, trimmed})
-
-      _ ->
-        case Message.parse(str) do
-          {msg, []} ->
-            GenServer.cast(room, {:say, id, msg})
-
-          {msg, recipients} ->
-            GenServer.cast(room, {:whisper, id, msg, recipients})
-        end
+    case Message.parse(str) do
+      {msg, []} -> GenServer.cast(room, {:say, id, msg})
+      {msg, recipients} -> GenServer.cast(room, {:whisper, id, msg, recipients})
     end
   end
+
+  @doc """
+  post a link. Returns :ok
+  """
+  def post(room, id, link), do: GenServer.cast(room, {:post, id, link})
 
   @doc """
   stash data in a temp file, returns :ok
@@ -106,8 +99,8 @@ defmodule Gara.Room do
 
   @doc """
   join the room with existing id.
-  Returns {id, nick, participants, history, idle_percentage, want_locked?} if successful,
-  {:error, reason} if not
+  Returns {id, nick, participants, history, idle_percentage, want_locked?, room_locked?}
+  if successful, {:error, reason} if not
   """
   def join(room, id \\ nil, preferred_nick \\ nil) do
     GenServer.call(room, {:join, self(), id, preferred_nick})
@@ -136,6 +129,24 @@ defmodule Gara.Room do
       GenServer.call(room, :stat)
     catch
       :exit, _ -> nil
+    end
+  end
+
+  @doc """
+  advertise another room in this room. return false if the another room is not open,
+  :ok otherwise
+  """
+  def advertize(room, id, another_room) when is_pid(another_room) do
+    case stat(another_room) do
+      nil -> false
+      stat -> GenServer.cast(room, {:advertize, id, stat.name, stat.topic})
+    end
+  end
+
+  def advertize(room, id, another_room_name) when is_binary(another_room_name) do
+    case Registry.lookup(Rooms, another_room_name) do
+      [{pid, _}] -> advertize(room, id, pid)
+      _ -> false
     end
   end
 
@@ -190,11 +201,14 @@ defmodule Gara.Room do
   end
 
   @impl true
+  def handle_info(:timeout, state), do: {:stop, :normal, state}
+
+  @impl true
   def handle_info({:DOWN, id, :process, _, _}, state) do
     state = drop_one(state, id)
 
     case Roster.size(state.roster) do
-      0 -> {:stop, :normal, state}
+      0 -> {:noreply, state, @timeout_interval}
       _ -> {:noreply, state}
     end
   end
@@ -281,6 +295,19 @@ defmodule Gara.Room do
 
   @impl true
   def handle_cast(
+        {:advertize, id, room_name, room_topic},
+        %__MODULE__{roster: roster, messages: messages, msg_id: msg_id} = state
+      ) do
+    nick = Roster.get_name(roster, id)
+    now = NaiveDateTime.utc_now()
+    msg = Message.advertize(room_name, room_topic)
+    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
+    messages = [{msg_id, now, id, msg} | messages]
+    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+  end
+
+  @impl true
+  def handle_cast(
         {:attach, id, filename},
         %__MODULE__{
           name: name,
@@ -351,12 +378,8 @@ defmodule Gara.Room do
 
         Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
-
-        {
-          :reply,
-          {id, nick, participants, history, want_lock?},
-          repoll(%{state | roster: roster, msg_id: msg_id + 1})
-        }
+        state = repoll(%{state | roster: roster, msg_id: msg_id + 1})
+        {:reply, {id, nick, participants, history, want_lock?, state.locked?}, state}
     end
   end
 

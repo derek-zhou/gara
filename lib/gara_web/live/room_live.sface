@@ -11,6 +11,8 @@
 	    show_info={@show_info} click_nick="click_nick" click_else="click_else"
 	    leave="leave" rename="rename" message="message" send_attachment="send_attachment"
 	    uploading={@uploading} mode={@input_mode}
+	    room_locked={@room_locked?} want_locked={@want_locked?}
+	    click_lock="lock" click_unlock="unlock" fork="fork"
 	    click_text="click_text" click_image="click_image" click_file="click_file"
 	    preview_url={@preview_url} attachment={@attachment} />
     <Chat :if={@room_status == :joined || @room_status == :hangup}

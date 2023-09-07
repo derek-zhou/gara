@@ -8,7 +8,7 @@ defmodule GaraWeb.RoomLive do
     endpoint: GaraWeb.Endpoint,
     statics: ~w(css images js)
 
-  alias Gara.{Room, Rooms, WaitingRooms}
+  alias Gara.{Room, Rooms, WaitingRooms, RoomsByPublicTopic}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
   alias GaraWeb.{Main, Header, Chat, History, Countdown}
@@ -45,40 +45,46 @@ defmodule GaraWeb.RoomLive do
   data show_info, :boolean, default: false
   data page_url, :string, default: ""
 
-  def mount(%{"name" => room_name}, _session, %Socket{assigns: %{live_action: :chat}} = socket) do
-    {
-      :ok,
-      socket
-      |> assign(room_name: room_name)
-      |> maybe_fetch_params()
-      |> mount_room(room_name),
-      temporary_assigns: [messages: []]
-    }
-  end
-
-  defp mount_room(socket, room_name) do
-    case Registry.lookup(Rooms, room_name) do
-      [] -> mount_waiting_room(socket, room_name)
-      [{pid, _}] -> mount_chat_room(socket, pid, room_name)
-    end
-  end
-
-  defp maybe_fetch_params(socket) do
+  def mount(_params, _session, socket) do
     if connected?(socket) do
       values = get_connect_params(socket)
 
-      socket
-      |> fetch_tz_offset(values)
-      |> fetch_preferred_nick(values)
-      |> fetch_locale(values)
-      |> fetch_token(values)
+      {
+        :ok,
+        socket
+        |> fetch_tz_offset(values)
+        |> fetch_preferred_nick(values)
+        |> fetch_locale(values)
+        |> fetch_token(values),
+        temporary_assigns: [messages: []]
+      }
     else
-      socket
+      {:ok, socket, temporary_assigns: [messages: []]}
     end
   end
 
-  defp mount_waiting_room(socket, room_name) do
-    case WaitingRooms.knock(room_name) do
+  def handle_params(
+        %{"name" => name},
+        _url,
+        %Socket{assigns: %{live_action: :chat}} = socket
+      ) do
+    socket = assign(socket, room_name: name)
+
+    if connected?(socket) do
+      case Registry.lookup(Rooms, name) do
+        [] -> {:noreply, mount_waiting_room(socket)}
+        [{pid, _}] -> {:noreply, mount_chat_room(socket, pid)}
+      end
+    else
+      case Registry.lookup(Rooms, name) do
+        [] -> {:noreply, socket}
+        [{pid, _}] -> {:noreply, static_chat_room(socket, pid)}
+      end
+    end
+  end
+
+  defp mount_waiting_room(%Socket{assigns: %{room_name: name}} = socket) do
+    case WaitingRooms.knock(name) do
       {:error, :no_entry} ->
         socket
         |> put_flash(:error, gettext("Room closed already"))
@@ -110,17 +116,16 @@ defmodule GaraWeb.RoomLive do
         )
 
       {:ok, pid} ->
-        mount_chat_room(socket, pid, room_name)
+        mount_chat_room(socket, pid)
     end
   end
 
-  defp mount_chat_room(socket, pid, room_name) do
+  defp static_chat_room(%Socket{assigns: %{room_name: name}} = socket, pid) do
     stat = Room.stat(pid)
-    page_url = if stat.canonical?, do: stat.topic, else: url(~p"/room/#{room_name}")
+    page_url = if stat.canonical?, do: stat.topic, else: url(~p"/room/#{name}")
 
     socket
     |> assign(
-      room_pid: pid,
       room_stat: stat,
       page_title: "(#{stat.active}) #{stat.topic}",
       page_url: page_url,
@@ -128,14 +133,15 @@ defmodule GaraWeb.RoomLive do
       page_title: "#{stat.topic} -- GARA",
       history: Enum.reverse(stat.history)
     )
-    |> maybe_join(pid)
   end
 
-  defp maybe_join(socket, pid) do
-    if connected?(socket), do: mount_join_room(socket, pid), else: socket
+  defp mount_chat_room(socket, pid) do
+    socket
+    |> static_chat_room(pid)
+    |> join_chat_room(pid)
   end
 
-  defp mount_join_room(
+  defp join_chat_room(
          %Socket{assigns: %{preferred_nick: preferred_nick, client_id: old_id}} = socket,
          pid
        ) do
@@ -147,7 +153,7 @@ defmodule GaraWeb.RoomLive do
         |> put_flash(:error, gettext("No space in room"))
         |> push_event("leave", %{})
 
-      {id, nick, participants, messages, want_locked?} ->
+      {id, nick, participants, messages, want_locked?, room_locked?} ->
         socket =
           if nick == preferred_nick do
             put_flash(socket, :info, gettext("Welcome back, ") <> nick)
@@ -164,15 +170,33 @@ defmodule GaraWeb.RoomLive do
 
         socket
         |> assign(
+          room_pid: pid,
           uid: id,
           nick: nick,
           room_status: :joined,
           participants: participants,
           history: [],
           messages: messages,
-          want_locked?: want_locked?
+          want_locked?: want_locked?,
+          room_locked?: room_locked?
         )
         |> push_event("set_token", %{token: IO.iodata_to_binary(:erlang.ref_to_list(id))})
+    end
+  end
+
+  defp hop_room(%Socket{assigns: %{room_pid: room, uid: uid}} = socket, name) do
+    case Registry.lookup(Rooms, name) do
+      [{pid, _}] ->
+        Room.advertize(room, uid, pid)
+        Room.leave(room, uid)
+
+        socket
+        |> assign(room_name: name)
+        |> push_event("set_url", %{url: ~p"/room/#{name}"})
+        |> mount_chat_room(pid)
+
+      _ ->
+        put_flash(socket, :error, gettext("hopping failed"))
     end
   end
 
@@ -186,8 +210,8 @@ defmodule GaraWeb.RoomLive do
     }
   end
 
-  def handle_info(:count_down, %Socket{assigns: %{room_name: name}} = socket) do
-    {:noreply, mount_waiting_room(socket, name)}
+  def handle_info(:count_down, socket) do
+    {:noreply, mount_waiting_room(socket)}
   end
 
   def handle_info({:DOWN, _, _, _, _}, socket) do
@@ -270,12 +294,28 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event("lock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
     Room.try_lock(room, uid)
-    {:npreply, assign(socket, want_locked?: true)}
+    {:noreply, assign(socket, want_locked?: true)}
   end
 
   def handle_event("unlock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
     Room.try_unlock(room, uid)
-    {:npreply, assign(socket, want_locked?: false)}
+    {:noreply, assign(socket, want_locked?: false)}
+  end
+
+  def handle_event("fork", %{"topic" => new_topic}, socket) do
+    case Room.new_room(new_topic) do
+      nil ->
+        {:noreply, put_flash(socket, :error, gettext("forking failed"))}
+
+      :ignore ->
+        case Registry.lookup(RoomsByPublicTopic, new_topic) do
+          [] -> {:noreply, put_flash(socket, :error, gettext("forking failed"))}
+          [{_pid, name}] -> {:noreply, hop_room(socket, name)}
+        end
+
+      name ->
+        {:noreply, hop_room(socket, name)}
+    end
   end
 
   def handle_event(
@@ -309,8 +349,29 @@ defmodule GaraWeb.RoomLive do
         %{"text" => text},
         %Socket{assigns: %{room_pid: room, uid: uid}} = socket
       ) do
-    Room.say(room, uid, text)
-    {:noreply, clear_flash(socket)}
+    %URI{scheme: s, port: p, host: h} = URI.parse(url(~p"/"))
+    trimmed = String.trim(text)
+
+    case URI.parse(trimmed) do
+      %URI{scheme: ^s, port: ^p, host: ^h, path: "/room/" <> name} ->
+        if Room.advertize(room, uid, name) do
+          {:noreply, clear_flash(socket)}
+        else
+          {:noreply, put_flash(socket, :error, gettext("Room closed already"))}
+        end
+
+      %URI{scheme: "https"} ->
+        Room.post(room, uid, trimmed)
+        {:noreply, clear_flash(socket)}
+
+      %URI{scheme: "http"} ->
+        Room.post(room, uid, trimmed)
+        {:noreply, clear_flash(socket)}
+
+      _ ->
+        Room.say(room, uid, text)
+        {:noreply, clear_flash(socket)}
+    end
   end
 
   def handle_event(

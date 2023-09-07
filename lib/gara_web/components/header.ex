@@ -11,12 +11,15 @@ defmodule GaraWeb.Header do
   prop mode, :atom, default: :text
   prop show_info, :boolean, default: false
   prop uploading, :boolean, default: false
+  prop room_locked, :boolean, default: false
+  prop want_locked, :boolean, default: false
   prop attachment, :tuple, default: nil
   prop participants, :list, default: []
   prop nick, :string, required: true
   prop preview_url, :string, default: ""
   prop leave, :event, required: true
   prop rename, :event, required: true
+  prop fork, :event, required: true
   prop message, :event, required: true
   prop send_attachment, :event, required: true
   prop click_nick, :event, required: true
@@ -24,6 +27,8 @@ defmodule GaraWeb.Header do
   prop click_text, :event, required: true
   prop click_image, :event, required: true
   prop click_file, :event, required: true
+  prop click_lock, :event, required: true
+  prop click_unlock, :event, required: true
 
   defp date_string(date, tz_offset) do
     date

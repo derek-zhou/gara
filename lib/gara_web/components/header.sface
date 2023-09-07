@@ -13,7 +13,7 @@
 	{@nick}</button>
 </div>
 <div class="panel" hidden={!@show_info} :if={@room_status != :unknown}>
-    <h4>
+    <h3>
 	{gettext("The topic is: ")}
 	<i>
 	    {#if is_url(@stat.topic)}
@@ -22,15 +22,34 @@
 	    {@stat.topic}
 	    {/if}
 	</i>
+    </h3>
+    <h4>
+	{gettext("The room's code is: ")}<span class="code">{@name}</span>. 
+	{gettext("The room has been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>
     </h4>
     <h4>
-	{gettext("The room's code is: ")}<span class="code">{@name}</span>.
+	{gettext("The room is ")}
+	<i>
+	    {#if @room_locked}
+	    {gettext("locked")}
+	    {#else}
+	    {gettext("unlocked")}
+	    {/if}
+	</i>. 
+	{gettext("You can vote to: ")}
     </h4>
-    <h4>
-	{gettext("The room have been opened since ")}<i>{date_string(@stat.since, @tz_offset)}</i>.
-    </h4>
+    <div class="panel">
+	<div class="toolbar">
+	    <button :on-click={@click_lock} class={"button", disabled: @want_locked}>
+		{gettext("Lock the room")}
+	    </button>
+	    <button :on-click={@click_unlock} class={"button", disabled: !@want_locked}>
+		{gettext("Unlock the room")}
+	    </button>
+	</div>
+    </div>
     <hr />
-    <h3>{gettext("Your nickname is ")}<i>{@nick}</i></h3>
+    <h3>{gettext("Change your nickname. It is now ")}<i>{@nick}</i>.</h3>
     <Form for={%{}} submit={@rename}>
 	<Field name="name" class="field">
 	    <Label>{gettext("Your new nickname: ")}</Label>
@@ -38,6 +57,17 @@
 	</Field>
 	<div class="toolbar">
 	    <input class="button" type="submit" value={gettext("rename")}>
+	</div>
+    </Form>
+    <hr />
+    <h3>{gettext("Fork the room. You will be the first of a new room. ")}</h3>
+    <Form for={%{}} submit={@fork}>
+	<Field name="topic" class="field">
+	    <Label>{gettext("Your new topic: ")}</Label>
+	    <TextInput />
+	</Field>
+	<div class="toolbar">
+	    <input class="button" type="submit" value={gettext("fork")}>
 	</div>
     </Form>
     <hr />
