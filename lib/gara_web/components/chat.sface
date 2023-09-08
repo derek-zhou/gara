@@ -1,8 +1,8 @@
-<article class="transcript" id="transcript" phx-update="prepend">
-    {#for message <- @messages}
+<article class="transcript" id="transcript" phx-update="stream">
+    {#for {id, message} <- @streams.messages}
     {#case message}
     {#match {:user_message, msg_id, ts, from, content}}
-    <div id={"msg_#{msg_id}"}
+    <div id={id}
 	 class={["message", (if from == @nick, do: "self_message", else: "user_message")]}>
 	<div class="meta">
 	    <cite>#{msg_id}</cite>
@@ -15,7 +15,7 @@
 	</div>
     </div>
     {#match {:private_message, msg_id, ts, from, content}}
-    <div id={"msg_#{msg_id}"}
+    <div id={id}
 	 class={["message", "private_message"]}>
 	<div class="meta">
 	    <cite>#{msg_id}</cite>
@@ -28,38 +28,43 @@
 	</div>
     </div>
     {#match {:leave_message, msg_id, ts, from}}
-    <div id={"msg_#{msg_id}"} class="message system_message">
+    <div id={id} class="message system_message">
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
 	    {gettext("left")}
 	</div>
     </div>
     {#match {:lock_message, msg_id, ts, true}}
-    <div id={"msg_#{msg_id}"} class="message system_message">
+    <div id={id} class="message system_message">
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    {gettext("room is now locked")}
 	</div>
     </div>
     {#match {:lock_message, msg_id, ts, false}}
-    <div id={"msg_#{msg_id}"} class="message system_message">
+    <div id={id} class="message system_message">
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    {gettext("room is now unlocked")}
 	</div>
     </div>
     {#match {:join_message, msg_id, ts, from}}
-    <div id={"msg_#{msg_id}"} class="message system_message">
+    <div id={id} class="message system_message">
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
 	    {gettext("joined")}
 	</div>
     </div>
     {#match {:rename_message, msg_id, ts, from, to}}
-    <div id={"msg_#{msg_id}"} class="message system_message">
+    <div id={id} class="message system_message">
 	<div class="meta">
+	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts, @tz_offset)}</b>
 	    <i>{from}</i>
 	    {gettext("renamed to")}

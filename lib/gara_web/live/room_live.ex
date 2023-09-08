@@ -39,9 +39,6 @@ defmodule GaraWeb.RoomLive do
   data preview_url, :string, default: ""
   data uploading, :boolean, default: false
   data history, :list, default: []
-  # temporary state
-  data messages, :list, default: []
-
   # for GUI
   data show_info, :boolean, default: false
   data page_url, :string, default: ""
@@ -56,11 +53,11 @@ defmodule GaraWeb.RoomLive do
         |> fetch_tz_offset(values)
         |> fetch_preferred_nick(values)
         |> fetch_locale(values)
-        |> fetch_token(values),
-        temporary_assigns: [messages: []]
+        |> fetch_token(values)
+        |> stream_configure(:messages, dom_id: &"msg_#{elem(&1, 1)}")
       }
     else
-      {:ok, socket, temporary_assigns: [messages: []]}
+      {:ok, socket}
     end
   end
 
@@ -176,10 +173,10 @@ defmodule GaraWeb.RoomLive do
           room_status: :joined,
           participants: participants,
           history: [],
-          messages: messages,
           want_locked?: locked?,
           room_locked?: locked?
         )
+        |> stream(:messages, messages, at: 0, reset: true)
         |> push_event("set_token", %{token: IO.iodata_to_binary(:erlang.ref_to_list(id))})
     end
   end
@@ -187,9 +184,9 @@ defmodule GaraWeb.RoomLive do
   defp hop_room(%Socket{assigns: %{room_pid: room, room_ref: ref, uid: uid}} = socket, name) do
     case Registry.lookup(Rooms, name) do
       [{pid, _}] ->
-        Room.advertize(room, uid, pid)
         Process.demonitor(ref)
         Room.break(room, uid)
+        Room.advertize(room, uid, pid)
 
         socket
         |> assign(room_name: name)
@@ -226,11 +223,11 @@ defmodule GaraWeb.RoomLive do
   end
 
   def handle_info({:user_message, _mid, _ts, _nick, _msg} = message, socket) do
-    {:noreply, assign(socket, messages: [message])}
+    {:noreply, stream_insert(socket, :messages, message, at: 0)}
   end
 
   def handle_info({:private_message, _mid, _ts, _nick, _msg} = message, socket) do
-    {:noreply, assign(socket, messages: [message])}
+    {:noreply, stream_insert(socket, :messages, message, at: 0)}
   end
 
   def handle_info(
@@ -241,16 +238,22 @@ defmodule GaraWeb.RoomLive do
 
     {
       :noreply,
-      assign(socket,
+      socket
+      |> assign(
         page_title: "(#{length(participants)}) #{stat.topic}",
-        messages: [message],
         participants: participants
       )
+      |> stream_insert(:messages, message, at: 0)
     }
   end
 
   def handle_info({:lock_message, _mid, _ts, v} = message, socket) do
-    {:noreply, assign(socket, messages: [message], room_locked?: v)}
+    {
+      :noreply,
+      socket
+      |> assign(room_locked?: v)
+      |> stream_insert(:messages, message, at: 0)
+    }
   end
 
   def handle_info(
@@ -262,11 +265,12 @@ defmodule GaraWeb.RoomLive do
 
     {
       :noreply,
-      assign(socket,
+      socket
+      |> assign(
         page_title: "(#{length(participants)}) #{stat.topic}",
-        messages: [message],
         participants: participants
       )
+      |> stream_insert(:messages, message, at: 0)
     }
   end
 
@@ -277,7 +281,12 @@ defmodule GaraWeb.RoomLive do
     participants = Enum.reject(participants, &(&1 == old_nick))
     participants = [new_nick | participants]
 
-    {:noreply, assign(socket, messages: [message], participants: participants)}
+    {
+      :noreply,
+      socket
+      |> assign(participants: participants)
+      |> stream_insert(:messages, message, at: 0)
+    }
   end
 
   def handle_event("leave", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
@@ -295,27 +304,50 @@ defmodule GaraWeb.RoomLive do
 
   def handle_event("lock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
     Room.try_lock(room, uid)
-    {:noreply, assign(socket, want_locked?: true)}
+    {:noreply, assign(socket, want_locked?: true, show_info: false)}
   end
 
   def handle_event("unlock", _, %Socket{assigns: %{room_pid: room, uid: uid}} = socket) do
     Room.try_unlock(room, uid)
-    {:noreply, assign(socket, want_locked?: false)}
+    {:noreply, assign(socket, want_locked?: false, show_info: false)}
   end
 
   def handle_event("fork", %{"topic" => new_topic}, socket) do
     case Room.new_room(new_topic) do
       nil ->
-        {:noreply, put_flash(socket, :error, gettext("forking failed"))}
+        {
+          :noreply,
+          socket
+          |> assign(show_info: false)
+          |> put_flash(:error, gettext("forking failed"))
+        }
 
       :ignore ->
         case Registry.lookup(RoomsByPublicTopic, new_topic) do
-          [] -> {:noreply, put_flash(socket, :error, gettext("forking failed"))}
-          [{_pid, name}] -> {:noreply, hop_room(socket, name)}
+          [] ->
+            {
+              :noreply,
+              socket
+              |> assign(show_info: false)
+              |> put_flash(:error, gettext("forking failed"))
+            }
+
+          [{_pid, name}] ->
+            {
+              :noreply,
+              socket
+              |> assign(show_info: false)
+              |> hop_room(name)
+            }
         end
 
       name ->
-        {:noreply, hop_room(socket, name)}
+        {
+          :noreply,
+          socket
+          |> assign(show_info: false)
+          |> hop_room(name)
+        }
     end
   end
 

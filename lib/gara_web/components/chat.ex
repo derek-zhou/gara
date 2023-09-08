@@ -3,7 +3,7 @@ defmodule GaraWeb.Chat do
   import GaraWeb.Gettext
 
   prop tz_offset, :integer, default: 0
-  prop messages, :list, default: []
+  prop streams, :any, required: true
   prop nick, :string, required: true
 
   defp date_string(date, tz_offset) do

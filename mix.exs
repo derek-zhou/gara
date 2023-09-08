@@ -46,7 +46,7 @@ defmodule Gara.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:phoenix_view, "~> 2.0"},
       {:floki, ">= 0.33.0"},
-      {:phoenix_live_dashboard, "~> 0.7.2"},
+      {:phoenix_live_dashboard, "~> 0.8.1"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"}
     ]

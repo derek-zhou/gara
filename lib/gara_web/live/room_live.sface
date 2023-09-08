@@ -16,6 +16,6 @@
 	    click_text="click_text" click_image="click_image" click_file="click_file"
 	    preview_url={@preview_url} attachment={@attachment} />
     <Chat :if={@room_status == :joined || @room_status == :hangup}
-	  tz_offset={@tz_offset} messages={@messages} nick={@nick} />
+	  tz_offset={@tz_offset} streams={@streams} nick={@nick} />
     <History :if={@room_status == :exist} messages={@history} />
 </Main>
