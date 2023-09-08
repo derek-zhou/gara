@@ -21,6 +21,7 @@ defmodule GaraWeb.RoomLive do
   # states
   data room_name, :string, default: ""
   data room_pid, :pid, default: nil
+  data room_ref, :any, default: nil
   data room_stat, :any, default: nil
   data room_locked?, :boolean, default: false
   data want_locked?, :boolean, default: false
@@ -145,15 +146,13 @@ defmodule GaraWeb.RoomLive do
          %Socket{assigns: %{preferred_nick: preferred_nick, client_id: old_id}} = socket,
          pid
        ) do
-    Process.monitor(pid)
-
     case Room.join(pid, old_id, preferred_nick) do
       {:error, _} ->
         socket
         |> put_flash(:error, gettext("No space in room"))
         |> push_event("leave", %{})
 
-      {id, nick, participants, messages, want_locked?, room_locked?} ->
+      {id, nick, participants, messages, locked?} ->
         socket =
           if nick == preferred_nick do
             put_flash(socket, :info, gettext("Welcome back, ") <> nick)
@@ -171,24 +170,26 @@ defmodule GaraWeb.RoomLive do
         socket
         |> assign(
           room_pid: pid,
+          room_ref: Process.monitor(pid),
           uid: id,
           nick: nick,
           room_status: :joined,
           participants: participants,
           history: [],
           messages: messages,
-          want_locked?: want_locked?,
-          room_locked?: room_locked?
+          want_locked?: locked?,
+          room_locked?: locked?
         )
         |> push_event("set_token", %{token: IO.iodata_to_binary(:erlang.ref_to_list(id))})
     end
   end
 
-  defp hop_room(%Socket{assigns: %{room_pid: room, uid: uid}} = socket, name) do
+  defp hop_room(%Socket{assigns: %{room_pid: room, room_ref: ref, uid: uid}} = socket, name) do
     case Registry.lookup(Rooms, name) do
       [{pid, _}] ->
         Room.advertize(room, uid, pid)
-        Room.leave(room, uid)
+        Process.demonitor(ref)
+        Room.break(room, uid)
 
         socket
         |> assign(room_name: name)

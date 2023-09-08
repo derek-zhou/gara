@@ -98,8 +98,13 @@ defmodule Gara.Room do
   def leave(room, id), do: GenServer.cast(room, {:leave, id})
 
   @doc """
+  break out from the room. Returns :ok
+  """
+  def break(room, id), do: GenServer.cast(room, {:break, id})
+
+  @doc """
   join the room with existing id.
-  Returns {id, nick, participants, history, idle_percentage, want_locked?, room_locked?}
+  Returns {id, nick, participants, history, idle_percentage, locked?}
   if successful, {:error, reason} if not
   """
   def join(room, id \\ nil, preferred_nick \\ nil) do
@@ -209,7 +214,7 @@ defmodule Gara.Room do
 
     case Roster.size(state.roster) do
       0 -> {:noreply, state, @timeout_interval}
-      _ -> {:noreply, state}
+      _ -> {:noreply, repoll(state)}
     end
   end
 
@@ -335,7 +340,17 @@ defmodule Gara.Room do
 
     case Roster.size(state.roster) do
       0 -> {:stop, :normal, state}
-      _ -> {:noreply, state}
+      _ -> {:noreply, repoll(state)}
+    end
+  end
+
+  @impl true
+  def handle_cast({:break, id}, state) do
+    state = drop_one(state, id)
+
+    case Roster.size(state.roster) do
+      0 -> {:noreply, state, @timeout_interval}
+      _ -> {:noreply, repoll(state)}
     end
   end
 
@@ -369,7 +384,6 @@ defmodule Gara.Room do
       {id, roster} ->
         nick = Roster.get_name(roster, id)
         participants = Roster.participants(roster)
-        want_lock? = Roster.want_lock?(roster, id)
 
         history =
           Enum.map(messages, fn {mid, time, id, msg} ->
@@ -379,7 +393,7 @@ defmodule Gara.Room do
         Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
         state = repoll(%{state | roster: roster, msg_id: msg_id + 1})
-        {:reply, {id, nick, participants, history, want_lock?, state.locked?}, state}
+        {:reply, {id, nick, participants, history, state.locked?}, state}
     end
   end
 
@@ -446,7 +460,7 @@ defmodule Gara.Room do
       nick ->
         roster = Roster.leave(roster, id)
         Roster.broadcast(roster, {:leave_message, msg_id, NaiveDateTime.utc_now(), nick})
-        repoll(%{state | roster: roster, msg_id: msg_id + 1})
+        %{state | roster: roster, msg_id: msg_id + 1}
     end
   end
 

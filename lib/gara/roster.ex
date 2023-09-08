@@ -112,13 +112,7 @@ defmodule Gara.Roster do
         names = names |> Map.delete(id) |> Map.put_new(new_id, name)
         # pld_pid is removed at hangup time
         pids = Map.put_new(pids, new_id, pid)
-
-        locks =
-          if MapSet.member?(locks, id) do
-            locks |> MapSet.delete(id) |> MapSet.put(new_id)
-          else
-            locks
-          end
+        locks = MapSet.delete(locks, id)
 
         {new_id, %__MODULE__{name_map: names, pid_map: pids, lock_set: locks}}
     end
@@ -127,8 +121,8 @@ defmodule Gara.Roster do
   @doc """
   leave the roster, return new_roster
   """
-  def leave(%__MODULE__{pid_map: pids} = roster, id) do
-    %{roster | pid_map: Map.delete(pids, id)}
+  def leave(%__MODULE__{pid_map: pids, lock_set: locks} = roster, id) do
+    %{roster | pid_map: Map.delete(pids, id), lock_set: MapSet.delete(locks, id)}
   end
 
   @doc """
