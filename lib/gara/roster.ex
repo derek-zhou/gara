@@ -14,6 +14,8 @@ defmodule Gara.Roster do
   defstruct name_map: %{},
             # all participants that have voted to lock the room.
             lock_set: nil,
+            # used names are not to be reused
+            used_names: nil,
             # all participants that currently are connected
             pid_map: %{}
 
@@ -56,10 +58,10 @@ defmodule Gara.Roster do
   @doc """
   make a new roster
   """
-  def new(), do: %__MODULE__{lock_set: MapSet.new()}
+  def new(), do: %__MODULE__{lock_set: MapSet.new(), used_names: MapSet.new()}
 
   defp join(
-         %__MODULE__{name_map: names, pid_map: pids} = roster,
+         %__MODULE__{name_map: names, pid_map: pids, used_names: used} = roster,
          pid,
          preferred_nick
        ) do
@@ -69,18 +71,19 @@ defmodule Gara.Roster do
 
       true ->
         id = Process.monitor(pid)
-        list = Map.values(names)
 
         nick =
           cond do
-            preferred_nick == nil -> gen_new_nick(list)
-            Enum.member?(list, preferred_nick) -> gen_new_nick(list)
+            preferred_nick == nil -> gen_new_nick(used)
+            MapSet.member?(used, preferred_nick) -> gen_new_nick(used)
             legal_nick?(preferred_nick) -> preferred_nick
-            true -> gen_new_nick(list)
+            true -> gen_new_nick(used)
           end
 
-        {id,
-         %{roster | name_map: Map.put_new(names, id, nick), pid_map: Map.put_new(pids, id, pid)}}
+        names = Map.put(names, id, nick)
+        pids = Map.put(pids, id, pid)
+        used = MapSet.put(used, nick)
+        {id, %{roster | name_map: names, pid_map: pids, used_names: used}}
     end
   end
 
@@ -112,9 +115,9 @@ defmodule Gara.Roster do
         names = names |> Map.delete(id) |> Map.put_new(new_id, name)
         # pld_pid is removed at hangup time
         pids = Map.put_new(pids, new_id, pid)
-        locks = MapSet.delete(locks, id)
-
-        {new_id, %__MODULE__{name_map: names, pid_map: pids, lock_set: locks}}
+        # new join uses the group consensus
+        locks = if locked?, do: MapSet.put(locks, new_id), else: locks
+        {new_id, %{roster | name_map: names, pid_map: pids, lock_set: locks}}
     end
   end
 
@@ -128,7 +131,7 @@ defmodule Gara.Roster do
   @doc """
   rename one people. return {:ok, new_roster, old_nick} if success, :error if something wrong
   """
-  def rename(%__MODULE__{name_map: names} = roster, id, name) do
+  def rename(%__MODULE__{name_map: names, used_names: used} = roster, id, name) do
     case Map.get(names, id) do
       nil ->
         {:error, :enodev}
@@ -138,9 +141,16 @@ defmodule Gara.Roster do
 
       old_name ->
         cond do
-          names |> Map.values() |> Enum.member?(name) -> {:error, :eexist}
-          !legal_nick?(name) -> {:error, :einval}
-          true -> {:ok, %{roster | name_map: %{names | id => name}}, old_name}
+          MapSet.member?(used, name) ->
+            {:error, :eexist}
+
+          !legal_nick?(name) ->
+            {:error, :einval}
+
+          true ->
+            names = %{names | id => name}
+            used = MapSet.put(used, name)
+            {:ok, %{roster | name_map: names, used_names: used}, old_name}
         end
     end
   end
@@ -190,11 +200,11 @@ defmodule Gara.Roster do
   """
   def want_lock?(%__MODULE__{lock_set: locks}, id), do: MapSet.member?(locks, id)
 
-  defp gen_new_nick(list) do
+  defp gen_new_nick(used) do
     nick = gen_nick()
 
-    case Enum.member?(list, nick) do
-      true -> gen_new_nick(list)
+    case MapSet.member?(used, nick) do
+      true -> gen_new_nick(used)
       false -> nick
     end
   end
