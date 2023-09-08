@@ -233,11 +233,11 @@ defmodule Gara.Room do
       ) do
     nick = Roster.get_name(roster, id)
     Message.fetch_preview(url, msg_id)
-    now = NaiveDateTime.utc_now()
     msg = "<a href=\"#{url}\">#{url}</a>"
-    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-    messages = [{msg_id, now, id, url} | messages]
-    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+    now = NaiveDateTime.utc_now()
+    message = {:user_message, msg_id, now, nick, msg}
+    Roster.broadcast(roster, message)
+    {:noreply, %{state | messages: [message | messages], msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -247,9 +247,9 @@ defmodule Gara.Room do
       ) do
     nick = Roster.get_name(roster, id)
     now = NaiveDateTime.utc_now()
-    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-    messages = [{msg_id, now, id, msg} | messages]
-    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+    message = {:user_message, msg_id, now, nick, msg}
+    Roster.broadcast(roster, message)
+    {:noreply, %{state | messages: [message | messages], msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -293,9 +293,9 @@ defmodule Gara.Room do
     msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
     nick = Roster.get_name(roster, id)
     now = NaiveDateTime.utc_now()
-    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-    messages = [{msg_id, now, id, msg} | messages]
-    {:noreply, %{state | messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}}
+    message = {:user_message, msg_id, now, nick, msg}
+    Roster.broadcast(roster, message)
+    {:noreply, %{state | messages: [message | messages], msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -304,11 +304,11 @@ defmodule Gara.Room do
         %__MODULE__{roster: roster, messages: messages, msg_id: msg_id} = state
       ) do
     nick = Roster.get_name(roster, id)
-    now = NaiveDateTime.utc_now()
     msg = Message.advertize(room_name, room_topic)
-    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-    messages = [{msg_id, now, id, msg} | messages]
-    {:noreply, %{state | messages: messages, msg_id: msg_id + 1}}
+    now = NaiveDateTime.utc_now()
+    message = {:user_message, msg_id, now, nick, msg}
+    Roster.broadcast(roster, message)
+    {:noreply, %{state | messages: [message | messages], msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -328,10 +328,9 @@ defmodule Gara.Room do
     msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
     nick = Roster.get_name(roster, id)
     now = NaiveDateTime.utc_now()
-    Roster.broadcast(roster, {:user_message, msg_id, now, nick, msg})
-    messages = [{msg_id, now, id, msg} | messages]
-
-    {:noreply, %{state | messages: messages, img_id: img_id + 1, msg_id: msg_id + 1}}
+    message = {:user_message, msg_id, now, nick, msg}
+    Roster.broadcast(roster, message)
+    {:noreply, %{state | messages: [message | messages], img_id: img_id + 1, msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -384,16 +383,10 @@ defmodule Gara.Room do
       {id, roster} ->
         nick = Roster.get_name(roster, id)
         participants = Roster.participants(roster)
-
-        history =
-          Enum.map(messages, fn {mid, time, id, msg} ->
-            {:user_message, mid, time, Roster.get_name(roster, id), msg}
-          end)
-
         Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
         state = repoll(%{state | roster: roster, msg_id: msg_id + 1})
-        {:reply, {id, nick, participants, history, state.locked?}, state}
+        {:reply, {id, nick, participants, messages, state.locked?}, state}
     end
   end
 
@@ -421,14 +414,9 @@ defmodule Gara.Room do
   end
 
   @impl true
-  def handle_call(:stat, _from, state) do
+  def handle_call(:stat, _from, %__MODULE__{messages: messages} = state) do
     # to avoid unbounded messages
-    messages = Enum.take(state.messages, Defaults.default(:max_history))
-
-    history =
-      Enum.map(messages, fn {mid, time, id, msg} ->
-        {:user_message, mid, time, Roster.get_name(state.roster, id), msg}
-      end)
+    messages = Enum.take(messages, Defaults.default(:max_history))
 
     {:reply,
      %{
@@ -437,10 +425,10 @@ defmodule Gara.Room do
        since: state.since,
        people: Roster.full_size(state.roster),
        active: Roster.size(state.roster),
-       history: history,
+       history: messages,
        canonical?: state.canonical?,
        locked?: state.locked?
-     }, state}
+     }, %{state | messages: messages}}
   end
 
   defp repoll(%__MODULE__{roster: roster, msg_id: msg_id, locked?: locked?} = state) do
@@ -466,10 +454,10 @@ defmodule Gara.Room do
 
   defp update_messages([], _mid, _msg, _roster), do: []
 
-  defp update_messages([{mid, ts, id, _old} | tail], mid, msg, roster) do
-    nick = Roster.get_name(roster, id)
-    Roster.broadcast(roster, {:user_message, mid, ts, nick, msg})
-    [{mid, ts, id, msg} | tail]
+  defp update_messages([{:user_message, mid, ts, nick, _old} | tail], mid, msg, roster) do
+    message = {:user_message, mid, ts, nick, msg}
+    Roster.broadcast(roster, message)
+    [message | tail]
   end
 
   defp update_messages([head | tail], mid, msg, roster) do
