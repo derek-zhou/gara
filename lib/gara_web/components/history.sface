@@ -3,7 +3,6 @@
     <div id={"msg_#{msg_id}"}
 	 class={["message", "user_message"]}>
 	<div class="meta">
-	    <cite>#{msg_id}</cite>
 	    <b>{date_string(ts)}</b>
 	    <i>{from}</i>
 	    {gettext("said: ")}

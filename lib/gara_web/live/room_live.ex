@@ -8,7 +8,7 @@ defmodule GaraWeb.RoomLive do
     endpoint: GaraWeb.Endpoint,
     statics: ~w(css images js)
 
-  alias Gara.{Room, Rooms, WaitingRooms, RoomsByPublicTopic}
+  alias Gara.{Room, Rooms, WaitingRooms, RoomsByPublicTopic, Defaults}
   alias Phoenix.LiveView.Socket
   alias Surface.Components.Link
   alias GaraWeb.{Main, Header, Chat, History, Countdown}
@@ -61,11 +61,7 @@ defmodule GaraWeb.RoomLive do
     end
   end
 
-  def handle_params(
-        %{"name" => name},
-        _url,
-        %Socket{assigns: %{live_action: :chat}} = socket
-      ) do
+  def handle_params(%{"name" => name}, _url, %Socket{assigns: %{live_action: :chat}} = socket) do
     socket = assign(socket, room_name: name)
 
     if connected?(socket) do
@@ -175,25 +171,19 @@ defmodule GaraWeb.RoomLive do
           want_locked?: locked?,
           room_locked?: locked?
         )
-        |> stream(:messages, messages, at: 0, reset: true)
+        |> stream(:messages, messages, at: 0, reset: true, limit: Defaults.default(:max_history))
         |> push_event("set_token", %{token: IO.iodata_to_binary(:erlang.ref_to_list(id))})
     end
   end
 
-  defp hop_room(%Socket{assigns: %{room_pid: room, room_ref: ref, uid: uid}} = socket, name) do
+  defp hop_room(%Socket{assigns: %{room_pid: room, uid: uid}} = socket, name) do
     case Registry.lookup(Rooms, name) do
       [{pid, _}] ->
-        Process.demonitor(ref)
-        Room.break(room, uid)
         Room.advertize(room, uid, pid)
-
-        socket
-        |> assign(room_name: name)
-        |> push_event("set_url", %{url: ~p"/room/#{name}"})
-        |> mount_chat_room(pid)
+        push_event(socket, "set_url", %{url: ~p"/room/#{name}"})
 
       _ ->
-        put_flash(socket, :error, gettext("hopping failed"))
+        put_flash(socket, :error, gettext("Room closed already"))
     end
   end
 

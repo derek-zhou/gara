@@ -3,7 +3,7 @@ defmodule Gara.Room do
 
   require Logger
   use GenServer, restart: :transient
-  alias Gara.{Roster, Message, Defaults, RoomSupervisor, Rooms, RoomsByPublicTopic}
+  alias Gara.{Roster, Message, RoomSupervisor, Rooms, RoomsByPublicTopic}
 
   defstruct [
     :name,
@@ -96,11 +96,6 @@ defmodule Gara.Room do
   leave the room. Returns :ok
   """
   def leave(room, id), do: GenServer.cast(room, {:leave, id})
-
-  @doc """
-  break out from the room. Returns :ok
-  """
-  def break(room, id), do: GenServer.cast(room, {:break, id})
 
   @doc """
   join the room with existing id.
@@ -270,7 +265,8 @@ defmodule Gara.Room do
 
   @impl true
   def handle_cast({:stash, id, content, offset}, %__MODULE__{name: name} = state) do
-    dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    token = id |> :erlang.ref_to_list() |> IO.chardata_to_string() |> Base.url_encode64()
+    dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, token])
     mode = if offset == 0, do: [:write, :raw], else: [:append, :raw]
     File.open(dest, mode, &IO.binwrite(&1, content))
     {:noreply, state}
@@ -287,7 +283,8 @@ defmodule Gara.Room do
           msg_id: msg_id
         } = state
       ) do
-    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    token = id |> :erlang.ref_to_list() |> IO.chardata_to_string() |> Base.url_encode64()
+    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, token])
     dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.jpg"])
     File.rename!(src, dest)
     msg = Message.flaunt("/uploads/#{name}/#{img_id}.jpg")
@@ -322,7 +319,8 @@ defmodule Gara.Room do
           msg_id: msg_id
         } = state
       ) do
-    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{id}.tmp"])
+    token = id |> :erlang.ref_to_list() |> IO.chardata_to_string() |> Base.url_encode64()
+    src = Path.join([:code.priv_dir(:gara), "static", "uploads", name, token])
     dest = Path.join([:code.priv_dir(:gara), "static", "uploads", name, "#{img_id}.bin"])
     File.rename!(src, dest)
     msg = Message.attach(filename, "/uploads/#{name}/#{img_id}.bin")
@@ -339,16 +337,6 @@ defmodule Gara.Room do
 
     case Roster.size(state.roster) do
       0 -> {:stop, :normal, state}
-      _ -> {:noreply, repoll(state)}
-    end
-  end
-
-  @impl true
-  def handle_cast({:break, id}, state) do
-    state = drop_one(state, id)
-
-    case Roster.size(state.roster) do
-      0 -> {:noreply, state, @timeout_interval}
       _ -> {:noreply, repoll(state)}
     end
   end
@@ -415,9 +403,6 @@ defmodule Gara.Room do
 
   @impl true
   def handle_call(:stat, _from, %__MODULE__{messages: messages} = state) do
-    # to avoid unbounded messages
-    messages = Enum.take(messages, Defaults.default(:max_history))
-
     {:reply,
      %{
        name: state.name,
@@ -428,7 +413,7 @@ defmodule Gara.Room do
        history: messages,
        canonical?: state.canonical?,
        locked?: state.locked?
-     }, %{state | messages: messages}}
+     }, state}
   end
 
   defp repoll(%__MODULE__{roster: roster, msg_id: msg_id, locked?: locked?} = state) do

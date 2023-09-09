@@ -44,7 +44,7 @@ defmodule Gara.Message do
     """
      <div class="card">
       <div class="thumbnail">
-        <a href="/room/#{name}" data-phx-link="patch" data-phx-link-state="push">
+        <a href="/room/#{name}">
           <img alt="thumbnail" src="/images/gara_room.jpg">
         </a>
       </div>
@@ -52,7 +52,7 @@ defmodule Gara.Message do
         <span class="title">#{topic}</span>
         <span class="site"> | #{gettext("Get A Room Already!")}</span>
       </div>
-      <a class="url" href="/room/#{name}" data-phx-link="patch" data-phx-link-state="push">
+      <a class="url" href="/room/#{name}">
         #{gettext("Room ")}#{name}
       </a>
     </div>
