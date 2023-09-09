@@ -20,27 +20,28 @@ msgstr ""
 msgid "Back to the lobby"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:148
+#: lib/gara_web/live/room_live.ex:144
 #, elixir-autogen, elixir-format
 msgid "No space in room"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:88
-#: lib/gara_web/live/room_live.ex:89
-#: lib/gara_web/live/room_live.ex:101
-#: lib/gara_web/live/room_live.ex:102
-#: lib/gara_web/live/room_live.ex:346
-#: lib/gara_web/live/room_live.ex:366
+#: lib/gara_web/live/room_live.ex:84
+#: lib/gara_web/live/room_live.ex:85
+#: lib/gara_web/live/room_live.ex:97
+#: lib/gara_web/live/room_live.ex:98
+#: lib/gara_web/live/room_live.ex:186
+#: lib/gara_web/live/room_live.ex:336
+#: lib/gara_web/live/room_live.ex:356
 #, elixir-autogen, elixir-format
 msgid "Room closed already"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:219
+#: lib/gara_web/live/room_live.ex:209
 #, elixir-autogen, elixir-format
 msgid "Server crashed"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:205
+#: lib/gara_web/live/room_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "Server hangup"
 msgstr ""
@@ -50,17 +51,17 @@ msgstr ""
 msgid "The topic is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:154
+#: lib/gara_web/live/room_live.ex:150
 #, elixir-autogen, elixir-format
 msgid "Welcome back, "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:295
+#: lib/gara_web/live/room_live.ex:285
 #, elixir-autogen, elixir-format
 msgid "You left"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:162
+#: lib/gara_web/live/room_live.ex:158
 #, elixir-autogen, elixir-format
 msgid "You should change it by clicking the top right corner"
 msgstr ""
@@ -70,12 +71,12 @@ msgstr ""
 msgid "Your new nickname: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:159
+#: lib/gara_web/live/room_live.ex:155
 #, elixir-autogen, elixir-format
 msgid "Your temporary nickname is: "
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:61
+#: lib/gara_web/components/chat.sface:55
 #, elixir-autogen, elixir-format
 msgid "joined"
 msgstr ""
@@ -85,7 +86,7 @@ msgstr ""
 msgid "leave"
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:36
+#: lib/gara_web/components/chat.sface:33
 #, elixir-autogen, elixir-format
 msgid "left"
 msgstr ""
@@ -95,7 +96,7 @@ msgstr ""
 msgid "rename"
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:70
+#: lib/gara_web/components/chat.sface:63
 #, elixir-autogen, elixir-format
 msgid "renamed to"
 msgstr ""
@@ -110,9 +111,9 @@ msgstr ""
 msgid "rooms occupied, comeback later"
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:11
-#: lib/gara_web/components/chat.sface:24
-#: lib/gara_web/components/history.sface:9
+#: lib/gara_web/components/chat.sface:10
+#: lib/gara_web/components/chat.sface:22
+#: lib/gara_web/components/history.sface:8
 #, elixir-autogen, elixir-format
 msgid "said: "
 msgstr ""
@@ -155,7 +156,7 @@ msgstr ""
 msgid "The room's code is: "
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:466
+#: lib/gara_web/live/room_live.ex:456
 #, elixir-autogen, elixir-format
 msgid "File too big"
 msgstr ""
@@ -165,12 +166,12 @@ msgstr ""
 msgid "Markdown syntax supported"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:349
+#: lib/gara_web/live/room_live.ex:339
 #, elixir-autogen, elixir-format
 msgid "The nickname is invalid"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:343
+#: lib/gara_web/live/room_live.ex:333
 #, elixir-autogen, elixir-format
 msgid "The nickname is taken"
 msgstr ""
@@ -208,13 +209,13 @@ msgid "hours"
 msgstr ""
 
 #: lib/gara_web/components/countdown.sface:6
-#: lib/gara_web/live/room_live.ex:108
+#: lib/gara_web/live/room_live.ex:104
 #, elixir-autogen, elixir-format
 msgid "minutes"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:95
-#: lib/gara_web/live/room_live.ex:96
+#: lib/gara_web/live/room_live.ex:91
+#: lib/gara_web/live/room_live.ex:92
 #, elixir-autogen, elixir-format
 msgid "All rooms are occupied, please come back later"
 msgstr ""
@@ -294,15 +295,10 @@ msgstr ""
 msgid "fork"
 msgstr ""
 
-#: lib/gara_web/live/room_live.ex:314
-#: lib/gara_web/live/room_live.ex:318
+#: lib/gara_web/live/room_live.ex:304
+#: lib/gara_web/live/room_live.ex:308
 #, elixir-autogen, elixir-format
 msgid "forking failed"
-msgstr ""
-
-#: lib/gara_web/live/room_live.ex:196
-#, elixir-autogen, elixir-format
-msgid "hopping failed"
 msgstr ""
 
 #: lib/gara_web/components/header.sface:34
@@ -310,12 +306,12 @@ msgstr ""
 msgid "locked"
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:44
+#: lib/gara_web/components/chat.sface:40
 #, elixir-autogen, elixir-format
 msgid "room is now locked"
 msgstr ""
 
-#: lib/gara_web/components/chat.sface:52
+#: lib/gara_web/components/chat.sface:47
 #, elixir-autogen, elixir-format
 msgid "room is now unlocked"
 msgstr ""
