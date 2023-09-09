@@ -170,7 +170,8 @@ button[disabled] {
     justify-content: center;
 }
 .content ul.room-list {
-    display: inline;
+    display: flex;
+    column-gap: 0.5rem;
 }
 .content ul.room-list li {
     display: inline;

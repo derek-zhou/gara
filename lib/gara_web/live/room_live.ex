@@ -125,7 +125,6 @@ defmodule GaraWeb.RoomLive do
     socket
     |> assign(
       room_stat: stat,
-      page_title: "(#{stat.active}) #{stat.topic}",
       page_url: page_url,
       room_status: :exist,
       page_title: "#{stat.topic} -- GARA",
@@ -232,17 +231,15 @@ defmodule GaraWeb.RoomLive do
 
   def handle_info(
         {:leave_message, _mid, _ts, nick} = message,
-        %Socket{assigns: %{participants: participants, room_stat: stat}} = socket
+        %Socket{assigns: %{participants: participants}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == nick))
 
     {
       :noreply,
       socket
-      |> assign(
-        page_title: "(#{length(participants)}) #{stat.topic}",
-        participants: participants
-      )
+      |> assign(participants: participants)
+      |> update_room_title()
       |> stream_insert(:messages, message, at: 0)
     }
   end
@@ -252,13 +249,14 @@ defmodule GaraWeb.RoomLive do
       :noreply,
       socket
       |> assign(room_locked?: v)
+      |> update_room_title()
       |> stream_insert(:messages, message, at: 0)
     }
   end
 
   def handle_info(
         {:join_message, _mid, _ts, nick} = message,
-        %Socket{assigns: %{participants: participants, room_stat: stat}} = socket
+        %Socket{assigns: %{participants: participants}} = socket
       ) do
     participants = Enum.reject(participants, &(&1 == nick))
     participants = [nick | participants]
@@ -266,10 +264,8 @@ defmodule GaraWeb.RoomLive do
     {
       :noreply,
       socket
-      |> assign(
-        page_title: "(#{length(participants)}) #{stat.topic}",
-        participants: participants
-      )
+      |> assign(participants: participants)
+      |> update_room_title()
       |> stream_insert(:messages, message, at: 0)
     }
   end
@@ -315,39 +311,16 @@ defmodule GaraWeb.RoomLive do
   def handle_event("fork", %{"topic" => new_topic}, socket) do
     case Room.new_room(new_topic) do
       nil ->
-        {
-          :noreply,
-          socket
-          |> assign(show_info: false)
-          |> put_flash(:error, gettext("forking failed"))
-        }
+        {:noreply, put_flash(socket, :error, gettext("forking failed"))}
 
       :ignore ->
         case Registry.lookup(RoomsByPublicTopic, new_topic) do
-          [] ->
-            {
-              :noreply,
-              socket
-              |> assign(show_info: false)
-              |> put_flash(:error, gettext("forking failed"))
-            }
-
-          [{_pid, name}] ->
-            {
-              :noreply,
-              socket
-              |> assign(show_info: false)
-              |> hop_room(name)
-            }
+          [] -> {:noreply, put_flash(socket, :error, gettext("forking failed"))}
+          [{_pid, name}] -> {:noreply, socket |> assign(show_info: false) |> hop_room(name)}
         end
 
       name ->
-        {
-          :noreply,
-          socket
-          |> assign(show_info: false)
-          |> hop_room(name)
-        }
+        {:noreply, socket |> assign(show_info: false) |> hop_room(name)}
     end
   end
 
@@ -617,5 +590,29 @@ defmodule GaraWeb.RoomLive do
         |> assign(attachment: {size, name, offset})
         |> push_event("read_attachment", %{offset: offset})
     end
+  end
+
+  defp update_room_title(
+         %Socket{
+           assigns: %{
+             participants: participants,
+             room_stat: stat,
+             room_locked?: false
+           }
+         } = socket
+       ) do
+    assign(socket, page_title: "(#{length(participants)}) #{stat.topic}")
+  end
+
+  defp update_room_title(
+         %Socket{
+           assigns: %{
+             participants: participants,
+             room_stat: stat,
+             room_locked?: true
+           }
+         } = socket
+       ) do
+    assign(socket, page_title: "🔒 (#{length(participants)}) #{stat.topic}")
   end
 end

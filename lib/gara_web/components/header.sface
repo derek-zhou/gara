@@ -79,6 +79,7 @@
     </Form>
 </div>
 <div class="roster-panel" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
+    <span :if={@room_locked}>🔒 </span>
     <span>
 	<i>{length(@participants)}</i> {gettext("people are here: ")}
     </span>
