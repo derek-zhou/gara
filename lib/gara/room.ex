@@ -180,7 +180,8 @@ defmodule Gara.Room do
         since: NaiveDateTime.utc_now(),
         roster: Roster.new(),
         canonical?: canonical?
-      }
+      },
+      @timeout_interval
     }
   end
 
