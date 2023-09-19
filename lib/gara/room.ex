@@ -10,6 +10,7 @@ defmodule Gara.Room do
     :topic,
     :roster,
     :since,
+    :timer,
     messages: [],
     msg_id: 0,
     img_id: 0,
@@ -179,9 +180,9 @@ defmodule Gara.Room do
         topic: topic,
         since: NaiveDateTime.utc_now(),
         roster: Roster.new(),
-        canonical?: canonical?
-      },
-      @timeout_interval
+        canonical?: canonical?,
+        timer: Process.send_after(self(), :timeout, @timeout_interval)
+      }
     }
   end
 
@@ -209,7 +210,7 @@ defmodule Gara.Room do
     state = drop_one(state, id)
 
     case Roster.size(state.roster) do
-      0 -> {:noreply, state, @timeout_interval}
+      0 -> {:noreply, %{state | timer: Process.send_after(self(), :timeout, @timeout_interval)}}
       _ -> {:noreply, repoll(state)}
     end
   end
@@ -361,7 +362,8 @@ defmodule Gara.Room do
           roster: roster,
           messages: messages,
           msg_id: msg_id,
-          locked?: locked?
+          locked?: locked?,
+          timer: timer
         } = state
       ) do
     case Roster.rejoin(roster, pid, id, preferred_nick, locked?) do
@@ -374,7 +376,8 @@ defmodule Gara.Room do
         participants = Roster.participants(roster)
         Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
-        state = repoll(%{state | roster: roster, msg_id: msg_id + 1})
+        Process.cancel_timer(timer)
+        state = repoll(%{state | roster: roster, msg_id: msg_id + 1, timer: nil})
         {:reply, {id, nick, participants, messages, state.locked?}, state}
     end
   end
