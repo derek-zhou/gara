@@ -294,7 +294,7 @@ defmodule Gara.Room do
     now = NaiveDateTime.utc_now()
     message = {:user_message, msg_id, now, nick, msg}
     Roster.broadcast(roster, message)
-    {:noreply, %{state | messages: [message | messages], msg_id: msg_id + 1}}
+    {:noreply, %{state | messages: [message | messages], img_id: img_id + 1, msg_id: msg_id + 1}}
   end
 
   @impl true
@@ -376,7 +376,7 @@ defmodule Gara.Room do
         participants = Roster.participants(roster)
         Logger.info("Room #{name}: #{nick}(#{inspect(id)}) joined")
         Roster.broadcast(roster, {:join_message, msg_id, NaiveDateTime.utc_now(), nick})
-        Process.cancel_timer(timer)
+        if timer, do: Process.cancel_timer(timer)
         state = repoll(%{state | roster: roster, msg_id: msg_id + 1, timer: nil})
         {:reply, {id, nick, participants, messages, state.locked?}, state}
     end
