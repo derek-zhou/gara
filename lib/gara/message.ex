@@ -122,7 +122,7 @@ defmodule Gara.Message do
             {:error, "HTTP error code: " <> to_string(code)}
 
           new_url ->
-            Logger.warn("#{url} redirect to #{new_url} at iteration #{redirect_count}")
+            Logger.warning("#{url} redirect to #{new_url} at iteration #{redirect_count}")
             # make sure new url is not relative
             new_url = url |> URI.merge(new_url) |> to_string()
             body_from_url(new_url, redirect_count - 1)

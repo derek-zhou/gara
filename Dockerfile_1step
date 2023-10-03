@@ -1,8 +1,8 @@
-# this is a multiarch image with 64 bit kernel and a 32 bit userland.
 # if you cannot build the release in 32 bit to be compatible with debian
-# bullseye please use Dockerfiles_2steps for safety
+# please use Dockerfiles_2steps for safety
 
-FROM "multiarch/debian-debootstrap:i386-bullseye-slim"
+#FROM "multiarch/debian-debootstrap:i386-bullseye-slim"
+FROM "i386/debian:bookworm-20230919-slim"
 
 RUN apt-get update -y && apt-get install -y libstdc++6 openssl libncurses5 locales \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*

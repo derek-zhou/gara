@@ -368,7 +368,7 @@ defmodule Gara.Room do
       ) do
     case Roster.rejoin(roster, pid, id, preferred_nick, locked?) do
       {:error, reason} ->
-        Logger.warn("Room #{name}: room full")
+        Logger.warning("Room #{name}: room full")
         {:reply, {:error, reason}, state}
 
       {id, roster} ->
@@ -390,7 +390,7 @@ defmodule Gara.Room do
       ) do
     case Roster.rename(roster, id, new_nick) do
       {:error, reason} ->
-        Logger.warn("Room #{name}: #{inspect(id)} rename failed: #{reason}")
+        Logger.warning("Room #{name}: #{inspect(id)} rename failed: #{reason}")
         {:reply, {:error, reason}, state}
 
       {:ok, roster, old_nick} ->
