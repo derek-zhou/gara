@@ -33,7 +33,7 @@ defmodule Gara.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bandit, ">= 0.7.7"},
+      {:bandit, "~> 1.0"},
       {:surface, path: "../surface"},
       {:phoenix_copy, "~> 0.1.3"},
       {:md, "~> 0.9.1"},
@@ -46,7 +46,7 @@ defmodule Gara.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:phoenix_view, "~> 2.0"},
       {:floki, ">= 0.33.0"},
-      {:phoenix_live_dashboard, "~> 0.8.1"},
+      {:phoenix_live_dashboard, "~> 0.8.3"},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"}
     ]

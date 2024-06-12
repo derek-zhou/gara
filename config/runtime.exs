@@ -19,13 +19,6 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  guardian_key =
-    System.get_env("GUARDIAN_KEY") ||
-      raise """
-      environment variable GUARDIAN_KEY is missing.
-      You can generate one by calling: mix guardian.gen.secret
-      """
-
   app_name =
     System.get_env("FLY_APP_NAME") ||
       raise "FLY_APP_NAME not available"
@@ -43,7 +36,4 @@ if config_env() == :prod do
       port: String.to_integer(System.get_env("PORT") || "4000")
     ],
     secret_key_base: secret_key_base
-
-  # for guardian
-  config :liv, LivWeb.Guardian, secret_key: guardian_key
 end
