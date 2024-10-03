@@ -1,9 +1,9 @@
 <Main messages={@flash}>
     <Countdown :if={@room_status == :waiting} minutes={@waiting_minutes} />
     <div class="hero" :if={@room_status == :unknown || @room_status == :hangup}>
-	<Link class="button" to={~p"/"} opts={referrerpolicy: "no-referrer"}>
+	<a class="button" href={~p"/"} referrerpolicy="no-referrer">
         {gettext("Back to the lobby")}
-        </Link>
+        </a>
     </div>
     <Header :if={@room_status == :joined}
 	    tz_offset={@tz_offset} name={@room_name} stat={@room_stat}

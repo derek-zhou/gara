@@ -50,33 +50,37 @@
     </div>
     <hr />
     <h3>{gettext("Change your nickname. It is now ")}<i>{@nick}</i>.</h3>
-    <Form for={%{}} submit={@rename}>
-	<Field name="name" class="field">
-	    <Label>{gettext("Your new nickname: ")}</Label>
-	    <TextInput />
-	</Field>
+    <form :on-submit={@rename}>
+	<div class="field">
+	    <label>
+		{gettext("Your new nickname: ")}
+		<input type="text" name="name" />
+	    </label>
+	</div>
 	<div class="toolbar">
 	    <input class="button" type="submit" value={gettext("rename")}>
 	</div>
-    </Form>
+    </form>
     <hr />
     <h3>{gettext("Fork the room. You will be the first of a new room. ")}</h3>
-    <Form for={%{}} submit={@fork}>
-	<Field name="topic" class="field">
-	    <Label>{gettext("Your new topic: ")}</Label>
-	    <TextInput />
-	</Field>
+    <form :on-submit={@fork}>
+	<div class="field">
+	    <label>
+		{gettext("Your new topic: ")}
+		<input type="text" name="topic" />
+	    </label>
+	</div>
 	<div class="toolbar">
 	    <input class="button" type="submit" value={gettext("fork")}>
 	</div>
-    </Form>
+    </form>
     <hr />
     <h3>{gettext("Leave the room. Your transcript will be frozen.")}</h3>
-    <Form for={%{}} submit={@leave}>
+    <form :on-submit={@leave}>
 	<div class="toolbar">
 	    <input class="button button-danger" type="submit" value={gettext("leave")}>
 	</div>
-    </Form>
+    </form>
 </div>
 <div class="roster-panel" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
     <span :if={@room_locked}>🔒 </span>
@@ -90,12 +94,11 @@
     </ul>
 </div>
 <div class="write" hidden={@room_status != :joined || @show_info} :if={@room_status != :unknown}>
-    <Form for={%{}} submit={@message} :if={@mode == :text}>
-	<div id="text-box" :hook>
-	    <Field name="text" class="input-box">
-		<TextArea class="compose" id="text-compose"
-			  opts={autofocus: true, placeholder: gettext("Markdown syntax supported") }/>
-	    </Field>
+    <form :on-submit={@message.name} :if={@mode == :text}>
+	<div id="text-box" class="input-box" :hook>
+	    <textarea name="text" class="compose" id="text-compose" autofocus={true}
+		      placeholder={gettext("Markdown syntax supported")}>
+	    </textarea>
 	</div>
 	<div class="toolbar">
 	    <input class={"button", disabled: @uploading}
@@ -105,12 +108,13 @@
 	    <button class={"button", "button-other"}
 		    type="button" :on-click={@click_file}>{gettext("file")}</button>
 	</div>
-    </Form>
+    </form>
     <div class="image-container" :if={@mode == :image}>
 	<div id="image-box" class="input-box" :hook>
 	    {#if !attached(@attachment)}
-	    <label id="image-notice" for="image-attach">
+	    <label>
 		{gettext("Click to select a picture")}
+		<input type="file" id="image-attach" name="image-attach" accept="image/*"/>
 	    </label>
 	    {#elseif @uploading}
 	    <div class="progress"
@@ -118,7 +122,6 @@
 	    {#else}
 	    <img alt="preview" src={@preview_url}>
 	    {/if}
-	    <FileInput name="image-attach" id="image-attach" opts={accept: "image/*"}/>
 	</div>
 	<div class="toolbar">
 	    <button class={"button", disabled: @uploading || @attachment == nil}
@@ -132,8 +135,9 @@
     <div class="image-container" :if={@mode == :file}>
 	<div id="file-box" class="input-box" :hook>
 	    {#if !attached(@attachment)}
-	    <label id="file-notice" for="file-attach">
+	    <label>
 		{gettext("Click to select a file")}
+		<input type="file" id="file-attach" name="file-attach" />
 	    </label>
 	    {#elseif @uploading}
 	    <div class="progress"
@@ -142,7 +146,6 @@
 	    <a class="attachment notice" download={attachment_name(@attachment)}
 	       href={@preview_url}>{attachment_name(@attachment)}</a>
 	    {/if}
-	    <FileInput name="file-attach" id="file-attach" />
 	</div>
 	<div class="toolbar">
 	    <button class={"button", disabled: @uploading || @attachment == nil}

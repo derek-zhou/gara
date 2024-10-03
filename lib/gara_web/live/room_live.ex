@@ -10,7 +10,6 @@ defmodule GaraWeb.RoomLive do
 
   alias Gara.{Room, Rooms, WaitingRooms, RoomsByPublicTopic, Defaults}
   alias Phoenix.LiveView.Socket
-  alias Surface.Components.Link
   alias GaraWeb.{Main, Header, Chat, History, Countdown}
 
   # client side state

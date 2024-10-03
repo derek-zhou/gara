@@ -34,7 +34,7 @@ defmodule Gara.MixProject do
   defp deps do
     [
       {:bandit, "~> 1.0"},
-      {:surface, path: "../surface"},
+      {:surface, "~> 0.12.0"},
       {:phoenix_copy, "~> 0.1.3"},
       {:md, "~> 0.9.1"},
       {:cookie_jar, "~> 1.1"},
@@ -44,6 +44,7 @@ defmodule Gara.MixProject do
       {:phoenix_live_reload, "~> 1.4.1", only: :dev},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
+      {:phoenix_live_view, "~> 0.20"},
       {:phoenix_view, "~> 2.0"},
       {:floki, ">= 0.33.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},

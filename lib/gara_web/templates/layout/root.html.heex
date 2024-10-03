@@ -10,7 +10,7 @@
     <meta property="og:url" content={assigns[:page_url] || ""} />
     <meta property="og:type" content="article" />
     <meta property="og:image" content={~p"/images/gara_room.jpg"} />
-    <%= live_title_tag assigns[:page_title] || "Welcome, and Get a room already!" %>
+    <title><%= assigns[:page_title] || "Welcome, and Get a room already!" %></title>
     <link phx-track-static rel="stylesheet" href={~p"/css/preflight.css"}/>
     <link phx-track-static rel="stylesheet" href={~p"/css/app.css"}/>
     <script defer phx-track-static type="module" src={~p"/js/app.js"}></script>
