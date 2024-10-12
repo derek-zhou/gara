@@ -4,7 +4,7 @@ defmodule Gara.MixProject do
   def project do
     [
       app: :gara,
-      version: "0.3.0",
+      version: version(),
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers() ++ [:surface],
@@ -50,6 +50,19 @@ defmodule Gara.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"}
     ]
+  end
+
+  defp version do
+    case System.shell("git tag | tail -n1") do
+      {tag, 0} ->
+        case String.trim(tag) do
+          "" -> "0.0.0"
+          trimmed -> trimmed
+        end
+
+      _ ->
+        "0.0.0"
+    end
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
