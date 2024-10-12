@@ -4,7 +4,7 @@ defmodule Gara.MixProject do
   def project do
     [
       app: :gara,
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: Mix.compilers() ++ [:surface],
@@ -35,7 +35,6 @@ defmodule Gara.MixProject do
     [
       {:bandit, "~> 1.0"},
       {:surface, "~> 0.12.0"},
-      {:phoenix_copy, "~> 0.1.3"},
       {:md, "~> 0.9.1"},
       {:cookie_jar, "~> 1.1"},
       {:httpoison, "~> 1.8"},
@@ -61,12 +60,9 @@ defmodule Gara.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      start: ["compile", "phx.copy default", "phx.server"],
+      start: ["compile", "phx.server"],
       deploy: [
         "compile",
-        "phx.digest.clean",
-        "phx.copy default",
-        "phx.digest",
         "release --overwrite"
       ]
     ]

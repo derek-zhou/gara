@@ -1,1 +1,0 @@
-../../deps/phoenix_live_view/priv/static/phoenix_live_view.esm.js

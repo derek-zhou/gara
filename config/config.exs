@@ -31,12 +31,10 @@ config :gara, GaraWeb.Guardian,
     "access" => {8, :hours}
   }
 
-config :phoenix_copy,
-  default: [
-    debounce: 100,
-    source: Path.expand("../assets/", __DIR__),
-    destination: Path.expand("../priv/static/", __DIR__)
-  ]
+# output directly to priv
+config :surface, :compiler,
+  hooks_output_dir: "priv/static/js/_hooks",
+  css_output_file: "priv/static/css/_components.css"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

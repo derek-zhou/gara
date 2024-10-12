@@ -13,10 +13,7 @@ config :gara, GaraWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "ILXRBu2Lt+YJiMCwBdcAgQ0xEXCW8+HDsMZmkOLBni4z0P7tJw1OYxss2wC5xo+Q",
-  watchers: [
-    asset_copy: {Phoenix.Copy, :watch, [:default]}
-  ]
+  secret_key_base: "ILXRBu2Lt+YJiMCwBdcAgQ0xEXCW8+HDsMZmkOLBni4z0P7tJw1OYxss2wC5xo+Q"
 
 config :gara,
   idle_limit: 5,

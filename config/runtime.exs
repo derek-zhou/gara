@@ -26,7 +26,6 @@ if config_env() == :prod do
   config :gara, GaraWeb.Endpoint,
     server: true,
     url: [host: "#{app_name}.fly.dev", scheme: "https", port: 443],
-    cache_static_manifest: "priv/static/cache_manifest.json",
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.

@@ -26,8 +26,10 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 gara-*.tar
 
-# Ignore assets that are produced by build tools.
-/priv/static/
+# Ignore outputs from surface build.
+/priv/static/js/_hooks
+/priv/static/css/_components.css
+/priv/static/uploads
 
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
