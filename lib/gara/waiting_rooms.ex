@@ -1,7 +1,4 @@
 defmodule Gara.WaitingRooms do
-  # name of the ETS table
-  @ets_waiting_rooms :roastidious_waiting_rooms
-
   alias :ets, as: ETS
   alias Gara.{Defaults, Room, Rooms}
 
@@ -9,7 +6,7 @@ defmodule Gara.WaitingRooms do
   init the data structures
   """
   def init() do
-    ETS.new(@ets_waiting_rooms, [:named_table, :public])
+    ETS.new(__MODULE__, [:named_table, :public])
   end
 
   @doc """
@@ -18,7 +15,7 @@ defmodule Gara.WaitingRooms do
   def open(topic, minutes) do
     name = Room.new_room_name()
     timeout = System.monotonic_time(:second) + minutes * 60 + 59
-    ETS.insert(@ets_waiting_rooms, {name, topic, timeout})
+    ETS.insert(__MODULE__, {name, topic, timeout})
     name
   end
 
@@ -29,12 +26,12 @@ defmodule Gara.WaitingRooms do
     now = System.monotonic_time(:second)
     limit = Defaults.default(:idle_limit) * 60
 
-    case ETS.lookup(@ets_waiting_rooms, name) do
+    case ETS.lookup(__MODULE__, name) do
       [{^name, topic, timeout}] when timeout > now + 59 ->
         {:wait, div(timeout - now, 60), topic}
 
       [{^name, _topic, timeout}] when timeout <= now - limit ->
-        ETS.delete(@ets_waiting_rooms, name)
+        ETS.delete(__MODULE__, name)
         {:error, :expired}
 
       [{^name, topic, _timeout}] ->
@@ -46,7 +43,7 @@ defmodule Gara.WaitingRooms do
             end
 
           ^name ->
-            ETS.delete(@ets_waiting_rooms, name)
+            ETS.delete(__MODULE__, name)
 
             case Registry.lookup(Rooms, name) do
               [] -> {:error, :expired}
