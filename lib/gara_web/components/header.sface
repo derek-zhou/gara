@@ -97,8 +97,7 @@
     <form :on-submit={@message.name} :if={@mode == :text}>
 	<div id="text-box" class="input-box" :hook>
 	    <textarea name="text" class="compose" id="text-compose" autofocus={true}
-		      placeholder={gettext("Markdown syntax supported")}>
-	    </textarea>
+		      placeholder={gettext("Markdown syntax supported")}></textarea>
 	</div>
 	<div class="toolbar">
 	    <input class={"button", disabled: @uploading}
