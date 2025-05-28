@@ -432,7 +432,7 @@ defmodule Gara.Room do
   defp drop_one(%__MODULE__{roster: roster, msg_id: msg_id} = state, id) do
     case Roster.get_name(roster, id) do
       nil ->
-        state
+        %{state | roster: Roster.leave(roster, id)}
 
       nick ->
         roster = Roster.leave(roster, id)

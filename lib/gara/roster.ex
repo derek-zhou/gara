@@ -113,7 +113,7 @@ defmodule Gara.Roster do
 
         new_id = Process.monitor(pid)
         names = names |> Map.delete(id) |> Map.put_new(new_id, name)
-        # pld_pid is removed at hangup time
+        # old_pid is removed at hangup time
         pids = Map.put_new(pids, new_id, pid)
         # new join uses the group consensus
         locks = if locked?, do: MapSet.put(locks, new_id), else: locks
