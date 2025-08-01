@@ -1,5 +1,6 @@
 defmodule Gara.Room do
-  @timeout_interval 300_000
+  @idle_timeout 300_000
+  @lock_timeout 86_400_000
 
   require Logger
   use GenServer, restart: :transient
@@ -181,7 +182,7 @@ defmodule Gara.Room do
         since: NaiveDateTime.utc_now(),
         roster: Roster.new(),
         canonical?: canonical?,
-        timer: Process.send_after(self(), :timeout, @timeout_interval)
+        timer: Process.send_after(self(), :timeout, @idle_timeout)
       }
     }
   end
@@ -208,9 +209,10 @@ defmodule Gara.Room do
   @impl true
   def handle_info({:DOWN, id, :process, _, _}, state) do
     state = drop_one(state, id)
+    timeout = if state.locked?, do: @lock_timeout, else: @idle_timeout
 
     case Roster.size(state.roster) do
-      0 -> {:noreply, %{state | timer: Process.send_after(self(), :timeout, @timeout_interval)}}
+      0 -> {:noreply, %{state | timer: Process.send_after(self(), :timeout, timeout)}}
       _ -> {:noreply, repoll(state)}
     end
   end
@@ -336,9 +338,10 @@ defmodule Gara.Room do
   @impl true
   def handle_cast({:leave, id}, state) do
     state = drop_one(state, id)
+    timeout = if state.locked?, do: @lock_timeout, else: @idle_timeout
 
     case Roster.size(state.roster) do
-      0 -> {:stop, :normal, state}
+      0 -> {:noreply, %{state | timer: Process.send_after(self(), :timeout, timeout)}}
       _ -> {:noreply, repoll(state)}
     end
   end
